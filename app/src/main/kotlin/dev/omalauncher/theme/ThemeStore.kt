@@ -165,12 +165,24 @@ class ThemeStore(
             .onSuccess { Palette.apply(it) }
     }
 
-    /** Whether our live wallpaper is the Android wallpaper; the launcher then shows it instead of drawing its own. */
-    var liveWallpaperActive by mutableStateOf(false)
+    /** Whether Android reports our live wallpaper as its home screen wallpaper. */
+    var liveWallpaperSet by mutableStateOf(false)
         private set
 
+    /** False on a screen where it's set but doesn't show, as on a Samsung foldable's other screen; see [SystemWallpaper]. */
+    private var liveWallpaperShows by mutableStateOf(true)
+
+    /** Whether our live wallpaper shows behind the launcher; the launcher then shows it instead of drawing its own. */
+    val liveWallpaperActive get() = liveWallpaperSet && liveWallpaperShows
+
     suspend fun refreshLiveWallpaper() {
-        liveWallpaperActive = WallpaperManager.getInstance(context).wallpaperInfo?.packageName == context.packageName
+        liveWallpaperSet = WallpaperManager.getInstance(context).wallpaperInfo?.packageName == context.packageName
+        if (!liveWallpaperActive && wallpaper == null) wallpaper = decodeWallpaper(background)
+    }
+
+    /** Whether our live wallpaper was seen behind the launcher on the screen it's on now. */
+    suspend fun setLiveWallpaperShows(shows: Boolean) {
+        liveWallpaperShows = shows
         if (!liveWallpaperActive && wallpaper == null) wallpaper = decodeWallpaper(background)
     }
 

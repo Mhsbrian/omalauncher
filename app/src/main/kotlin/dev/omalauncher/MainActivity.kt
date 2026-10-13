@@ -3,11 +3,13 @@ package dev.omalauncher
 import android.app.ActivityManager
 import android.app.role.RoleManager
 import android.content.Intent
+import android.content.res.Configuration
 import android.os.Bundle
 import android.util.Log
 import android.view.KeyEvent
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.withResumed
 import kotlinx.coroutines.flow.first
@@ -93,7 +95,18 @@ class MainActivity : ComponentActivity() {
         // Made the default home app (or no longer it) while away: only then does Android show us pinned shortcuts.
         runtime.androidApps.checkShortcutAccess()
         // The user may have set or replaced the wallpaper while we were in the background.
-        lifecycleScope.launch { runtime.themes.refreshLiveWallpaper() }
+        runtime.wallpapers.onShown(this)
+    }
+
+    override fun onPause() {
+        runtime.wallpapers.onHidden()
+        super.onPause()
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        // A foldable folded or unfolded under us: on Samsung's, each screen has its own wallpaper.
+        if (lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) runtime.wallpapers.onShown(this)
     }
 
     /** Drops Recents cards whose Linux window no longer exists (app exited or process restarted). */

@@ -98,7 +98,10 @@ fun StyleScreen(
                 },
                 onRemove = { removing = it },
             )
-            store.current?.let { BackgroundSection(store, it) }
+            store.current?.let {
+                BackgroundSection(store, it)
+                AndroidWallpaperSection(runtime.wallpapers)
+            }
             // Style choices don't depend on a theme, so they're offered before themes are downloaded too.
             Heading("home screen")
             val style = runtime.style
@@ -214,14 +217,13 @@ private fun ThemeSection(
     }
 }
 
-/** [theme]'s backgrounds, one of the user's own images, and handing it all to Android. */
+/** [theme]'s backgrounds and one of the user's own images; [AndroidWallpaperSection] hands it to Android. */
 @Composable
 private fun BackgroundSection(
     store: ThemeStore,
     theme: OmarchyTheme,
 ) {
     val scope = rememberCoroutineScope()
-    val context = LocalContext.current
     // Keyed on the background too, so an image just added shows up.
     val backgrounds = remember(theme, store.background) { theme.backgrounds() }
     val pickImage = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
@@ -249,24 +251,6 @@ private fun BackgroundSection(
             ) {
                 BasicText("[ + image ]", style = Mono.copy(color = Palette.accent))
             }
-        }
-    }
-    Row(
-        Modifier
-            .fillMaxWidth()
-            // Some phones (Android Go) have no live wallpaper picker.
-            .clickable(enabled = !store.liveWallpaperActive) { runCatching { context.startActivity(store.liveWallpaperIntent()) } }
-            .padding(vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        if (store.liveWallpaperActive) {
-            // SystemUI defers live-wallpaper color changes until the screen turns off.
-            BasicText(
-                "✓ android wallpaper & system colors follow the theme (system colors update after the screen turns off)",
-                style = Mono.copy(color = Palette.green),
-            )
-        } else {
-            BasicText("[ use as android wallpaper + system colors ]", style = Mono.copy(color = Palette.accent))
         }
     }
 }
@@ -451,7 +435,7 @@ private fun NumberOption(
  * None is picked for a value set in style.toml outside the options; [custom] says what it is.
  */
 @Composable
-private fun StyleOption(
+internal fun StyleOption(
     label: String,
     options: List<String>,
     selected: Int,

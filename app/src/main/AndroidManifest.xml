@@ -5,6 +5,8 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Writes the theme's background as the home and lock screen picture when asked to (theme/SystemWallpaper.kt). -->
+    <uses-permission android:name="android.permission.SET_WALLPAPER" />
     <!-- Speech input for the agent prompt bar; only recognized text reaches Linux. -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
 

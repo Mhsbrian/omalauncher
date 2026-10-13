@@ -41,6 +41,7 @@ import dev.omalauncher.linux.run
 import dev.omalauncher.linux.shellQuote
 import dev.omalauncher.theme.Style
 import dev.omalauncher.theme.StyleStore
+import dev.omalauncher.theme.SystemWallpaper
 import dev.omalauncher.theme.ThemeStore
 import dev.omalauncher.ui.Gestures
 import dev.omalauncher.ui.KeyboardBridge
@@ -94,6 +95,9 @@ class Runtime(
     /** Where Android apps' icons come from: icon packs and the user's own files. Before [androidApps] starts drawing them. */
     val icons = IconStore(context, style, androidApps, usage)
     val themes = ThemeStore(context, proot, style, isLinux = { linux }, onConfigChanged = ::syncGuest)
+
+    /** Android's home and lock screen wallpapers, on each screen of a foldable. */
+    val wallpapers = SystemWallpaper(context, themes)
     private val audio = AudioBridge(proot)
     private val openBridge = OpenBridge(context, proot, onOpenFiles = ::openFiles)
     val agents = AgentStore(proot, onChanged = ::syncGuest)

@@ -1,6 +1,7 @@
 package dev.omalauncher.theme
 
 import android.app.WallpaperColors
+import android.app.WallpaperManager
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.Paint
@@ -13,6 +14,8 @@ import android.view.SurfaceHolder
 import dev.omalauncher.ui.decodeForScreen
 import dev.omalauncher.ui.wallpaperCrop
 import java.util.concurrent.Executors
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
 
 /**
  * Android live wallpaper showing the current Omarchy background. Its main
@@ -23,6 +26,14 @@ import java.util.concurrent.Executors
  */
 class OmarchyWallpaperService : WallpaperService() {
     override fun onCreateEngine(): Engine = OmarchyEngine()
+
+    companion object {
+        /**
+         * How many of our engines show as a home screen wallpaper now, previews aside: one behind the
+         * launcher means ours is the wallpaper of the screen it's on (see [SystemWallpaper]).
+         */
+        val showingOnHome = MutableStateFlow(0)
+    }
 
     private inner class OmarchyEngine : Engine() {
         private val main = Handler(Looper.getMainLooper())
@@ -36,6 +47,9 @@ class OmarchyWallpaperService : WallpaperService() {
         /** Where the launcher's pages are scrolled, 0 to 1: the background slides along. */
         private var xOffset = 0.5f
 
+        /** Whether this engine counts in [showingOnHome]. */
+        private var counted = false
+
         private val onThemeChanged: () -> Unit = { main.post { reload() } }
 
         override fun onCreate(surfaceHolder: SurfaceHolder) {
@@ -46,6 +60,7 @@ class OmarchyWallpaperService : WallpaperService() {
         }
 
         override fun onDestroy() {
+            countShowing(false)
             ThemeStore.changeListeners.remove(onThemeChanged)
             decoder.shutdownNow()
             super.onDestroy()
@@ -75,16 +90,32 @@ class OmarchyWallpaperService : WallpaperService() {
         }
 
         override fun onVisibilityChanged(visible: Boolean) {
+            countShowing(visible)
             if (visible) draw()
+        }
+
+        /** Android 14+ can move one engine between the home and lock screens. */
+        override fun onWallpaperFlagsChanged(which: Int) {
+            countShowing(isVisible)
+        }
+
+        private fun countShowing(visible: Boolean) {
+            val home = Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE || wallpaperFlags and WallpaperManager.FLAG_SYSTEM != 0
+            val counts = visible && !isPreview && home
+            if (counts == counted) return
+            counted = counts
+            showingOnHome.update { it + if (counts) 1 else -1 }
         }
 
         /** Reads the saved theme off the main thread, then redraws with it. */
         private fun reload() {
             // A change posted just before the engine was destroyed.
             if (decoder.isShutdown) return
+            // Sized for the display this engine is on: with more than one, each has an engine.
+            val display = displayContext ?: this@OmarchyWallpaperService
             decoder.execute {
                 val (themeColors, file) = ThemeStore.savedSelection(this@OmarchyWallpaperService) ?: (emptyMap<String, String>() to null)
-                val decoded = if (file?.path != loadedPath) file?.let { decodeForScreen(it, this@OmarchyWallpaperService) } else null
+                val decoded = if (file?.path != loadedPath) file?.let { decodeForScreen(it, display) } else null
                 main.post {
                     val colorsChanged = themeColors != colors
                     colors = themeColors

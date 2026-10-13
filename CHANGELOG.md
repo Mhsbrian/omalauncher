@@ -4,6 +4,15 @@ The most important changes in each release. The Play Store notes for a release
 are in `fastlane/metadata/android/en-US/changelogs/<versionCode>.txt`.
 Dates are when the build was uploaded to Play.
 
+## Unreleased
+
+- Style › android wallpaper sets the lock screen too: the theme's background as a
+  picture, or on the home screen as well, following theme changes. On Samsung's
+  foldables, where the cover and main screens each keep their own wallpaper, each
+  screen gets it the first time the launcher shows there, and a table shows which
+  screens have it. Where the live wallpaper isn't on the screen in use, the home
+  screen draws the background itself and offers to set it there.
+
 ## 0.7.1 (versionCode 13) – 2026-10-13
 
 - Websites installed from a browser (Install app, or Add to home screen) show up
