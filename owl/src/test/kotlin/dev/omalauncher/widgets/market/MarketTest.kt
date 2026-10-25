@@ -284,7 +284,9 @@ class MarketTest {
         assertEquals(listOf(FacePage("faces/simon/manga/page-2.owl", page.sha256)), e.pages)
         assertEquals(mapOf("pacman" to listOf("coreutils", "curl")), e.requires)
         assertEquals(listOf("uptime", "curl -s https://example.com/q"), e.commands)
-        assertEquals(13, e.owl)
+        // Pages at owl 13 still need 14: launchers before it would install page 1 alone.
+        assertEquals(Review.PAGES_LEVEL, e.owl)
+        assertEquals(10, Review("faces/simon/manga/face.owl", face).entry(null).owl)
         assertEquals("A manga page for home", e.description)
         val json = Catalog.write(listOf(e), "now", "faces")
         assertEquals(listOf(e), Catalog.parse(json, "faces"))

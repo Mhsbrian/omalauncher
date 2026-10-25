@@ -139,7 +139,8 @@ class Review(
             requires = all.flatMap { it.requires.entries }.groupBy({ it.key }, { it.value }).mapValues { (_, l) -> l.flatten().distinct() },
             commands = all.flatMap { it.commands }.distinct(),
             preview = preview,
-            owl = all.maxOf { it.level },
+            // Launchers from before pages would install page 1 alone: a face with more needs one that knows them.
+            owl = all.maxOf { it.level }.let { if (pages.isEmpty()) it else maxOf(it, PAGES_LEVEL) },
             category = Catalog.metaText(p.meta["category"]),
             themePreviews = themePreviews,
             icon = p.icon,
@@ -171,6 +172,9 @@ class Review(
     companion object {
         const val MAX_BYTES = 1024 * 1024
         val PATH = Regex("""(widget|face|app)s/([a-z0-9][a-z0-9-]{0,38})/([a-z0-9][a-z0-9-]{0,38})/\1\.owl""")
+        /** The first language level whose launchers install a face's other pages. */
+        const val PAGES_LEVEL = 14
+
         /** A face's other pages, from 2 on. */
         val PAGE = Regex("""(face)s/([a-z0-9][a-z0-9-]{0,38})/([a-z0-9][a-z0-9-]{0,38})/page-([2-9]|[1-9][0-9])\.owl""")
         private val VERSION = Regex("""\d+(\.\d+){0,2}""")

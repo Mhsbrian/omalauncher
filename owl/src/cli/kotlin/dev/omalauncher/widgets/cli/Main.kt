@@ -102,8 +102,10 @@ private fun pageChange(
     if (base == null || Review.PAGE.matchEntire(path) == null || previous == text) return null
     val face = path.substringBeforeLast('/') + "/face.owl"
     val old = File(base, face).takeIf { it.exists() } ?: return null
+    // Removed with its face.owl, it goes with the whole face.
+    val new = File(repo, face).takeIf { it.exists() } ?: return null
     val oldVersion = Review(face, old.readText()).version
-    val version = File(repo, face).takeIf { it.exists() }?.let { Review(face, it.readText()).version }.orEmpty()
+    val version = Review(face, new.readText()).version
     if (Catalog.compareVersions(version, oldVersion) > 0) return null
     return "this changes a page of an existing face, so the version in its face.owl must go up (main has $oldVersion)"
 }
