@@ -25,7 +25,7 @@ class Compiler private constructor(
          * instead of failing on what they don't know. Bump it with every
          * addition a widget could depend on: nodes, properties, builtins.
          */
-        const val LEVEL = 14
+        const val LEVEL = 15
         private const val MAX_ASSET_BYTES = 2 shl 20
 
         /** Pages as far out as a file can ask for; past Int's range, the pages either side of them would wrap. */
@@ -483,8 +483,8 @@ class Compiler private constructor(
         triggers: List<Trigger>,
     ): Program {
         since(PANEL_FILE, 0)
-        body.props.firstOrNull { it.name != "enter" && it.name != "opacity" }?.let {
-            fail("a panel only takes enter (what the prompt bar says Enter does) and opacity (how much it covers home); the launcher frames it, and gesture settings pick which swipe opens it", it.pos)
+        body.props.firstOrNull { it.name != "enter" && it.name != "opacity" && it.name != "keyboard" }?.let {
+            fail("a panel only takes enter (what the prompt bar says Enter does), opacity (how much it covers home) and keyboard (whether the keyboard comes up as it opens); the launcher frames it, and gesture settings pick which swipe opens it", it.pos)
         }
         body.handlers.firstOrNull { it.name != "onSubmit" && it.name != "onKey" }?.let {
             fail("handlers go on the nodes inside a panel; only onSubmit (Enter in the prompt bar) and onKey (its arrow and Tab keys) go at its top", it.pos)
@@ -508,6 +508,12 @@ class Compiler private constructor(
                 if (n != null && n !in 0.0..1.0) fail("a panel's opacity is from 0 (home shows through) to 1 (solid)", it.pos)
                 e
             }
+        // Whether opening the drawer raises the keyboard, so search is ready; fixed in the file, like a face's edge.
+        val keyboard =
+            body.props.firstOrNull { it.name == "keyboard" }?.let {
+                since(PANEL_KEYBOARD, it.pos)
+                ((it.value as? Expr.Lit)?.value as? Bool)?.v ?: fail("keyboard is true or false, not an expression", it.pos)
+            } ?: true
         checkLevel(level)
         return Program(
             name = ast.name ?: "panel",
@@ -519,6 +525,7 @@ class Compiler private constructor(
             onKey = onKey,
             enter = enter,
             opacity = opacity,
+            keyboard = keyboard,
             triggers = triggers,
             commands = commands.toList(),
             secretHosts = secretHosts.mapValues { it.value.sorted() },

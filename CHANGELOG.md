@@ -8,6 +8,9 @@ Dates are when the build was uploaded to Play.
 
 - Tapping a now-playing widget brings up the player's own screen, like a web app's
   window when one installed from a browser plays, rather than a new browser tab.
+- A drawer can leave the keyboard down as it opens, for scrolling the apps rather
+  than searching them: owl 15's `keyboard: false` in `drawer.owl`. Tapping the
+  bar brings it up.
 
 ## 0.13.0 (versionCode 24) – 2026-10-25
 

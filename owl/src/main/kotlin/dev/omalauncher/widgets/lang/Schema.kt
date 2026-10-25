@@ -149,7 +149,9 @@ internal val SINCE =
         // screenRight measure.
         mapOf(FACE_EDGE to 14, "screenLeft" to 14, "screenRight" to 14) +
         // owl 14: no ripple under the finger, for a node that shows its press itself.
-        mapOf("ripple" to 14)
+        mapOf("ripple" to 14) +
+        // owl 15: a drawer that leaves the keyboard down as it opens.
+        mapOf(PANEL_KEYBOARD to 15)
 
 /** `animate offset: ...`, named like this in [SINCE]. */
 internal const val ANIMATE_OFFSET = "animate offset"
@@ -178,6 +180,9 @@ internal const val PANEL_FILE = "panel \"…\" { }"
 
 /** A panel's own `opacity:`, named like this in [SINCE]. */
 internal const val PANEL_OPACITY = "panel opacity"
+
+/** A panel's own `keyboard:`, named like this in [SINCE]. */
+internal const val PANEL_KEYBOARD = "panel keyboard"
 
 internal const val KEYBAR_FILE = "keybar \"…\" { }"
 

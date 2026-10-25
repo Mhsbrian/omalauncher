@@ -359,6 +359,8 @@ class Program(
     val enter: Ev? = null,
     /** A panel's `opacity`: how much the backdrop the launcher draws behind it covers home, 0 to 1; null for the default. */
     val opacity: Ev? = null,
+    /** A panel's `keyboard`: whether the keyboard comes up as it opens above the prompt bar; false leaves it down until the bar is tapped. */
+    val keyboard: Boolean = true,
     val onTap: Action? = null,
     val triggers: List<Trigger>,
     /** Shell commands this widget can run, known without running it; for reviewing shared widgets. */
