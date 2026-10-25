@@ -25,7 +25,7 @@ class Compiler private constructor(
          * instead of failing on what they don't know. Bump it with every
          * addition a widget could depend on: nodes, properties, builtins.
          */
-        const val LEVEL = 13
+        const val LEVEL = 14
         private const val MAX_ASSET_BYTES = 2 shl 20
 
         /** Pages as far out as a file can ask for; past Int's range, the pages either side of them would wrap. */
@@ -231,6 +231,9 @@ class Compiler private constructor(
     /** A face: it runs under the navigation bar, so its nodes may read `screenInset`. Known from the file's first word, so its lets and components see it too. */
     private val isFace = ast.kind == OwlKind.Face
 
+    /** A face with `edge: true`, which runs under the status bar and a cutout and may read how much they cover. Known up front, like [isFace]. */
+    private val edgeFace = isFace && ast.body.props.any { p -> p.name == "edge" && ((p.value as? Expr.Lit)?.value as? Bool)?.v == true }
+
     /** Where a handler calls screen() or close(), which need a screen { } block. */
     private var screenAction: Int? = null
 
@@ -339,6 +342,12 @@ class Compiler private constructor(
         val background = props["background"]?.let { if (gradient(it.value)) since(GRADIENT_BACKGROUND, it.pos); ex(it.value, root) }
         // Whether the status bar stays over a face, read as it changes: a face can hide it for a game and bring it back.
         val statusBar = props["statusBar"]?.let { ex(it.value, root) }
+        // Drawn under the status bar and a camera cutout: fixed in the file, since the whole face moves when it changes.
+        val edge =
+            props["edge"]?.let { p ->
+                since(FACE_EDGE, p.pos)
+                ((p.value as? Expr.Lit)?.value as? Bool)?.v ?: fail("edge is true or false, not an expression", p.pos)
+            } ?: false
         checkLevel(level)
 
         return Program(
@@ -347,6 +356,7 @@ class Compiler private constructor(
             level = level,
             size = props["size"]?.let { cells(it) },
             statusBar = statusBar,
+            edge = edge,
             kind = ast.kind,
             minSize = props["minSize"]?.let { cells(it) } ?: (1 to 1),
             // A face goes left of page 1 by default: 0, and -1, -2, ... further left. A tile never does.
@@ -1512,9 +1522,13 @@ class Compiler private constructor(
         if (e.name == "screenInset" && ast.kind != OwlKind.App && !(isFace && inScreen != true)) {
             fail("screenInset is for apps with edge: true and faces; a widget's screen ends above the navigation bar", e.pos)
         }
-        // Only an app runs up to the top edge, with statusBar: false; a face and a widget's screen stay clear of the cutout.
-        if (e.name == "screenTop" && ast.kind != OwlKind.App) {
-            fail("screenTop is for apps with statusBar: false; a face and a widget's screen start below the camera", e.pos)
+        // Only an app with statusBar: false and a face with edge: true run up to the top edge; a widget's screen stays clear of it.
+        if (e.name == "screenTop" && ast.kind != OwlKind.App && !(edgeFace && inScreen != true)) {
+            fail("screenTop is for apps with statusBar: false and faces with edge: true; anything else starts below the status bar", e.pos)
+        }
+        // Only a face with edge: true runs under a cutout or navigation bar at the side.
+        if ((e.name == "screenLeft" || e.name == "screenRight") && !(edgeFace && inScreen != true)) {
+            fail("${e.name} is for faces with edge: true, which run under a camera cutout or navigation bar at the side", e.pos)
         }
         // Not reserved: widgets that already declare `rows` or `cols` keep their own.
         if (e.name in TILE || e.name == LINUX) {
