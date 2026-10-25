@@ -371,7 +371,7 @@ class ServerDecoration(
 ) : Resource(client, id, 1) {
     override val iface = "org_kde_kwin_server_decoration"
 
-    fun sendMode() = send(event(0).uint(ServerDecorationManager.SERVER_MODE))
+    fun sendMode(mode: Int = ServerDecorationManager.SERVER_MODE) = send(event(0).uint(mode))
 
     override fun request(
         opcode: Int,
@@ -379,7 +379,9 @@ class ServerDecoration(
     ) {
         when (opcode) {
             0 -> destroy() // release
-            1 -> sendMode() // request_mode: whatever is asked, it stays server-side
+            // request_mode: granted, as wlroots does. A header-bar window asks for client-side and, answered
+            // server-side, asks again at once, forever; the default already keeps plain windows server-side.
+            1 -> sendMode(args.uint())
         }
     }
 }
