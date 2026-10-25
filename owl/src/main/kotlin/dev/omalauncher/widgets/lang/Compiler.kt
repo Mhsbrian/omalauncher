@@ -989,6 +989,10 @@ class Compiler private constructor(
                 if ((p.value as? Expr.Name)?.name !in axes) fail("drag is ${axes.joinToString(" or ")}", p.pos)
                 if (body.handlers.none { it.name == "onDrag" }) fail("drag picks the direction onDrag follows: add onDrag", p.pos)
             }
+            if (p.name == "ripple") {
+                since("ripple", p.pos)
+                if (body.handlers.none { it.name == "onTap" || it.name == "onLongPress" }) fail("ripple is the press shown on a node that takes taps: add onTap", p.pos)
+            }
             if (p.name == "repeats") {
                 since("repeats", p.pos)
                 if (body.handlers.none { it.name == "onPress" }) fail("repeats runs onPress again while the finger stays down: add onPress", p.pos)
@@ -1061,6 +1065,7 @@ class Compiler private constructor(
         val wrapper = body.props.filter { it.name !in c.params }.associate { it.name to prop(it, scope) }
         body.props.firstOrNull { it.name == "frost" && it.name !in c.params }?.let { since("frost", it.pos) }
         body.props.firstOrNull { it.name == "drag" && it.name !in c.params }?.let { fail("drag goes on the node inside ${n.type} that has onDrag", it.pos) }
+        body.props.firstOrNull { it.name == "ripple" && it.name !in c.params }?.let { fail("ripple goes on the node inside ${n.type} that has onTap", it.pos) }
         return WNode.Use(n.type, args, wrapper, c.body, n.pos)
     }
 

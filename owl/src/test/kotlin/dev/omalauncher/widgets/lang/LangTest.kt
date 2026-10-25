@@ -1342,6 +1342,14 @@ class LangTest {
         compileError("widget {\n meta { owl: 13 }\n component C() { Box { } }\n C { drag: horizontal } }").let { assertTrue(it, it.contains("drag goes on the node inside C")) }
     }
 
+    /** ripple: false turns off the press shown on a node that takes taps (owl 14). */
+    @Test fun rippleOff() {
+        Compiler.compile("widget {\n meta { owl: 14 }\n state n = 0\n Box { ripple: false; onTap: n = n + 1 } }")
+        compileError("widget {\n meta { owl: 13 }\n state n = 0\n Box { ripple: false; onTap: n = n + 1 } }").let { assertTrue(it, it.contains("ripple needs owl 14")) }
+        compileError("widget {\n meta { owl: 14 }\n Box { ripple: false } }").let { assertTrue(it, it.contains("add onTap")) }
+        compileError("widget {\n meta { owl: 14 }\n component C() { Box { } }\n C { ripple: false } }").let { assertTrue(it, it.contains("ripple goes on the node inside C")) }
+    }
+
     /** The SIM, Do Not Disturb switched, notifications snoozed, and offsets that ease back (owl 13). */
     @Test fun simDndSnoozeAndSpringBack() {
         Compiler.compile(

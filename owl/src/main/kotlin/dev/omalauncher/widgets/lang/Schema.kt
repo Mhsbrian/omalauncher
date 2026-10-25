@@ -47,7 +47,7 @@ internal val KINDS: Map<String, Kind> =
 internal val COMMON =
     setOf(
         "width", "height", "size", "fill", "weight", "padding", "background", "border", "borderColor",
-        "radius", "opacity", "rotation", "scale", "offset", "clip", "visible", "frost", "repeats", "drag",
+        "radius", "opacity", "rotation", "scale", "offset", "clip", "visible", "frost", "repeats", "drag", "ripple",
     )
 
 internal val ANIMATABLE = setOf("opacity", "rotation", "scale", "offset", "value", "color", "background")
@@ -147,7 +147,9 @@ internal val SINCE =
         listOf("tileOpacity", "tileFrost").associateWith { 13 } +
         // owl 14: a face whose nodes run on under the status bar and the camera cutout, which screenTop, screenLeft and
         // screenRight measure.
-        mapOf(FACE_EDGE to 14, "screenLeft" to 14, "screenRight" to 14)
+        mapOf(FACE_EDGE to 14, "screenLeft" to 14, "screenRight" to 14) +
+        // owl 14: no ripple under the finger, for a node that shows its press itself.
+        mapOf("ripple" to 14)
 
 /** `animate offset: ...`, named like this in [SINCE]. */
 internal const val ANIMATE_OFFSET = "animate offset"
