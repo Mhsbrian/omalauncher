@@ -177,7 +177,7 @@ private fun KindToggle(
     kinds: List<OwlKind>,
     onPick: (OwlKind) -> Unit,
 ) {
-    Row(Modifier.padding(end = 4.dp).frame(1.dp, Palette.border, radius = 14.dp).clip(RoundedCornerShape(14.dp))) {
+    Row(Modifier.padding(end = 4.dp).frame(1.dp, Palette.border, radius = 14.dp)) {
         for (k in kinds) {
             val label = "${k.word}s"
             val on = k == kind
