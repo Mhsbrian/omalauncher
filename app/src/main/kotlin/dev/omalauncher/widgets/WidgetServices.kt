@@ -269,6 +269,15 @@ class WidgetServices(
 
     override fun androidImage(src: String) = media.art(src)
 
+    override fun speechUpdates(owner: Any) = runtime.dictation.updates(owner)
+
+    override fun speech(
+        owner: Any,
+        word: String,
+    ) = runtime.dictation.act(owner, word)
+
+    override fun heard(owner: Any) = runtime.dictation.heard(owner)
+
     /** "work" or "clone" for an app in a profile beside the launcher's own, as the drawer marks it; null for its own. */
     private fun profileKind(user: UserHandle): String? {
         if (user == Process.myUserHandle()) return null

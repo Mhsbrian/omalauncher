@@ -21,6 +21,7 @@ import kotlinx.coroutines.withContext
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.snapshotFlow
 import dev.omalauncher.ui.ImagePicker
+import dev.omalauncher.ui.MicPermission
 import dev.omalauncher.ui.Palette
 import dev.omalauncher.theme.Style
 import dev.omalauncher.ui.KeyIndicated
@@ -43,6 +44,7 @@ class MainActivity : ComponentActivity() {
     private val runtime get() = (application as App).runtime
     private val state = LauncherState()
     private val imagePicker = ImagePicker(this) { runtime }
+    private val mic = MicPermission(this)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -120,6 +122,7 @@ class MainActivity : ComponentActivity() {
         away = false
         runtime.wm.focus(null)
         runtime.keyboard.imagePicker = imagePicker
+        runtime.dictation.askMic = mic::ask
         removeStaleWindowTasks()
         // Made the default home app (or no longer it) while away: only then does Android show us pinned shortcuts.
         runtime.androidApps.checkShortcutAccess()
@@ -200,6 +203,7 @@ class MainActivity : ComponentActivity() {
         super.onPause()
         runtime.keyboard.releaseHeld()
         if (runtime.keyboard.imagePicker === imagePicker) runtime.keyboard.imagePicker = null
+        runtime.dictation.askMic = null
     }
 
     override fun onStop() {

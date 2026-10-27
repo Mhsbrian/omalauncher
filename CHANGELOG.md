@@ -21,6 +21,10 @@ Dates are when the build was uploaded to Play.
   temperature's °C or °F, and keeps the scale picked; until then it follows the country.
 - A widget can turn home to another page: `launcher("page:0")` shows the face left of
   page 1, as Super+1…9 does for pages 1 to 9, so a tile can lead to the face that shows more of it.
+- Widgets can take dictation: owl 15's `speech("toggle")` turns the microphone on and off from a
+  tap, and `source said = android.speech` has what's heard, as you speak and once you're done, so a
+  widget can show it, run a command with it, or type it into a terminal with `on said.final`. The
+  phone recognizes the speech, as for the prompt bar, and only the text reaches the widget (#84).
 - Widgets can show how fast the phone charges: owl 15's `source p = android.power every 2s` has the
   battery's current in mA, its watts, the mAh it holds, Android's time to full and what the charger
   offers, the same units and sign on every phone (#226).
