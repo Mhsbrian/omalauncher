@@ -1,5 +1,7 @@
 package dev.omalauncher.ui
 
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
@@ -304,70 +306,73 @@ internal fun FolderPanel(
     val density = LocalDensity.current
     val from = (geometry.anchor ?: geometry.panel).toRect()
     val to = geometry.panel.toRect()
-    Box(
-        Modifier
-            .fillMaxSize()
-            .zIndex(4f)
-            // Keys go between its apps while it's open, not to the tiles behind it.
-            .holdsKeys()
-            .drawWithContent {
-                val t = progress()
-                drawRect(Palette.overlay.copy(alpha = 0.6f * phase(t, 0f, 0.5f)))
-                // The tile's frame (FolderTile's tileFrame, style.toml's widgets.border) becomes the panel's: a
-                // wireframe at first, so the tile still shows through, filling in as it grows.
-                val f = FastOutSlowInEasing.transform(phase(t, 0f, 0.6f))
-                val r = lerp(from, to, f)
-                val stroke = lerp(LauncherStyle.borderWidth, 2.dp, f).toPx()
-                val radius = lerp(16.dp, 20.dp, f).toPx() * LauncherStyle.cornerScale
-                drawRoundRect(Palette.background.copy(alpha = f), r.topLeft, r.size, CornerRadius(radius))
-                // A tile without an outline starts without one: a 0 wide stroke would be a hairline.
-                if (stroke > 0f) {
-                    drawRoundRect(
-                        lerp(LauncherStyle.tileBorder, Palette.accent, f),
-                        r.topLeft + Offset(stroke / 2, stroke / 2),
-                        Size(r.width - stroke, r.height - stroke),
-                        CornerRadius((radius - stroke / 2).coerceAtLeast(0f)),
-                        style = Stroke(stroke),
+    // Keys go between its apps while it's open, not to the tiles behind it.
+    Box(Modifier.fillMaxSize().zIndex(4f).holdsKeys()) {
+        Box(
+            Modifier
+                .fillMaxSize()
+                .drawWithContent {
+                    val t = progress()
+                    drawRect(Palette.overlay.copy(alpha = 0.6f * phase(t, 0f, 0.5f)))
+                    // The tile's frame (FolderTile's tileFrame, style.toml's widgets.border) becomes the panel's: a
+                    // wireframe at first, so the tile still shows through, filling in as it grows.
+                    val f = FastOutSlowInEasing.transform(phase(t, 0f, 0.6f))
+                    val r = lerp(from, to, f)
+                    val stroke = lerp(LauncherStyle.borderWidth, 2.dp, f).toPx()
+                    val radius = lerp(16.dp, 20.dp, f).toPx() * LauncherStyle.cornerScale
+                    drawRoundRect(Palette.background.copy(alpha = f), r.topLeft, r.size, CornerRadius(radius))
+                    // A tile without an outline starts without one: a 0 wide stroke would be a hairline.
+                    if (stroke > 0f) {
+                        drawRoundRect(
+                            lerp(LauncherStyle.tileBorder, Palette.accent, f),
+                            r.topLeft + Offset(stroke / 2, stroke / 2),
+                            Size(r.width - stroke, r.height - stroke),
+                            CornerRadius((radius - stroke / 2).coerceAtLeast(0f)),
+                            style = Stroke(stroke),
+                        )
+                    }
+                    // The apps show only inside the frame so far.
+                    clipRect(r.left + stroke, r.top + stroke, r.right - stroke, r.bottom - stroke) { this@drawWithContent.drawContent() }
+                },
+        ) {
+            FolderName(folder.name, geometry.name, progress, onName)
+            folder.apps.forEachIndexed { i, app ->
+                if (app.key == carried) return@forEachIndexed
+                val r = geometry.app(i)
+                val wave = geometry.wave(i)
+                key(app.key) {
+                    // Apps making way for a dragged one slide to their new places.
+                    val at = animateIntOffsetAsState(IntOffset(r.left, r.top))
+                    render(
+                        app,
+                        Modifier
+                            .offset { at.value }
+                            .size(with(density) { r.width.toDp() }, with(density) { r.height.toDp() })
+                            .inert(closing)
+                            .graphicsLayer {
+                                val a = LinearOutSlowInEasing.transform(phase(progress(), 0.3f + 0.35f * wave, 0.65f + 0.35f * wave))
+                                alpha = a
+                                scaleX = 0.85f + 0.15f * a
+                                scaleY = 0.85f + 0.15f * a
+                            },
+                        app.key == selected,
                     )
                 }
-                // The apps show only inside the frame so far.
-                clipRect(r.left + stroke, r.top + stroke, r.right - stroke, r.bottom - stroke) { this@drawWithContent.drawContent() }
-            },
-    ) {
-        FolderName(folder.name, geometry.name, progress, onName)
-        folder.apps.forEachIndexed { i, app ->
-            if (app.key == carried) return@forEachIndexed
-            val r = geometry.app(i)
-            val wave = geometry.wave(i)
-            key(app.key) {
-                // Apps making way for a dragged one slide to their new places.
-                val at = animateIntOffsetAsState(IntOffset(r.left, r.top))
-                render(
-                    app,
-                    Modifier
-                        .offset { at.value }
-                        .size(with(density) { r.width.toDp() }, with(density) { r.height.toDp() })
-                        .inert(closing)
-                        .graphicsLayer {
-                            val a = LinearOutSlowInEasing.transform(phase(progress(), 0.3f + 0.35f * wave, 0.65f + 0.35f * wave))
-                            alpha = a
-                            scaleX = 0.85f + 0.15f * a
-                            scaleY = 0.85f + 0.15f * a
-                        },
-                    app.key == selected,
-                )
             }
         }
+        // Outside the clipped frame above, which would cut it off: it sits above or below the panel.
         val sel = folder.apps.indexOfFirst { it.key == selected }
         if (sel >= 0) {
             // Above the panel, so it covers neither the name nor the other apps, or below it with no room there; lined up with the app.
             val p = geometry.panel
             val r = geometry.app(sel)
             val barGap = with(density) { 8.dp.roundToPx() }
+            // This panel opens out of its tile, often near the top: the bar keeps below the status bar, as home's does.
+            val statusBar = WindowInsets.statusBars.getTop(density)
             fun at(size: IntSize) =
                 IntOffset(
                     r.left.coerceAtMost(p.right - size.width).coerceAtLeast(0),
-                    (p.top - size.height - barGap).takeIf { it >= 0 } ?: (p.bottom + barGap),
+                    (p.top - size.height - barGap).takeIf { it >= statusBar } ?: (p.bottom + barGap),
                 )
             DisposableEffect(Unit) { onDispose { onBar(null) } }
             Box(
