@@ -8,6 +8,7 @@
 # states to set first (`view = "watch"; openId = ""`), each starting from the screen before;
 # `wait = 60` there pauses first, for an API that allows only so many calls a minute.
 # The first is its preview as above; the rest go to apps/<author>/<name>/screens/<n>/<theme>.webp.
+# A face's other pages (page-2.owl, ...) go the same way, to faces/<author>/<name>/screens/<n>/<theme>.webp.
 #
 # Needs a debug build on an emulator (adb root) with Linux installed, so widgets
 # that run commands show real data, and the packages they require (curl, jq,
@@ -72,6 +73,17 @@ while True:
         break
     scale *= 0.85
 PY
+}
+
+# A WebP at quality 80, or lower until it's within the store's 100 KB: busy pictures (halftones, photos) don't fit at 80.
+webp() {
+  local src=$1 out=$2 q
+  shift 2
+  for q in 80 70 60 50 40; do
+    cwebp -quiet -q "$q" "$@" "$src" -o "$out"
+    [ "$(wc -c < "$out")" -le 102400 ] && return 0
+  done
+  echo "  $(basename "$out") is over 100 KB even at quality 40" >&2
 }
 
 # Runs store-previews-demo.sh in the guest (through the debug build's exec intent) and waits for it.
@@ -147,11 +159,51 @@ print(json.dumps({"days": days, "entries": [{"date": today.isoformat(), "v": v, 
     nostr-inbox)
       local now; now=$(date +%s)
       json=$(printf '{"who":"009ce97e22b376c406740f9b842f780ca2e92c2093a5f11d12f43f6150d8e6a1","seen":%s,"alerts":true,"notifiedAt":%s}' $((now - 86400)) "$now") ;;
+    # A stop in Berlin's Mitte with trams and buses every few minutes, any line, four minutes away.
+    next-bus) json='{"stopId":"de-VBB_de:11000:900100503::2","stopName":"Berlin, Invalidenpark","route":"","dir":"","walk":4}' ;;
+    # A game under way: three spades, two hearts and a diamond up, runs on most columns.
+    solitaire) json='{"stock":[7,4,51,23,11,49,34],"waste":[32,22,8,31],"found":[3,2,1,0],"tab":[[25,50,36,9],[45,46],[18,33,37,10],[21,48,12,19,5],[16,39,3,27,35],[17,28,40,41,38,47,20,6],[24,42,44,15,29,43,30]],"down":[0,1,2,3,4,5,6],"hist":[],"moves":23,"wins":2,"counted":false,"draw3":false}' ;;
+    # Three space agencies' public accounts; the posts are live from FxTwitter.
+    xfeed) json='{"users":["NASA","esa","Space_Station"]}' ;;
+    # A city under the NWS's radars: the emulator's own location is outside them.
+    nws-radar) json='{"city":"Oklahoma City"}' ;;
+    # A preset city: its default ("auto") would show the host's own location from its IP.
+    islamic) json='{"city":"Makkah","method":"4"}' ;;
+    # Most of a day measured, with a few lost pings, so the day's figures show.
+    network) json=$(printf '{"todayKey":"%s","todaySamples":5140,"todayFails":6,"todaySum":107800}' "$(adb shell date +%F | tr -d '\r')") ;;
     *) return 0 ;;
   esac
   printf '{"v":1,"savedAt":%s,"values":%s}' "$(date +%s)" "$json" > "$WORK/state.json"
   adb push "$WORK/state.json" /data/local/tmp/store-preview-state.json >/dev/null
   adb shell "cp /data/local/tmp/store-preview-state.json $STATE/$2.json && chown $owner $STATE/$2.json && chmod 600 $STATE/$2.json && chcon $(adb shell ls -Zd $STATE | cut -d' ' -f1) $STATE/$2.json"
+}
+
+# Draws a face's page [n] from $1 into $2/screens/<n>/<theme>.webp, as its own face under the name $3.
+draw_page() {
+  local page=$1 dir=$2 pname=$3 n hash
+  n=$(basename "$page" .owl)
+  n=${n#page-}
+  hash=$(shasum -a 256 "$page" | cut -d' ' -f1)
+  adb shell "rm -rf $APP/.preview/themes"
+  put "$page" "$pname"
+  if ! wait_for 30 "grep -q $hash $APP/.check/$pname.txt"; then
+    echo "  page $n didn't compile in time; skipped" >&2
+    adb shell "rm -f $APP/$pname"
+    return 1
+  fi
+  adb push "$WORK/empty.txt" /data/local/tmp/store-preview-screens.txt >/dev/null
+  adb shell "cp /data/local/tmp/store-preview-screens.txt $APP/.check/$pname.themes"
+  if ! wait_for 120 "test -f $APP/.preview/themes/$pname.done"; then
+    echo "  page $n: no previews in time; skipped" >&2
+    adb shell "rm -f $APP/$pname"
+    return 1
+  fi
+  mkdir -p "$dir/screens/$n"
+  for theme in $(adb shell "ls $APP/.preview/themes" | grep -v '\.done$'); do
+    adb exec-out cat "$APP/.preview/themes/$theme/$pname.png" > "$WORK/png/$theme.$n.png"
+    webp "$WORK/png/$theme.$n.png" "$dir/screens/$n/$theme.webp" -resize 540 0
+  done
+  adb shell "rm -f $APP/$pname; rm -rf $APP/.preview/themes"
 }
 
 demo on
@@ -200,17 +252,26 @@ for dir in "${dirs[@]}"; do
   rm -rf "$WORK/png" "$dir/screens" && mkdir -p "$WORK/png" "$dir/previews"
   for theme in $(adb shell "ls $APP/.preview/themes" | grep -v '\.done$'); do
     adb exec-out cat "$APP/.preview/themes/$theme/$name.png" > "$WORK/png/$theme.png"
-    cwebp -quiet -q 80 ${resize[@]+"${resize[@]}"} "$WORK/png/$theme.png" -o "$dir/previews/$theme.webp"
+    webp "$WORK/png/$theme.png" "$dir/previews/$theme.webp" ${resize[@]+"${resize[@]}"}
     # Not seq: on macOS, seq 2 1 counts down.
     for ((n = 2; n <= screens; n++)); do
       mkdir -p "$dir/screens/$n"
       adb exec-out cat "$APP/.preview/themes/$theme/$name.$n.png" > "$WORK/png/$theme.$n.png"
-      cwebp -quiet -q 80 ${resize[@]+"${resize[@]}"} "$WORK/png/$theme.$n.png" -o "$dir/screens/$n/$theme.webp"
+      webp "$WORK/png/$theme.$n.png" "$dir/screens/$n/$theme.webp" ${resize[@]+"${resize[@]}"}
     done
   done
   small_png "$WORK/png/$DEFAULT_THEME.png" "$dir/preview.png"
+  # A face's other pages, one at a time: all in this run, since it cleared screens/ above.
+  adb shell "rm -f $APP/$name"
+  : > "$WORK/empty.txt"
+  pages=1
+  for page in "$dir"/page-*.owl; do
+    [ -f "$page" ] || continue
+    draw_page "$page" "$dir" "store-$(basename "$dir").$(basename "$page")" && pages=$((pages + 1))
+  done
   extra=""
   [ "$screens" -gt 1 ] && extra=", $screens screens, $(du -sh "$dir/screens" | cut -f1) more"
+  [ "$pages" -gt 1 ] && extra=", $pages pages, $(du -sh "$dir/screens" | cut -f1) more"
   echo "  $(ls "$dir/previews" | wc -l | tr -d ' ') themes, $(du -sh "$dir/previews" | cut -f1)$extra"
   adb shell "rm -f $APP/$name; rm -rf $APP/.preview/themes"
 done

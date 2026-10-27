@@ -83,18 +83,19 @@ class ManagedFiles(
             val file = File(base, key)
             if (hash(file) == sha) file.delete()
         }
-        save(next)
+        // Most syncs change nothing; skip the fsync then.
+        if (next != recorded) save(next)
     }
 
     fun forgetAll() = manifest.delete()
 
     private fun load(): Map<String, String> {
-        val json = Versioned.read(manifest.takeIf { it.exists() }?.readText(), VERSION) as? JSONObject ?: return emptyMap()
+        val json = Versioned.readFile(manifest, VERSION) ?: return emptyMap()
         return json.keys().asSequence().associateWith { json.getString(it) }
     }
 
     private fun save(files: Map<String, String>) =
-        writeAtomically(manifest, Versioned.write(VERSION, JSONObject(files as Map<*, *>)).toByteArray(), executable = false)
+        Versioned.writeFile(manifest, VERSION, JSONObject(files as Map<*, *>))
 
     private companion object {
         const val VERSION = 1

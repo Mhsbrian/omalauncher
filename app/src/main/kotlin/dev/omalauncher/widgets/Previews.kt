@@ -22,11 +22,15 @@ import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
+import dev.omalauncher.ui.KeybarPreview
+import dev.omalauncher.ui.LocalOffscreen
 import dev.omalauncher.ui.OwlAppWindow
+import dev.omalauncher.ui.PanelPreview
 import dev.omalauncher.ui.WidgetScreenPanel
 import dev.omalauncher.widgets.lang.OwlKind
 import dev.omalauncher.ui.WidgetTile
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withTimeoutOrNull
 import java.io.File
@@ -69,7 +73,7 @@ internal class Previews(
             )
         }
 
-    /** Draws [spec]'s screen { } as it opens over home (an app's window, for an app), at [widthPx] x [heightPx], like [render]. */
+    /** Draws [spec]'s screen { } as it opens over home (an app's window, for an app; a panel fully open), at [widthPx] x [heightPx], like [render]. */
     suspend fun renderScreen(
         spec: WidgetSpec,
         instance: dev.omalauncher.widgets.runtime.WidgetInstance,
@@ -79,7 +83,12 @@ internal class Previews(
         ready: suspend () -> Unit,
     ): Boolean =
         draw(spec, widthPx, heightPx, out, ready) {
-            if (instance.program.kind == OwlKind.App) OwlAppWindow(spec, instance) else WidgetScreenPanel(spec, instance, onDismiss = {})
+            when (instance.program.kind) {
+                OwlKind.App -> OwlAppWindow(spec, instance)
+                OwlKind.Panel -> PanelPreview(instance)
+                OwlKind.Keybar -> KeybarPreview(instance)
+                else -> WidgetScreenPanel(spec, instance, onDismiss = {})
+            }
         }
 
     private suspend fun draw(
@@ -114,7 +123,7 @@ internal class Previews(
                     window?.setBackgroundDrawable(ColorDrawable(android.graphics.Color.TRANSPARENT))
                     val view =
                         ComposeView(this.context).apply {
-                            setContent { content() }
+                            setContent { CompositionLocalProvider(LocalOffscreen provides true) { content() } }
                         }
                     setContentView(view, ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
                     window?.decorView?.let {

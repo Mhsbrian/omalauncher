@@ -1,5 +1,6 @@
 package dev.omalauncher.ui
 
+import dev.omalauncher.widgets.lang.rankMatches
 import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.BackHandler
@@ -217,8 +218,8 @@ private fun AgentChoice(
     val installed = runtime.agents.installed
     val chosen = runtime.agents.default
     when {
-        !runtime.bootstrap.isInstalled -> BracketAction("install linux to draw with agents", Palette.accent, onSetup)
-        installed.isEmpty() -> BracketAction("install a coding agent", Palette.accent, onSetup)
+        !runtime.bootstrap.isInstalled -> BracketAction("install linux to draw with agents", Palette.accent, onClick = onSetup)
+        installed.isEmpty() -> BracketAction("install a coding agent", Palette.accent, onClick = onSetup)
         else ->
             FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 for (agent in installed) {
@@ -254,9 +255,9 @@ private fun FolderPackActions(
             style = Mono.copy(color = Palette.muted, fontSize = TextSize.Small),
         )
         FlowRow {
-            if (missing > 0) BracketAction("fill in $missing", Palette.accent, onFill)
-            BracketAction("change it", Palette.accent, onEdit)
-            BracketAction("remove", Palette.red, onRemove)
+            if (missing > 0) BracketAction("fill in $missing", Palette.accent, onClick = onFill)
+            BracketAction("change it", Palette.accent, onClick = onEdit)
+            BracketAction("remove", Palette.red, onClick = onRemove)
         }
     }
 }

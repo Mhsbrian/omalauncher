@@ -54,6 +54,10 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntRect
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.unit.min
@@ -291,6 +295,11 @@ internal fun FolderPanel(
     carried: String?,
     render: @Composable (HomeItem, Modifier, Boolean) -> Unit,
     onName: () -> Unit,
+    /** An app picked for editing: it has home's [actions] bar beside it, as a tile does on home. */
+    selected: String? = null,
+    actions: @Composable (HomeItem) -> Unit = {},
+    /** Where the bar is, so its taps reach its buttons; null once it's gone. */
+    onBar: (IntRect?) -> Unit = {},
 ) {
     val density = LocalDensity.current
     val from = (geometry.anchor ?: geometry.panel).toRect()
@@ -299,6 +308,8 @@ internal fun FolderPanel(
         Modifier
             .fillMaxSize()
             .zIndex(4f)
+            // Keys go between its apps while it's open, not to the tiles behind it.
+            .holdsKeys()
             .drawWithContent {
                 val t = progress()
                 drawRect(Palette.overlay.copy(alpha = 0.6f * phase(t, 0f, 0.5f)))
@@ -343,9 +354,31 @@ internal fun FolderPanel(
                             scaleX = 0.85f + 0.15f * a
                             scaleY = 0.85f + 0.15f * a
                         },
-                    false,
+                    app.key == selected,
                 )
             }
+        }
+        val sel = folder.apps.indexOfFirst { it.key == selected }
+        if (sel >= 0) {
+            // Above the panel, so it covers neither the name nor the other apps, or below it with no room there; lined up with the app.
+            val p = geometry.panel
+            val r = geometry.app(sel)
+            val barGap = with(density) { 8.dp.roundToPx() }
+            fun at(size: IntSize) =
+                IntOffset(
+                    r.left.coerceAtMost(p.right - size.width).coerceAtLeast(0),
+                    (p.top - size.height - barGap).takeIf { it >= 0 } ?: (p.bottom + barGap),
+                )
+            DisposableEffect(Unit) { onDispose { onBar(null) } }
+            Box(
+                Modifier
+                    .zIndex(1f)
+                    .layout { measurable, constraints ->
+                        val bar = measurable.measure(constraints.copy(minWidth = 0, minHeight = 0))
+                        layout(bar.width, bar.height) { bar.place(at(IntSize(bar.width, bar.height))) }
+                    }
+                    .onSizeChanged { onBar(IntRect(at(it), it)) },
+            ) { actions(folder.apps[sel]) }
         }
     }
 }

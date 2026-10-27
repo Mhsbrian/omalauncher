@@ -26,13 +26,18 @@ touches it: `files/omarchy` is `~/.local/share/omarchy` and `files/widgets` is
   mapping, per-surface pixel stores, and compositing them into a window's
   `ANativeWindow`
 - `wayland/`: the Wayland server in Kotlin (wl_compositor, wl_shm,
-  wl_subcompositor, wl_seat, wl_output, xdg_wm_base, xdg-decoration) and
+  wl_subcompositor, wl_seat, wl_output, xdg_wm_base, xdg-decoration, and
+  text-input-v3 for where a client's text cursor is) and
   `WindowRenderer`, which draws one window into its activity's SurfaceView
   (or, for a widget's `Terminal`, into a TextureView in the tile)
 - `linux/`: proot, the rootfs setup and its update steps, pacman, coding
   agents, and the bridges to Android (audio, URLs, /proc)
 - `ui/`: the Compose home screen, the bar and its app list, settings and Files
-- `widgets/`: the widget engine; the language itself is in the `owl` module
+- `widgets/`: the widget engine; the language itself is in the `owl` module.
+  A widget's state and sources live in its `WidgetInstance`, which runs while
+  its page or a neighbour is on screen, but the pager composes only the
+  current page: a node drawn in Kotlin loses its `remember` state when its
+  page is swiped away, and keeps anything lasting in the instance
 - `theme/`: Omarchy themes, applied to the launcher and the guest
 - `feed/`: the feed left of the first home page: its sources, reading RSS,
   Atom, Hacker News and FxTwitter, settings and the cache; `ui/FeedPanel.kt` draws it

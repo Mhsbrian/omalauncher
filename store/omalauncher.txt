@@ -1,6 +1,6 @@
 Privacy Policy
 
-Effective Date: 15.10.2026
+Effective Date: 23.10.2026
 
 Omalauncher ("the App") is an Android home screen launcher developed by Simon Schubert ("we," "us," or "our"). This Privacy Policy explains how the App handles information.
 
@@ -20,7 +20,7 @@ Your home screen layout, widgets, theme settings and, if you install it, the Lin
 3. Device Permissions
 
 - Microphone (optional): used only while you hold or tap the microphone button to dictate a prompt. Speech is recognized by your phone's speech recognition service (on the device where the phone supports it), and only the resulting text is passed to the app you are talking to. The App does not record or store audio.
-- Notification access (optional): lets media widgets show and control what is currently playing, and lets widgets you add show your notifications (app name, title and text) and open or dismiss them. Notifications are read on your device, only when a widget on your home screen asks for them, and are not stored or sent to us. A widget you add could send what it shows to a service it contacts; each widget's page in the widget store shows what it runs and which addresses it contacts.
+- Notification access (optional): lets media widgets show and control what is currently playing, and lets widgets you add show your notifications (app name, title and text), open, dismiss or snooze them, use their buttons (such as "Mark as read"), send a reply you type to the app that posted one, and show or switch Do Not Disturb. A reply goes only to that app, which handles it as if you had replied from the notification. Notifications are read on your device, only when a widget on your home screen asks for them, and are not stored or sent to us. A widget you add could send what it shows to a service it contacts; each widget's page in the widget store shows what it runs and which addresses it contacts.
 - Uninstalling apps: used only when you choose to uninstall an app from the app drawer. Android asks you to confirm every uninstall.
 - Internet: used to download the content listed in section 4.
 - Local network (optional, Android 17 and newer): lets widgets you add and the Linux environment reach devices on your own network, such as a printer, a home server or Home Assistant. The App asks for it only when you turn it on in its settings. The App itself does not scan your network or contact devices on it.
@@ -42,7 +42,7 @@ wttr.in (weather widget)
 
 Widgets
 - Widgets you add from the widget store may contact other services to show their content (for example prices, news feeds or radio streams). Each widget's page in the store shows what it runs and which addresses it contacts.
-- Widgets you add can see which apps are installed on your phone (their names, package names and icons) and how often you open them from the App. This list is read on your device, only when a widget on your home screen asks for it, and is not stored or sent to us. A widget could send what it reads to a service it contacts; each widget's page in the store says if it reads your apps.
+- Widgets you add, and the app drawer and swipe panels (which are widget files you can edit), can see which apps are installed on your phone (their names, package names and icons), how often you open them from the App, and the shortcuts apps offer in their long-press menus (their names, which can include contact names). This list is read on your device, only when a widget on your home screen asks for it, and is not stored or sent to us. A widget could send what it reads to a service it contacts; each widget's page in the store says if it reads your apps.
 
 Feed (optional, on by default)
 - Only when you open the feed (swipe right on the first home page), the App fetches headlines straight from the sources picked in settings › feed: Hacker News (hn.algolia.com, hacker-news.firebaseio.com), the X accounts listed there through FxTwitter (api.fxtwitter.com), and the RSS feeds of the tech and news sites (for example arstechnica.com, theverge.com, lwn.net, bbc.co.uk, npr.org). Nothing is sent besides the requests themselves. Which stories you opened is remembered only on your device, to dim them. Turning the feed off stops these requests.

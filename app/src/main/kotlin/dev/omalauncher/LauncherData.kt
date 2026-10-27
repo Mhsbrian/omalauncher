@@ -40,6 +40,9 @@ object LauncherData {
     /** Icon packs agents drew, a folder each; see [dev.omalauncher.icons.FolderIconPack]. The guest sees ~/.config/omalauncher/icon-packs. */
     fun iconPacksDir(context: Context) = File(context.filesDir, "icon-packs")
 
+    /** layout.toml, where home's tiles and pages are; see [dev.omalauncher.widgets.HomeStore]. The guest sees ~/.config/omalauncher/home. */
+    fun homeDir(context: Context) = File(context.filesDir, "home")
+
     /** Settings that belong to no one store: setup, gestures, the GPU, the home role. Keys carry their owner's prefix. */
     fun prefs(context: Context): SharedPreferences = context.getSharedPreferences("launcher", Context.MODE_PRIVATE)
 

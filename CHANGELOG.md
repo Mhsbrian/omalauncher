@@ -4,6 +4,156 @@ The most important changes in each release. The Play Store notes for a release
 are in `fastlane/metadata/android/en-US/changelogs/<versionCode>.txt`.
 Dates are when the build was uploaded to Play.
 
+## Unreleased
+
+- Tapping a now-playing widget brings up the player's own screen, like a web app's
+  window when one installed from a browser plays, rather than a new browser tab.
+- A drawer can leave the keyboard down as it opens, for scrolling the apps rather
+  than searching them: owl 15's `keyboard: false` in `drawer.owl`. Tapping the
+  bar brings it up.
+- Images go into a terminal as the path they're saved to in Linux's /tmp, which
+  opencode and Claude Code attach: tap a screenshot or copied image in Gboard's
+  clipboard suggestions, or paste an image copied on Android (Chrome's Copy image).
+  Copied text pastes as before. The terminal key bar's new photos key, beside paste, opens Android's
+  photo picker and pastes the photos picked the same way, several at once; above it, a `|` key. Owl 15's
+  `pickImages()` does it in a key bar of your own.
+- The today widget's weather screen switches between °C and °F when you tap the
+  temperature's °C or °F, and keeps the scale picked; until then it follows the country.
+- A widget can turn home to another page: `launcher("page:0")` shows the face left of
+  page 1, as Super+1…9 does for pages 1 to 9, so a tile can lead to the face that shows more of it.
+
+## 0.13.0 (versionCode 24) – 2026-10-25
+
+- Faces can draw to the screen's edge: owl 14's `edge: true` runs a face under the
+  status bar, and in landscape under a camera cutout or navigation bar at the side;
+  `screenTop`, `screenLeft` and `screenRight` say how much those cover. Other faces
+  now keep clear of a navigation bar at the side, which they ran under.
+- A store face can have several pages, installed side by side. Each page stays
+  yours to remove; an update replaces only the pages still on home, and the face's
+  store page adds a removed one back. Publishing a face lets your agent add your
+  other faces as its pages.
+- Owl 14's `ripple: false` leaves out the ripple on a node that shows its press
+  itself.
+- Fixes: a face's bottom jumped after every reload or data update; the store's
+  widgets/faces/apps toggle stayed round with square corners.
+
+## 0.12.2 (versionCode 23) – 2026-10-25
+
+- A store update no longer throws away changes made to a widget, app or face:
+  settings' update leaves an edited one out and lists it as edited, and its store
+  page says updating replaces the changes, as "update anyway" (a Play review).
+- Home no longer crashes measuring or updating a tile on a page the pager had set
+  aside ("measure/Apply is called on deactivated node", Play, 0.12.1).
+- Animated Canvases draw about twice as fast.
+- AGENTS.md and CLAUDE.md in the Linux home folder link the launcher's source.
+
+## 0.12.1 (versionCode 22) – 2026-10-24
+
+- Owl apps, panels, faces and screens ripple where they're pressed; a widget's tile
+  on home and the key bar don't.
+- Home's bar on a pinned owl app offers edit and share, as the drawer does (#197),
+  and an app in a folder gets home's bar on a long press.
+- A tap on a terminal's prompt line brings the soft keyboard back (#100). Pressing
+  Home on home with nothing open goes back to page 1 (#201).
+- Faster and lighter: home has its widgets in about half the time after start and
+  shows complete rather than filling in; pages either side are made ahead; animated
+  widgets, terminal tiles and Linux app windows draw at most 60 frames a second, and
+  a terminal tile stops drawing while home is out of sight; the drawer's app list,
+  owl apps' icons and the media source work off the main thread.
+- Linux setup stops with an error naming the kernel fix on custom ROM kernels where
+  it hung at "Initializing pacman keyring" (#105), and setup failing at once (too
+  little space) no longer crashes the launcher.
+- Fixes: Shift on a hardware keyboard with FlorisBoard in terminals and Linux windows;
+  the home terminal tile stuck on its red file name after a relaunch; the first home
+  after onboarding opened on page 2 on short screens; the today tile labelled cached
+  forecast days wrong after midnight; android.battery said "on battery" when plugged
+  in but not charging; system updates printed "Directory not empty" removing an old
+  agent version (#196).
+
+## 0.12.0 (versionCode 21) – 2026-10-23
+
+- controls.owl, a control center for swiping down on home: the phone's switches,
+  brightness, volume and where it plays, Do Not Disturb and the torch with their
+  levels, what's playing, the next alarm and the notifications (reply, act, snooze,
+  swipe away). Pick it in settings › gestures. Owl 13 adds what it uses:
+  `settings(...)`, `dnd(...)` with `dndAllows`, `torch(level)`, the radios and more
+  in `android.modes`, `android.sim`, `android.network`, `android.volume`'s output,
+  notification actions, replies and snoozing, `drag` and `onDragEnd`.
+- Widgets' glass is a setting: an opacity slider and frosted glass in Style
+  (widgets.opacity, widgets.frost), terminal widgets included; the drawer and panels
+  set how much they cover home. Owl 13's `tileOpacity` and `tileFrost` let a face or
+  a widget's own cards match.
+- Keyboards and gamepads reach the whole launcher: arrows or the D-pad move between
+  tiles, recent apps, the bar, the drawer, panels, settings and what takes taps in a
+  widget, with an accent ring; Enter opens, holding it or Menu long-presses, Esc or B
+  goes back. Super+D opens the drawer, Super+T a terminal, Super+Down the swipe-down
+  panel.
+- Codex runs commands again (its sandbox failed on every command under proot).
+  Agent updates delete the old versions and npm's cache, which left every upgraded
+  agent installed twice.
+- The store takes widgets, faces and apps up to 1 MB; an installed app opens from
+  its store page; store cards decode their previews at the size they're drawn.
+- Fixes: the mic crashed with some voice assistants (ChatGPT's) as the phone's
+  speech recognizer; store previews were blank on Android 10 and 11; very large
+  widget images ran out of memory; a widget too big for a share link crashed the
+  share screen (it's shared by QR code now); a frost that comes out NaN crashed the
+  launcher; the first key on setup could change the theme.
+
+## 0.11.0 (versionCode 20) – 2026-10-21
+
+- The terminal key bar is an owl file: keybar.owl, which you or an agent can edit
+  like drawer.owl, with .stock-keybar.owl as the fallback. Settings › style shows
+  whether it's stock, edited, has errors or removed, and sets its gaps and border
+  width. Owl 12 adds `keybar "…" { }` files, `pressKey`, `typeText`, `latch`,
+  `android.modifiers`, `onPress`/`onRelease` and `repeats`.
+- Owl 12 also: `secret` state, kept encrypted with Android's keystore and sent only
+  to the server written out in its request's URL; Input `password`; post's
+  `method:` PUT, PATCH and DELETE; `toBase64`/`fromBase64`; `screenTop` for apps
+  without a status bar. `requires { pacman: [] }` no longer makes a widget need Linux.
+- Widget requests follow redirects themselves and send headers and bodies only to
+  the server they name; a response over 1 MB fails rather than being cut; a failed
+  post says why in err. A runaway regex or a huge value can't freeze or take down
+  the launcher, and a stream's command stops when its widget lets go of it.
+- Installing Linux checks for free space before downloading (it needs about 3 GB)
+  and can be cancelled. Without Linux, a widget's edit and other agent buttons offer
+  to install it instead of failing.
+- Fixes: the status bar's icon colour after a fold or rotation; settings' subtitles
+  in the White theme; a store widget that doesn't fit shows the page it went to; the
+  store's previews use far less memory; Files handles links into /proc or out of
+  Linux and opens .owl files in its editor; symbols the launcher's font lacks; the
+  edit bar of a widget in home's top row.
+
+## 0.10.1 (versionCode 19) – 2026-10-20
+
+- The store's kind toggle showed a "panels" tab with no store behind it, and tapping
+  it crashed the launcher; it lists widgets, faces and apps again.
+- Going home while a backup or device transfer ran crashed (the process runs with a
+  plain Application then); home now closes until the process restarts.
+- Backups and device transfers leave out Linux (the rootfs and its setup records)
+  and Omarchy's downloaded release: a restored phone shows Linux as not installed
+  instead of a broken rootfs, and the backup fits Android's 25 MB quota. Before,
+  a phone with Linux got no backup at all ("Size quota exceeded").
+
+## 0.10.0 (versionCode 18) – 2026-10-20
+
+- The app drawer is an owl file: drawer.owl, which you or an agent can edit, with
+  .stock-drawer.owl as the fallback when it's removed or doesn't compile. Owl 11
+  adds `panel "…" { }` files that a swipe on home opens (up: the drawer, down: from
+  the top), picked in settings › gestures or style.toml, with the prompt bar's
+  `query`, `enter`, `onSubmit` and `onKey`; `android.drawer`, `appAction`,
+  `workApps`, `shortcuts()`, `rank` and `strongMatch` for the drawer's apps, search
+  and menus. The Kotlin drawer is gone.
+- Home's layout is a file: ~/.config/omalauncher/home/layout.toml lists home's
+  pages in order and where every widget, app and folder sits. Moving things on the
+  phone rewrites it, and an agent (or you) can edit it to move, resize, pin or
+  reorder; problems show on home and in errors.txt next to it. A widget's `page:`,
+  `order:` and `size:` only place it the first time.
+- Owl 11 also: Column and Grid `lazy: true` and `reverse`, Image `label` for screen
+  readers, Text `minLines`, `chunk(list, n)`, apps without a status bar or title
+  row, and a Column in a Row or Flow is as wide as its content.
+- owl review warns about widgets that poll more often than they need to.
+- Faster: a Shader animates only when it reads time; Canvas text layouts are cached.
+
 ## 0.9.0 (versionCode 17) – 2026-10-18
 
 - Faces: an owl file can be a whole home screen (`face "name" { }`, owl 10), left of

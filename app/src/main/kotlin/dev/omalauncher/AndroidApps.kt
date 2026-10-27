@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.ApplicationInfo
+import android.content.pm.LauncherActivityInfo
 import android.content.pm.LauncherApps
 import android.content.pm.LauncherApps.ShortcutQuery
 import android.content.pm.ShortcutInfo
@@ -188,7 +189,7 @@ class AndroidAppCatalog(
     /** Names by [AndroidApp.key] and [AndroidShortcut.key], in the phone's language now; home's tiles go by these. */
     val labels by derivedStateOf { apps.associate { it.key to it.label } + shortcuts.associate { it.key to it.label } }
 
-    private val byKey by derivedStateOf { apps.associateBy { it.key } }
+    internal val byKey by derivedStateOf { apps.associateBy { it.key } }
 
     /**
      * The app a home tile pinned as [component] in [profile] opens now. Apps that let you pick another icon (Duolingo,
@@ -230,6 +231,13 @@ class AndroidAppCatalog(
 
     /** Whether the last load could list [shortcuts]: only while this is the default home app. Long-press menus offer app shortcuts only then too. */
     var listsShortcuts by mutableStateOf(false)
+        private set
+
+    /** Keys of the apps whose icons are drawn first, ahead of the alphabet: the ones showing as the launcher starts. */
+    var iconsFirst: () -> Set<String> = { emptySet() }
+
+    /** Whether the apps have been listed once; until then [apps] is empty because nothing was asked yet, not because there are none. */
+    var listed by mutableStateOf(false)
         private set
 
     /** Icon edge in px: the drawer's 52dp icon at this screen's density. */
@@ -556,42 +564,16 @@ class AndroidAppCatalog(
                     shortcuts.clear()
                     shortcuts += pinned
                 }
+                this@AndroidAppCatalog.listed = true
                 val present = (list.map { it.key } + pinned.map { it.key }).toHashSet()
                 icons.keys.retainAll(present)
                 masks.keys.retainAll(present)
                 stale.retainAll(present)
-                for ((info, app) in infos) {
-                    if (app.key in icons && app.key !in stale) continue
-                    launch {
-                        // Both styles are rendered up front so switching is instant; masks are 1 byte per pixel.
-                        val rendered =
-                            withContext(iconDispatcher) {
-                                runCatching {
-                                    val custom =
-                                        try {
-                                            iconSource?.render(app, info, iconPx)
-                                        } catch (e: CancellationException) {
-                                            throw e
-                                        } catch (e: Exception) {
-                                            // A broken pack or file: the app's own icon rather than none.
-                                            Log.w(TAG, "can't draw the custom icon of ${app.component}", e)
-                                            null
-                                        }
-                                    if (custom != null) {
-                                        var mask = custom.mask
-                                        if (app.profile != null) mask = addBadge(custom.icon, mask, if (app.clone) cloneMark else briefcase)
-                                        custom.icon.asImageBitmap() to mask.asImageBitmap()
-                                    } else {
-                                        render(info.getIcon(0), app.profile, app.clone)
-                                    }
-                                }.getOrNull()
-                            }
-                        stale -= app.key
-                        if (rendered != null) {
-                            icons[app.key] = rendered.first
-                            masks[app.key] = rendered.second
-                        }
-                    }
+                // Started in this order, and they run four at a time: with hundreds of apps, the recent strip's would
+                // otherwise wait their turn in the alphabet. One whose custom icon changed is drawn again (stale).
+                val first = iconsFirst()
+                for ((info, app) in infos.sortedBy { it.second.key !in first }) {
+                    if (app.key !in icons || app.key in stale) loadAppIcon(app, info)
                 }
                 // Apps change a shortcut's icon without an update, so these are drawn again each time; there are only a few.
                 for ((info, shortcut) in made) {
@@ -643,6 +625,42 @@ class AndroidAppCatalog(
             .orEmpty()
             .filter { it.isEnabled }
             .map { it to AndroidShortcut(shortcutLabel(it), ShortcutRef(it.`package`, it.id), user, profile, clone) }
+
+    /**
+     * Draws [app]'s icon as [loadIcon] does, or its custom one when [iconSource] has one (an icon pack's, or the user's
+     * own file); a broken pack or file falls back to the app's own icon rather than none.
+     */
+    private fun CoroutineScope.loadAppIcon(
+        app: AndroidApp,
+        info: LauncherActivityInfo,
+    ) = launch {
+        val rendered =
+            withContext(iconDispatcher) {
+                runCatching {
+                    val custom =
+                        try {
+                            iconSource?.render(app, info, iconPx)
+                        } catch (e: CancellationException) {
+                            throw e
+                        } catch (e: Exception) {
+                            Log.w(TAG, "can't draw the custom icon of ${app.component}", e)
+                            null
+                        }
+                    if (custom != null) {
+                        var mask = custom.mask
+                        if (app.profile != null) mask = addBadge(custom.icon, mask, if (app.clone) cloneMark else briefcase)
+                        custom.icon.asImageBitmap() to mask.asImageBitmap()
+                    } else {
+                        render(info.getIcon(0), app.profile, app.clone)
+                    }
+                }.getOrNull()
+            }
+        stale -= app.key
+        if (rendered != null) {
+            icons[app.key] = rendered.first
+            masks[app.key] = rendered.second
+        }
+    }
 
     /** Draws [key]'s icon off the main thread; both styles up front so switching is instant, and masks are 1 byte per pixel. */
     private fun CoroutineScope.loadIcon(
