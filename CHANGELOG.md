@@ -19,6 +19,8 @@ Dates are when the build was uploaded to Play.
   `pickImages()` does it in a key bar of your own.
 - The today widget's weather screen switches between °C and °F when you tap the
   temperature's °C or °F, and keeps the scale picked; until then it follows the country.
+- A widget can turn home to another page: `launcher("page:0")` shows the face left of
+  page 1, as Super+1…9 does for pages 1 to 9, so a tile can lead to the face that shows more of it.
 
 ## 0.13.0 (versionCode 24) – 2026-10-25
 
