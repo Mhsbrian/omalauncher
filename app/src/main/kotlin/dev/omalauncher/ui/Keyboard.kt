@@ -129,14 +129,29 @@ class KeyboardBridge(
         uri: Uri,
         mime: String,
         done: () -> Unit,
+    ) = insertImages(listOf(uri), mime, done)
+
+    /** Images picked with [pickImages], pasted as [insertImage] does, their paths apart by spaces. */
+    fun insertImages(
+        uris: List<Uri>,
+        mime: String? = null,
+        done: () -> Unit = {},
     ) {
         thread(name = "keyboard-image", isDaemon = true) {
-            val path = images.save(uri, mime)?.let(images::guestPath)
+            val paths = uris.mapNotNull { images.save(it, mime)?.let(images::guestPath) }
             done()
-            if (path == null) return@thread
-            wm.server.insertText(path)
+            if (paths.isEmpty()) return@thread
+            wm.server.insertText(paths.joinToString(" "))
             main.post { tap(Keys.KEY_INSERT, Keys.KEY_LEFTSHIFT) }
         }
+    }
+
+    /** Android's photo picker for the activity in front, home's or a Linux window's; set as it resumes. */
+    var imagePicker: ImagePicker? = null
+
+    /** pickImages(): Android's photo picker, whose picks go into the window that has the keyboard, see [ImagePicker]. */
+    fun pickImages() {
+        imagePicker?.launch()
     }
 
     private val main = Handler(Looper.getMainLooper())

@@ -1090,6 +1090,16 @@ class LangTest {
         }
     }
 
+    @Test fun photosPickedPasteIntoTheWindow() {
+        val p = Compiler.compile("keybar {\n meta { owl: 15 }\n Box { onTap: pickImages(); Text { text: 1 } } }")
+        assertEquals(listOf("paste images you pick on Android into the Linux window you're typing in"), p.commands)
+        val host = TestHost(p)
+        (p.screen!!.single() as WNode.Element).handlers["onTap"]!!.run(Env.root(host), listOf(Num(0.0), Num(0.0)))
+        assertEquals(listOf("pickImages "), host.actions)
+        assertTrue(compileError("keybar {\n meta { owl: 14 }\n Box { onTap: pickImages(); Text { text: 1 } } }").contains("needs owl 15"))
+        assertTrue(compileError("keybar {\n meta { owl: 15 }\n Box { onTap: pickImages(\"a\"); Text { text: 1 } } }").isNotEmpty())
+    }
+
     @Test fun keyNamesAndCombos() {
         assertEquals(KeyNames.Combo(1, emptyList()), KeyNames.combo("esc"))
         assertEquals(KeyNames.Combo(46, listOf(29)), KeyNames.combo("ctrl+c"))

@@ -601,6 +601,7 @@ class WidgetServices(
             "pressKey" -> return KeyNames.combo(arg)?.let(runtime.keyboard::press) ?: Unit
             "typeText" -> return runtime.keyboard.type(arg)
             "latch" -> return runtime.keyboard.latch(arg, args.getOrNull(1).textOrNull())
+            "pickImages" -> return runtime.keyboard.pickImages()
         }
         when (name) {
             // Named after the command (btop, dua, ...) unless the widget passes a name.

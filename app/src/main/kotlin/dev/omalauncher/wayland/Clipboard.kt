@@ -299,13 +299,16 @@ class GuestImages(
     private val dir: File,
     private val guestPath: (File) -> String?,
 ) {
-    /** Copies the image at [uri] into Linux; null if it can't be read. */
+    /** Copies the image at [uri] into Linux, of type [mime] or else the one its app says; null if it can't be read. */
     fun save(
         uri: Uri,
-        mime: String,
+        mime: String? = null,
     ): File? {
-        val ext = MimeTypeMap.getSingleton().getExtensionFromMimeType(mime) ?: "img"
-        val file = File(dir, "clipboard-${LocalDateTime.now().format(NAME_TIME)}.$ext")
+        val type = mime ?: runCatching { context.contentResolver.getType(uri) }.getOrNull()
+        val ext = type?.let(MimeTypeMap.getSingleton()::getExtensionFromMimeType) ?: "img"
+        // Several picked at once share a second: numbered after the first.
+        val name = "clipboard-${LocalDateTime.now().format(NAME_TIME)}"
+        val file = generateSequence(1) { it + 1 }.map { File(dir, if (it == 1) "$name.$ext" else "$name-$it.$ext") }.first { !it.exists() }
         try {
             dir.mkdirs()
             context.contentResolver.openInputStream(uri)?.use { input -> file.outputStream().use { input.copyTo(it) } } ?: return null

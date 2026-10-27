@@ -14,7 +14,9 @@ Dates are when the build was uploaded to Play.
 - Images go into a terminal as the path they're saved to in Linux's /tmp, which
   opencode and Claude Code attach: tap a screenshot or copied image in Gboard's
   clipboard suggestions, or paste an image copied on Android (Chrome's Copy image).
-  Copied text pastes as before.
+  Copied text pastes as before. The terminal key bar's new photos key, beside paste, opens Android's
+  photo picker and pastes the photos picked the same way, several at once; above it, a `|` key. Owl 15's
+  `pickImages()` does it in a key bar of your own.
 
 ## 0.13.0 (versionCode 24) – 2026-10-25
 
