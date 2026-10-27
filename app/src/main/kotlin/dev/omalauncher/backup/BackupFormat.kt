@@ -54,7 +54,7 @@ internal object BackupFormat {
             PrefsPart("feed", setOf("settings")),
             // The terminal's text size and font before style.toml, and what swiping up and down on home do
             // (settings > gestures); the rest of these preferences are this install's.
-            PrefsPart("launcher", setOf("terminal_text", "terminal_font", "gesture_swipe_up", "gesture_swipe_down")),
+            PrefsPart("launcher", setOf("terminal_text", "terminal_font", "gesture_swipe_up", "gesture_swipe_down", "gestures_in_style", "fork_swipe_down_in_style")),
         )
 
     /**
@@ -67,10 +67,16 @@ internal object BackupFormat {
     const val STYLE = "style/style.toml"
 
     /**
+     * Home's layout as a file agents edit (from upstream 0.10): the preferences above stay what home draws from, so a
+     * backup without it restores them, and the launcher writes this again from them at its next start.
+     */
+    const val HOME = "home/layout.toml"
+
+    /**
      * Files under the app's files. The launcher's record of the default widgets it wrote keeps a
      * restored default updating, and one deleted before the backup deleted.
      */
-    val FILES = listOf("launcher-managed.json", STYLE)
+    val FILES = listOf("launcher-managed.json", STYLE, HOME)
 
     fun prefsEntry(name: String) = "prefs/$name.json"
 

@@ -150,8 +150,8 @@ private fun Confirm(
                 "open Linux windows close. the home screen as it is now is kept, so you can undo it here.",
         )
         Row {
-            BracketAction("restore", Palette.accent, onRestore)
-            BracketAction("cancel", Palette.muted, onCancel)
+            BracketAction("restore", Palette.accent, onClick = onRestore)
+            BracketAction("cancel", Palette.muted, onClick = onCancel)
         }
     }
 }

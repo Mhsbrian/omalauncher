@@ -31,6 +31,7 @@ class BackupFormatTest {
             "prefs/launcher.json",
             "files/launcher-managed.json",
             "files/style/style.toml",
+            "files/home/layout.toml",
             "files/widgets/clock.owl",
             "files/widgets/examples/gauge.owl",
             "files/widget-state/clock.owl.json",
@@ -162,6 +163,24 @@ class BackupFormatTest {
         val to = tmp.newFolder("to")
         applyFiles(readBackup(ByteArrayInputStream(zip), tmp.newFolder("s")), to) { it.deleteRecursively() }
         assertEquals("theme = \"nord\"", File(to, "style/style.toml").readText())
+    }
+
+    @Test fun homesLayoutFileGoesBackWithTheBackup() {
+        val from = tmp.newFolder("from")
+        File(from, "home/layout.toml").apply { parentFile.mkdirs() }.writeText("version = 1\n[[page]]\n")
+        val zip = ByteArrayOutputStream().also { writeBackup(it, info, emptyMap(), from) }.toByteArray()
+        val to = tmp.newFolder("to")
+        File(to, "home/layout.toml").apply { parentFile.mkdirs() }.writeText("version = 1\n")
+        applyFiles(readBackup(ByteArrayInputStream(zip), tmp.newFolder("s")), to) { it.deleteRecursively() }
+        assertEquals("version = 1\n[[page]]\n", File(to, "home/layout.toml").readText())
+    }
+
+    @Test fun aBackupWithoutHomesLayoutFileLetsItBeWrittenAgainFromThePreferences() {
+        val zip = ByteArrayOutputStream().also { writeBackup(it, info, emptyMap(), tmp.newFolder("from")) }.toByteArray()
+        val to = tmp.newFolder("to")
+        File(to, "home/layout.toml").apply { parentFile.mkdirs() }.writeText("version = 1\n[[page]]\n")
+        applyFiles(readBackup(ByteArrayInputStream(zip), tmp.newFolder("s")), to) { it.deleteRecursively() }
+        assertFalse(File(to, "home/layout.toml").exists())
     }
 
     @Test fun aStyleWithoutAThemeHasTheDefaultOne() {

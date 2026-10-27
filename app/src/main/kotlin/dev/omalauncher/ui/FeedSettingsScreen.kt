@@ -245,6 +245,6 @@ private fun AddField(
                 modifier = Modifier.fillMaxWidth(),
             )
         }
-        BracketAction("add", Palette.accent, ::add)
+        BracketAction("add", Palette.accent, onClick = ::add)
     }
 }
