@@ -4,7 +4,7 @@ The most important changes in each release. The Play Store notes for a release
 are in `fastlane/metadata/android/en-US/changelogs/<versionCode>.txt`.
 Dates are when the build was uploaded to Play.
 
-## Unreleased
+## 0.14.0 (versionCode 25) – 2026-10-27
 
 - Tapping a now-playing widget brings up the player's own screen, like a web app's
   window when one installed from a browser plays, rather than a new browser tab.
@@ -28,6 +28,16 @@ Dates are when the build was uploaded to Play.
 - Widgets can show how fast the phone charges: owl 15's `source p = android.power every 2s` has the
   battery's current in mA, its watts, the mAh it holds, Android's time to full and what the charger
   offers, the same units and sign on every phone (#226).
+- Home's empty pages at either end can be turned off in style.toml or the Style screen:
+  `home.empty-page-left = false` drops the one left of the leftmost page, and
+  `home.empty-page-right = false` the one after the last page of tiles (#202, #205).
+- GTK3 and wxWidgets apps (PrusaSlicer) leave out their own title bar and window buttons,
+  which only took space on a phone; apps with their own header bar keep it (#215).
+- A Linux window too big for the screen is drawn shrunk to fit, keeping its shape, instead of
+  running off the right and bottom edges, and touches map back to it (#218).
+- Fixes: a widget node with `clip: true` and a negative radius crashed home; a widget home
+  placed on another page, or one moved there, stopped updating two pages away until the
+  launcher restarted; a GTK app with a header bar kept asking how to decorate its window.
 
 ## 0.13.0 (versionCode 24) – 2026-10-25
 
