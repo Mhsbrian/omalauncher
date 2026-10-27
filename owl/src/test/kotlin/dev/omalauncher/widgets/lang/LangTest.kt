@@ -908,6 +908,15 @@ class LangTest {
         assertTrue(compileError("widget {\n meta { owl: 12 }\n source n = android.network\n Text { text: 1 } }").contains("android.network needs owl 13"))
     }
 
+    @Test fun androidPower() {
+        val p = Compiler.compile("widget {\n meta { owl: 15 }\n source p = android.power every 2s\n Text { text: p.current + \" mA \" + p.watts + \" W\" } }")
+        val s = p.globals.first() as Global.Source
+        assertEquals("android.power", s.kind)
+        assertEquals(2.0, s.every, 0.0)
+        assertTrue(!p.needsLinux)
+        assertTrue(compileError("widget {\n meta { owl: 14 }\n source p = android.power every 2s\n Text { text: 1 } }").contains("android.power needs owl 15"))
+    }
+
     @Test fun androidAlarmModesAndPhoneActions() {
         val p = Compiler.compile("widget {\n meta { owl: 7 }\n source a = android.alarm\n source m = android.modes\n Text { text: a.time; onTap: { torch(\"toggle\"); torch(!m.torch); share(\"hi\"); haptic() } } }")
         assertEquals(listOf("android.alarm", "android.modes"), p.globals.map { (it as Global.Source).kind })

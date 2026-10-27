@@ -153,7 +153,9 @@ internal val SINCE =
         // owl 15: a drawer that leaves the keyboard down as it opens.
         mapOf(PANEL_KEYBOARD to 15) +
         // owl 15: photos picked on Android pasted into the Linux window being typed in, as paths agents attach.
-        mapOf("pickImages" to 15)
+        mapOf("pickImages" to 15) +
+        // owl 15: the battery's current, charge and time to full, and the charger's, for a charging widget.
+        mapOf("android.power" to 15)
 
 /** `animate offset: ...`, named like this in [SINCE]. */
 internal const val ANIMATE_OFFSET = "animate offset"
@@ -244,8 +246,8 @@ internal val HANDLER_KINDS = mapOf("onChange" to setOf("Slider", "Input"), "onSu
 /** What triggers bind in their statements. */
 internal val TRIGGER_PARAMS = mapOf("on" to listOf("value", "old"))
 
-/** Data from the phone and the launcher; device is fixed, system and network are polled, the rest update as they change. */
-internal val ANDROID = setOf("battery", "device", "media", "notifications", "volume", "system", "network", "sim", "alarm", "modes", "apps", "agents", "recent", "drawer", "modifiers")
+/** Data from the phone and the launcher; device is fixed, system, network and power are polled, the rest update as they change. */
+internal val ANDROID = setOf("battery", "device", "media", "notifications", "volume", "system", "network", "power", "sim", "alarm", "modes", "apps", "agents", "recent", "drawer", "modifiers")
 
 /**
  * The words an action's first value may be, when it's written out; [numbers] also allows a number. [forms] are the
