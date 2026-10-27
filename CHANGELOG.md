@@ -17,6 +17,8 @@ Dates are when the build was uploaded to Play.
   Copied text pastes as before. The terminal key bar's new photos key, beside paste, opens Android's
   photo picker and pastes the photos picked the same way, several at once; above it, a `|` key. Owl 15's
   `pickImages()` does it in a key bar of your own.
+- The today widget's weather screen switches between °C and °F when you tap the
+  temperature's °C or °F, and keeps the scale picked; until then it follows the country.
 
 ## 0.13.0 (versionCode 24) – 2026-10-25
 
