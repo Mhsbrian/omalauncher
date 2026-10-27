@@ -1101,13 +1101,23 @@ class Compiler private constructor(
         scope: Scope,
     ): Ev = enumOrNull(p.name, p.value) ?: ex(p.value, scope)
 
+    /** The handler whose statements are compiling, like onTap; null outside one, as in a trigger. */
+    private var handlerName: String? = null
+
     private fun handler(
         h: Handler,
         scope: Scope,
         params: List<String> = HANDLER_PARAMS[h.name].orEmpty(),
     ): Action {
         val inner = Scope(scope, params)
-        val run = chancy { block(h.stmts, inner) }
+        val outer = handlerName
+        handlerName = h.name
+        val run =
+            try {
+                chancy { block(h.stmts, inner) }
+            } finally {
+                handlerName = outer
+            }
         return Action(params) { env, values ->
             val e = if (params.isEmpty()) env else env.child(*Array(params.size) { values.getOrElse(it) { Null } })
             // Handlers run from touch events: a failure is reported, never thrown into the UI.
@@ -1233,7 +1243,11 @@ class Compiler private constructor(
                     commands += "press keys in the Linux window you're typing in: " + ((args[0].const as? Str)?.v ?: "keys built from widget values")
                 }
                 if (call.name == "typeText") commands += "type into the Linux window you're typing in: " + ((args[0].const as? Str)?.v ?: "text built from widget values")
-                if (call.name == "pickImages") commands += "paste images you pick on Android into the Linux window you're typing in"
+                if (call.name == "pickImages") {
+                    // The picker would cover the node before the finger lifts: home then sees a long press under it.
+                    if (handlerName == "onPress" || handlerName == "onRelease") fail("pickImages() opens Android's photo picker over the widget, before the finger lifts: put it in onTap", call.pos)
+                    commands += "paste images you pick on Android into the Linux window you're typing in"
+                }
                 if (call.name == "latch") (args.getOrNull(1)?.const as? Str)?.v?.let { if (it !in KeyNames.hows) fail("latch's second value is ${KeyNames.hows.joinToString()}", call.args[1].pos) }
                 if (call.name == "screen" || call.name == "close") screenAction = screenAction ?: call.pos
                 if (call.name == "screen") openScreen = openScreen ?: call.pos

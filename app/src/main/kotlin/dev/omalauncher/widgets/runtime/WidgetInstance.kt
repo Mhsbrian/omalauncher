@@ -530,7 +530,8 @@ class WidgetInstance(
         // sound(...), a trigger does it only while the app or screen is open.
         if ((name == "ask" || name == "open") && inTrigger && !foreground()) return report("$name(...) in a trigger works only while the app or screen is open")
         // Keys go to whatever window has the keyboard: only from a touch, never on a timer or a fetched value.
-        if ((name == "pressKey" || name == "typeText" || name == "latch" || name == "pickImages") && inTrigger) return report("$name(...) works in handlers like onPress, not in a trigger")
+        if ((name == "pressKey" || name == "typeText" || name == "latch") && inTrigger) return report("$name(...) works in handlers like onPress, not in a trigger")
+        if (name == "pickImages" && inTrigger) return report("pickImages() works in onTap, not in a trigger")
         // Names built from values, which the compiler couldn't check: say so rather than press nothing.
         val key = args.firstOrNull().textOrNull()
         if (name == "pressKey" && key != null && KeyNames.combo(key) == null) return report("pressKey(\"$key\") names no key; ${KeyNames.help}")

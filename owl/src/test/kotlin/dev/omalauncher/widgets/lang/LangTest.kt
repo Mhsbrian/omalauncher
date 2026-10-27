@@ -1098,6 +1098,11 @@ class LangTest {
         assertEquals(listOf("pickImages "), host.actions)
         assertTrue(compileError("keybar {\n meta { owl: 14 }\n Box { onTap: pickImages(); Text { text: 1 } } }").contains("needs owl 15"))
         assertTrue(compileError("keybar {\n meta { owl: 15 }\n Box { onTap: pickImages(\"a\"); Text { text: 1 } } }").isNotEmpty())
+        for (h in listOf("onPress", "onRelease")) {
+            assertTrue(compileError("keybar {\n meta { owl: 15 }\n Box { $h: pickImages(); Text { text: 1 } } }").contains("put it in onTap"))
+        }
+        // A handler inside another node's doesn't carry over: the outer one is onTap again after it.
+        Compiler.compile("keybar {\n meta { owl: 15 }\n Box { onPress: haptic(); onTap: pickImages(); Text { text: 1 } } }")
     }
 
     @Test fun keyNamesAndCombos() {
