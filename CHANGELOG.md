@@ -11,6 +11,10 @@ Dates are when the build was uploaded to Play.
 - A drawer can leave the keyboard down as it opens, for scrolling the apps rather
   than searching them: owl 15's `keyboard: false` in `drawer.owl`. Tapping the
   bar brings it up.
+- Images go into a terminal as the path they're saved to in Linux's /tmp, which
+  opencode and Claude Code attach: tap a screenshot or copied image in Gboard's
+  clipboard suggestions, or paste an image copied on Android (Chrome's Copy image).
+  Copied text pastes as before.
 
 ## 0.13.0 (versionCode 24) – 2026-10-25
 

@@ -2,6 +2,8 @@ package dev.omalauncher.ui
 
 import android.content.Context
 import android.database.ContentObserver
+import android.net.Uri
+import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
@@ -11,14 +13,17 @@ import android.view.View
 import android.view.inputmethod.BaseInputConnection
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputConnection
+import android.view.inputmethod.InputContentInfo
 import android.view.inputmethod.InputMethodManager
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import dev.omalauncher.wayland.GuestImages
 import dev.omalauncher.wayland.Keys
 import dev.omalauncher.widgets.lang.KeyNames
+import kotlin.concurrent.thread
 
 /** How a modifier on the extra-keys row is held: for the next key only, or until tapped again. */
 enum class Latch { Off, Once, Locked }
@@ -33,6 +38,7 @@ class StickyModifier(
 /** Translates Android key events and IME text into Wayland keyboard input for the focused window. */
 class KeyboardBridge(
     private val wm: WindowManager,
+    private val images: GuestImages,
 ) {
     /** Launcher shortcuts triggered with Meta (Super), like Omarchy's Super bindings. */
     var onShortcut: (Int) -> Boolean = { false }
@@ -113,6 +119,27 @@ class KeyboardBridge(
             }
         }
     }
+
+    /**
+     * An image the keyboard inserts, like a screenshot from Gboard's clipboard: saved into Linux
+     * and pasted as its path, which agents attach. A paste rather than typing, since they only
+     * take a path that comes as one. [done] runs once it's read.
+     */
+    fun insertImage(
+        uri: Uri,
+        mime: String,
+        done: () -> Unit,
+    ) {
+        thread(name = "keyboard-image", isDaemon = true) {
+            val path = images.save(uri, mime)?.let(images::guestPath)
+            done()
+            if (path == null) return@thread
+            wm.server.insertText(path)
+            main.post { tap(Keys.KEY_INSERT, Keys.KEY_LEFTSHIFT) }
+        }
+    }
+
+    private val main = Handler(Looper.getMainLooper())
 
     /** Presses and releases [code], with [held] and any latched modifiers held around it. */
     fun tap(
@@ -266,6 +293,8 @@ class KeyboardSink(
                     InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS
             }
         outAttrs.imeOptions = EditorInfo.IME_FLAG_NO_FULLSCREEN or EditorInfo.IME_FLAG_NO_EXTRACT_UI
+        // So Gboard's clipboard and screenshot suggestions can insert an image, see [KeyboardBridge.insertImage].
+        outAttrs.contentMimeTypes = arrayOf("image/*")
         return object : BaseInputConnection(this, false) {
             /**
              * Text the IME is still composing, like pinyin before a candidate is picked. A window
@@ -301,6 +330,21 @@ class KeyboardSink(
                 afterLength: Int,
             ): Boolean {
                 repeat(beforeLength.coerceAtLeast(1)) { bridge.tap(Keys.KEY_BACKSPACE) }
+                return true
+            }
+
+            override fun commitContent(
+                info: InputContentInfo,
+                flags: Int,
+                opts: Bundle?,
+            ): Boolean {
+                val description = info.description
+                val mime = (0 until description.mimeTypeCount).map(description::getMimeType).firstOrNull { it.startsWith("image/") }
+                if (mime == null) return false
+                if (flags and INPUT_CONTENT_GRANT_READ_URI_PERMISSION != 0) {
+                    runCatching { info.requestPermission() }.onFailure { return false }
+                }
+                bridge.insertImage(info.contentUri, mime) { info.releasePermission() }
                 return true
             }
 
