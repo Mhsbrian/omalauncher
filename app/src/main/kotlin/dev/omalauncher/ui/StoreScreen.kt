@@ -138,6 +138,10 @@ fun StoreScreen(
                             }
                         },
                         onAddPages = { scope.launch { message = market.addPages(e) } },
+                        onRemove = {
+                            message = null
+                            market.remove(e)
+                        },
                     )
                 }
                 val list = @Composable { modifier: Modifier ->
@@ -234,7 +238,8 @@ private fun StoreList(
                     .sortedWith(compareBy({ -it.value }, { known(it.key) }, { it.key }))
                     .forEach { (c, n) -> add(c to n) }
                 market.entries.count { it.category == null }.takeIf { it > 0 }?.let { add(OTHER to it) }
-                if (installed.isNotEmpty()) add(INSTALLED to installed.size)
+                // There even when nothing is, as "new" is, so each kind's store has the same tabs.
+                add(INSTALLED to installed.size)
             }
         val q = filter.query.trim().lowercase()
         // In the catalog's order, which the store repo sets in order.txt.
@@ -302,6 +307,7 @@ private fun StoreList(
                         market.error != null && market.entries.isEmpty() -> BasicText(market.error.orEmpty(), style = Mono.copy(color = Palette.red))
                         market.entries.isEmpty() -> BasicText("no $noun yet", style = Mono.copy(color = Palette.muted))
                         shown.isEmpty() && q.isEmpty() && filter.tab == NEW -> BasicText("no new $noun", style = Mono.copy(color = Palette.muted))
+                        shown.isEmpty() && q.isEmpty() && filter.tab == INSTALLED -> BasicText("no $noun installed from the store", style = Mono.copy(color = Palette.muted))
                         shown.isEmpty() -> BasicText("nothing matches \"${filter.query.trim()}\"", style = Mono.copy(color = Palette.muted))
                     }
                 }
@@ -518,6 +524,7 @@ private fun Detail(
     onOpen: () -> Unit,
     onInstall: () -> Unit,
     onAddPages: () -> Unit,
+    onRemove: () -> Unit,
 ) = key(e.id) {
     val installed = market.installedVersion(e)
     val update = market.hasUpdate(e)
@@ -596,6 +603,27 @@ private fun Detail(
                     Modifier.passesKeys(),
                     onInstall,
                 )
+        }
+        if (installed != null && busy == null) {
+            // Asked first, as removing a page is.
+            var confirming by remember { mutableStateOf(false) }
+            val word = if (market.kind == OwlKind.App) "uninstall" else "remove"
+            BracketAction(word, Palette.red) { confirming = true }
+            if (confirming) {
+                ConfirmDialog(
+                    "$word ${e.name}?",
+                    if (installed.pages.isEmpty()) {
+                        "Its file goes to .removed/ in the widgets folder."
+                    } else {
+                        "Its files go to .removed/ in the widgets folder."
+                    },
+                    word,
+                    onDismiss = { confirming = false },
+                ) {
+                    confirming = false
+                    onRemove()
+                }
+            }
         }
         message?.let { BasicText(it, style = Mono.copy(color = Palette.red, fontSize = TextSize.Small)) }
         if (!linux && e.needsLinux) NeedsLinuxNote(market.kind == OwlKind.App)

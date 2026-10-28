@@ -5,6 +5,7 @@ import android.graphics.BitmapFactory
 import android.graphics.BitmapRegionDecoder
 import android.graphics.Rect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -126,8 +127,12 @@ class Market(
         n: Int = 1,
     ) = (if (kind == OwlKind.Widget) "market-" else "market-${kind.word}-") + "${e.author}-${e.id.substringAfter('/')}" + (if (n > 1) ".$n" else "") + ".owl"
 
+    /** Bumped when [remove] moves files away, which no state shows, so the store's pages ask [installedVersion] again. */
+    private var removals by mutableIntStateOf(0)
+
     /** Installed, and one of its files is still there (removing the tile moves the file away). */
-    fun installedVersion(e: CatalogEntry): Installed? = installed[e.id]?.takeIf { i -> i.files.any { File(engine.dir, it.file).exists() } }
+    fun installedVersion(e: CatalogEntry): Installed? =
+        installed[e.id]?.takeIf { i -> removals >= 0 && i.files.any { File(engine.dir, it.file).exists() } }
 
     /** Each of [e]'s pages' files, from page 1: the installed one, or where a new one goes. */
     private fun pageFiles(e: CatalogEntry): List<String> {
@@ -168,6 +173,16 @@ class Market(
         val edited = runCatching { Review.sha256(file.readBytes()) != sha }.getOrDefault(true)
         editedFiles[page.file] = stamp to edited
         return edited
+    }
+
+    /**
+     * Takes [e] off home or out of the drawer, every page of a face: its files go to .removed/, as removing it there does.
+     * Its record stays, as it does then, so adding it again shows what changed since the version approved.
+     */
+    fun remove(e: CatalogEntry) {
+        val names = installedVersion(e)?.files?.map { it.file }?.toSet() ?: return
+        for (spec in engine.specs.filter { it.file.name in names }) engine.removeWidget(spec)
+        removals++
     }
 
     /** An update runs different commands or needs other packages than what the user approved. */
