@@ -28,6 +28,9 @@ android {
 
     buildFeatures { buildConfig = true }
 
+    // Lists the translations in res/ for Android 13's per-app language setting.
+    androidResources { generateLocaleConfig = true }
+
     externalNativeBuild {
         cmake { path = file("src/main/cpp/CMakeLists.txt") }
     }

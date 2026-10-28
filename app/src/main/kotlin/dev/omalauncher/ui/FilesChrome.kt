@@ -31,10 +31,13 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
+import dev.omalauncher.R
 import dev.omalauncher.linux.GuestEntry
 
 /** The path as tappable segments: / › root › .config. */
@@ -75,12 +78,17 @@ internal fun Places(
 ) {
     val places =
         remember(path) {
-            listOf("home" to "/root", "config" to "/root/.config", "downloads" to "/root/Downloads", "system" to "/")
+            listOf(
+                R.string.files_home to "/root",
+                R.string.files_place_config to "/root/.config",
+                R.string.files_place_downloads to "/root/Downloads",
+                R.string.files_place_system to "/",
+            )
                 .filter { exists(it.second) }
         }
     LazyRow(Modifier.bleed(PanelPadding), contentPadding = PaddingValues(horizontal = PanelPadding - 8.dp)) {
         items(places) { (label, target) ->
-            BracketAction(label, if (path == target) Palette.accent else Palette.muted) { onNavigate(target) }
+            BracketAction(stringResource(label), if (path == target) Palette.accent else Palette.muted) { onNavigate(target) }
         }
     }
 }
@@ -128,7 +136,7 @@ internal fun FileRow(
             )
             val detail =
                 if (entry.isDir) {
-                    entry.children?.let { if (it == 1) "1 item" else "$it items" } ?: "folder"
+                    entry.children?.let { pluralStringResource(R.plurals.files_items, it, it) } ?: stringResource(R.string.files_folder)
                 } else {
                     Formatter.formatShortFileSize(context, entry.size) + " · " + formatDate(context, entry.modified)
                 }
@@ -154,20 +162,20 @@ internal fun SelectionBar(
 ) {
     var menu by remember { mutableStateOf(false) }
     BottomBar(modifier) {
-        BracketAction("copy", Palette.accent, onClick = onCopy)
-        BracketAction("cut", Palette.accent, onClick = onCut)
-        BracketAction("delete", Palette.red, onClick = onDelete)
+        BracketAction(stringResource(R.string.files_copy), Palette.accent, onClick = onCopy)
+        BracketAction(stringResource(R.string.files_cut), Palette.accent, onClick = onCut)
+        BracketAction(stringResource(R.string.files_delete), Palette.red, onClick = onDelete)
         Spacer(Modifier.weight(1f))
         Box {
-            BracketAction("more", Palette.muted) { menu = true }
+            BracketAction(stringResource(R.string.files_more), Palette.muted) { menu = true }
             if (menu) {
                 MenuPopup(
                     listOfNotNull(
-                        "select all" to onSelectAll,
-                        onRename?.let { "rename" to it },
-                        onEdit?.let { "edit" to it },
-                        onOpenWith?.let { "open with…" to it },
-                        onShare?.let { "share" to it },
+                        stringResource(R.string.files_select_all) to onSelectAll,
+                        onRename?.let { stringResource(R.string.files_rename) to it },
+                        onEdit?.let { stringResource(R.string.files_edit) to it },
+                        onOpenWith?.let { stringResource(R.string.files_open_with) to it },
+                        onShare?.let { stringResource(R.string.files_share) to it },
                     ),
                     onDismiss = { menu = false },
                     alignment = Alignment.BottomEnd,
@@ -190,14 +198,14 @@ internal fun PasteBar(
     BottomBar(modifier) {
         BasicText(
             // The button says whether they're copied or moved.
-            if (count == 1) "1 item" else "$count items",
+            pluralStringResource(R.plurals.files_items, count, count),
             Modifier.weight(1f).padding(start = 6.dp),
             style = Mono.copy(color = Palette.muted),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
         )
-        BracketAction("cancel", Palette.muted, onClick = onCancel)
-        BracketAction(if (cut) "move here" else "paste here", Palette.accent, Modifier.focusRequester(paste), onPaste)
+        BracketAction(stringResource(R.string.files_cancel), Palette.muted, onClick = onCancel)
+        BracketAction(stringResource(if (cut) R.string.files_move_here else R.string.files_paste_here), Palette.accent, Modifier.focusRequester(paste), onPaste)
     }
 }
 

@@ -20,8 +20,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import dev.omalauncher.BuildConfig
+import dev.omalauncher.R
 import dev.omalauncher.openUrl
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -150,11 +152,11 @@ private val COMPONENTS =
 @Composable
 fun LicensesScreen(onDismiss: () -> Unit) {
     var open by rememberSaveable { mutableStateOf<String?>(null) }
-    OverlayPanel("licenses", onDismiss, contentWidth = ReadingWidth) {
+    OverlayPanel(stringResource(R.string.licenses_title), onDismiss, contentWidth = ReadingWidth) {
         LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             item {
                 BasicText(
-                    "Omalauncher ${BuildConfig.VERSION_NAME} · © 2026 Simon Schubert\n\nIt includes the open source software below.",
+                    stringResource(R.string.licenses_header, BuildConfig.VERSION_NAME),
                     style = Mono.copy(color = Palette.muted, fontSize = TextSize.Small),
                     modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp),
                 )
@@ -199,8 +201,8 @@ private fun Details(c: Component) {
     BasicText(c.notice, style = small)
     Spacer(Modifier.height(10.dp))
     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        BracketAction("website", Palette.accent) { open(c.url) }
-        c.source?.let { BracketAction("source code", Palette.accent) { open(it) } }
+        BracketAction(stringResource(R.string.licenses_website), Palette.accent) { open(c.url) }
+        c.source?.let { BracketAction(stringResource(R.string.licenses_source), Palette.accent) { open(it) } }
     }
     text?.let {
         Spacer(Modifier.height(10.dp))

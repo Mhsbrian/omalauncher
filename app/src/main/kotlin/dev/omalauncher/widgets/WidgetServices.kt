@@ -476,7 +476,7 @@ class WidgetServices(
                 mapOf(
                     "bin" to Str(a.bin),
                     "name" to Str(a.name),
-                    "description" to Str(a.description),
+                    "description" to Str(context.getString(a.description)),
                     "command" to Str(a.command),
                     "key" to Str(key),
                     "icon" to Str("icon:$key"),
@@ -657,7 +657,7 @@ class WidgetServices(
             "terminal" -> runtime.terminal("$arg; exec bash", args.getOrNull(1)?.toString() ?: arg.substringBefore(' '))
             "app" -> runtime.launch(arg)
             // Any scheme an app handles: tel:, geo:, mailto:, ... One nothing handles mustn't crash the launcher.
-            "url" -> if (!context.openUrl(arg)) Toast.makeText(context, "no app opens $arg", Toast.LENGTH_SHORT).show()
+            "url" -> if (!context.openUrl(arg)) Toast.makeText(context, context.getString(R.string.widgets_no_app_opens, arg), Toast.LENGTH_SHORT).show()
             "launcher" -> launcherAction?.invoke(arg)
             "media" -> media.control(arg)
             "volume" -> volume.control(args[0], args.getOrNull(1).textOrNull())
@@ -950,7 +950,7 @@ class WidgetServices(
     private fun copy(text: String) {
         context.getSystemService(ClipboardManager::class.java).setPrimaryClip(ClipData.newPlainText("widget", text))
         // Android 13+ confirms copies itself.
-        if (Build.VERSION.SDK_INT < 33) Toast.makeText(context, "copied", Toast.LENGTH_SHORT).show()
+        if (Build.VERSION.SDK_INT < 33) Toast.makeText(context, R.string.widgets_copied, Toast.LENGTH_SHORT).show()
     }
 
     /** share(text): Android's share sheet, to send the text to any app. */
@@ -971,7 +971,7 @@ class WidgetServices(
             Log.w("widgets", "notify: notifications are off for the launcher")
             return
         }
-        nm.createNotificationChannel(NotificationChannel(NOTIFY_CHANNEL, "Widgets", NotificationManager.IMPORTANCE_DEFAULT))
+        nm.createNotificationChannel(NotificationChannel(NOTIFY_CHANNEL, context.getString(R.string.widgets_notify_channel), NotificationManager.IMPORTANCE_DEFAULT))
         val open = PendingIntent.getActivity(context, 0, Intent(context, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE)
         val n =
             Notification
