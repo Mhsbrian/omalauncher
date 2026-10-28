@@ -6,9 +6,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.FlowRowScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -209,15 +210,15 @@ internal fun PasteBar(
     }
 }
 
-/** A surface row of [BracketAction]s under the list. */
+/** A surface row of [BracketAction]s under the list; ones that don't fit go under it whole, not a letter a line. */
 @Composable
 private fun BottomBar(
     modifier: Modifier,
-    content: @Composable RowScope.() -> Unit,
+    content: @Composable FlowRowScope.() -> Unit,
 ) {
-    Row(
+    FlowRow(
         modifier.padding(top = 8.dp).card(6.dp),
-        verticalAlignment = Alignment.CenterVertically,
+        itemVerticalAlignment = Alignment.CenterVertically,
         content = content,
     )
 }
