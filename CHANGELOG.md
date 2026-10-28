@@ -4,6 +4,29 @@ The most important changes in each release. The Play Store notes for a release
 are in `fastlane/metadata/android/en-US/changelogs/<versionCode>.txt`.
 Dates are when the build was uploaded to Play.
 
+## 0.15.0 (versionCode 26) – unreleased
+
+- The launcher speaks Indonesian: with the phone set to Indonesian, all of its text, the
+  drawer, the today, fetch and owl widgets and the terminal key bar's spoken key names are
+  in Indonesian.
+- Widgets can carry their text in more than one language: owl 16's
+  `strings { en { ... } id { ... } }`, read as `str.name`, show the phone's language's with
+  English where it has none, and texts can take values. `lang()` is the phone's language for
+  APIs. Widgets recompile when the phone's language changes, and agents publishing a
+  one-language widget are asked whether to add English.
+- Coding agents take the theme as on Omarchy: Claude Code has an Omarchy theme to pick in
+  /theme, Pi starts in it, and OpenCode follows the terminal's colors; running sessions
+  recolor when the theme changes.
+- A widget, face or app added from the store can be removed from its page in the store, and
+  each store always has its installed tab.
+- The empty page right of home's last invites a widget, with create with the agent and browse
+  store, instead of a one-line hint.
+- The store's built-in widgets, a terminal and a tile per coding agent, are one row that
+  scrolls sideways.
+- At a large Android font size, buttons that would squeeze a label to a letter a line go under
+  it, in settings, the style screen and Files' selection bar, and settings' updates scroll with
+  its rows.
+
 ## 0.14.0 (versionCode 25) – 2026-10-27
 
 - Tapping a now-playing widget brings up the player's own screen, like a web app's
