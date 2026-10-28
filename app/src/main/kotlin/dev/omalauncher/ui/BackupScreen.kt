@@ -1,6 +1,8 @@
 package dev.omalauncher.ui
 
 import androidx.activity.compose.rememberLauncherForActivityResult
+import dev.omalauncher.R
+import androidx.compose.ui.res.stringResource
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -95,7 +97,7 @@ fun BackupScreen(onDismiss: () -> Unit) {
             if (uri != null) run("reading the backup…") { BackupStep.Picked(backups.read(uri), "the backup") }
         }
 
-    OverlayPanel("backup & restore", onDismiss, contentWidth = ReadingWidth) {
+    OverlayPanel(stringResource(R.string.fork_settings_backup), onDismiss, contentWidth = ReadingWidth) {
         Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = 4.dp)) {
             SectionLabel("back up")
             Note(
@@ -104,14 +106,14 @@ fun BackupScreen(onDismiss: () -> Unit) {
             )
             now?.let { Line("now: " + describe(it)) }
             Line(last.first.takeIf { it > 0 }?.let { "last backup: ${date(it)}" + (last.second?.let { n -> " · $n" } ?: "") } ?: "no backup yet")
-            BracketAction("back up to a file", Palette.accent) { create.launch("omalauncher-backup-${stamp()}.zip") }
+            BracketAction(stringResource(R.string.fork_backup_back_up), Palette.accent) { create.launch("omalauncher-backup-${stamp()}.zip") }
 
             SectionLabel("restore")
             Note("replaces the home screen with a backup's and restarts the launcher. you see what's in the backup first.")
-            BracketAction("restore from a file", Palette.accent) { open.launch(ZIP_TYPES) }
+            BracketAction(stringResource(R.string.fork_backup_restore_from_file), Palette.accent) { open.launch(ZIP_TYPES) }
             backups.undoAt?.let { at ->
                 Line("the home screen from before the restore on ${date(at)} is kept")
-                BracketAction("undo the last restore", Palette.accent) {
+                BracketAction(stringResource(R.string.fork_backup_undo), Palette.accent) {
                     run("reading…") { BackupStep.Picked(backups.readUndo(), "the home screen from before the last restore") }
                 }
             }
@@ -150,8 +152,8 @@ private fun Confirm(
                 "open Linux windows close. the home screen as it is now is kept, so you can undo it here.",
         )
         Row {
-            BracketAction("restore", Palette.accent, onClick = onRestore)
-            BracketAction("cancel", Palette.muted, onClick = onCancel)
+            BracketAction(stringResource(R.string.fork_backup_restore), Palette.accent, onClick = onRestore)
+            BracketAction(stringResource(R.string.fork_cancel), Palette.muted, onClick = onCancel)
         }
     }
 }

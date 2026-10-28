@@ -830,6 +830,8 @@ object Builtins {
                         }
                     }
                 },
+            // owl 16: lang(), the phone's language, like en or id; the compiler gives the language it compiled for.
+            "lang" to Builtin(0, 0) { Str(phoneLanguage()) },
             // hash(values...): a number in [0, 1) that's always the same for the same values, for noise in lets and canvases.
             "hash" to Builtin(1, 16) { a -> n(hash(a.args)) },
             "keys" to Builtin(1, 1) { a -> (a[0] as? Obj)?.let { o -> lst(o.fields.keys.map(::Str)) } ?: Lst(emptyList()) },
@@ -1014,3 +1016,6 @@ fun shQuote(s: String) = "'" + s.replace("'", "'\\''") + "'"
 
 /** [s] as one URL component, spaces as %20: what enc(...) gives. */
 fun urlEncode(s: String): String = URLEncoder.encode(s, "UTF-8").replace("+", "%20")
+
+/** The phone's language as strings and lang() name it: its code, like en or id (Java's older in for Indonesian is id here). */
+fun phoneLanguage(): String = Locale.getDefault().toLanguageTag().substringBefore('-').lowercase()

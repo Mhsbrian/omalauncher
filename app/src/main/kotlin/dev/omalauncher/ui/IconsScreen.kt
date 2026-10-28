@@ -1,6 +1,8 @@
 package dev.omalauncher.ui
 
 import dev.omalauncher.widgets.lang.rankMatches
+import dev.omalauncher.R
+import androidx.compose.ui.res.stringResource
 import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.BackHandler
@@ -149,11 +151,11 @@ fun IconsScreen(
     DisposableEffect(store) { onDispose { store.trim() } }
     var query by remember { mutableStateOf("") }
     var removing by remember { mutableStateOf<IconPackInfo?>(null) }
-    OverlayPanel("icons", onDismiss, contentWidth = ReadingWidth) {
+    OverlayPanel(stringResource(R.string.fork_settings_icons), onDismiss, contentWidth = ReadingWidth) {
         val apps = runtime.androidApps.apps
         val shown = if (query.isBlank()) apps.toList() else rankMatches(apps.toList(), query, { it.label }, alias = { it.spoken.takeIf { s -> s != it.label } }).map { it.first }
         LazyColumn(Modifier.weight(1f)) {
-            item(key = "pack-heading") { Heading("icon pack") { FindPacks() } }
+            item(key = "pack-heading") { Heading(R.string.fork_style_icon_pack) { FindPacks() } }
             item(key = "packs") { PackRow(store, onNew = { onTask(IconTask.NewPack) }) }
             item(key = "pack-actions") {
                 val pack = store.pack
@@ -164,15 +166,15 @@ fun IconsScreen(
             item(key = "options") {
                 Column {
                     if (store.pack?.hasBackdrop == true) {
-                        Flag("other apps", "on backdrop", "as is", runtime.style, Style.ICON_PACK_BACKDROP)
+                        Flag(R.string.fork_icons_other_apps, R.string.fork_icons_on_backdrop, R.string.fork_icons_as_is, runtime.style, Style.ICON_PACK_BACKDROP)
                         OptionHint("apps the pack has no icon for", Modifier.padding(bottom = 4.dp))
                     }
-                    Flag("icons", "monochrome", "colored", runtime.style, Style.MONOCHROME_ICONS)
+                    Flag(R.string.style_icons, R.string.style_monochrome, R.string.style_colored, runtime.style, Style.MONOCHROME_ICONS)
                 }
             }
             item(key = "agents") {
                 Column {
-                    Heading("drawn by")
+                    Heading(R.string.fork_icons_drawn_by)
                     AgentChoice(runtime, onSetup = { onTask(IconTask.Setup) })
                     BasicText(
                         "the launcher's agent, as in the bar, draws new packs, a pack's missing icons and single apps' icons, in " +
@@ -185,8 +187,8 @@ fun IconsScreen(
             }
             item(key = "apps-heading") {
                 Column {
-                    Heading("apps")
-                    SearchField(query, { query = it }, onGo = {}, placeholder = "search apps")
+                    Heading(R.string.fork_icons_apps)
+                    SearchField(query, { query = it }, onGo = {}, placeholder = stringResource(R.string.fork_icons_search_apps))
                     Spacer(Modifier.height(8.dp))
                 }
             }
@@ -218,8 +220,8 @@ private fun AgentChoice(
     val installed = runtime.agents.installed
     val chosen = runtime.agents.default
     when {
-        !runtime.bootstrap.isInstalled -> BracketAction("install linux to draw with agents", Palette.accent, onClick = onSetup)
-        installed.isEmpty() -> BracketAction("install a coding agent", Palette.accent, onClick = onSetup)
+        !runtime.bootstrap.isInstalled -> BracketAction(stringResource(R.string.fork_icons_install_linux), Palette.accent, onClick = onSetup)
+        installed.isEmpty() -> BracketAction(stringResource(R.string.fork_icons_install_agent), Palette.accent, onClick = onSetup)
         else ->
             FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 for (agent in installed) {
@@ -255,9 +257,9 @@ private fun FolderPackActions(
             style = Mono.copy(color = Palette.muted, fontSize = TextSize.Small),
         )
         FlowRow {
-            if (missing > 0) BracketAction("fill in $missing", Palette.accent, onClick = onFill)
-            BracketAction("change it", Palette.accent, onClick = onEdit)
-            BracketAction("remove", Palette.red, onClick = onRemove)
+            if (missing > 0) BracketAction(stringResource(R.string.fork_icons_fill_in, missing), Palette.accent, onClick = onFill)
+            BracketAction(stringResource(R.string.fork_icons_change), Palette.accent, onClick = onEdit)
+            BracketAction(stringResource(R.string.fork_remove), Palette.red, onClick = onRemove)
         }
     }
 }
@@ -266,7 +268,7 @@ private fun FolderPackActions(
 @Composable
 private fun FindPacks() {
     val context = LocalContext.current
-    BracketAction("find packs", Palette.accent) {
+    BracketAction(stringResource(R.string.fork_icons_find_packs), Palette.accent) {
         val market = Intent(Intent.ACTION_VIEW, Uri.parse("market://search?q=icon%20pack&c=apps")).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         val web = Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/search?q=icon%20pack&c=apps")).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         runCatching { context.startActivity(market) }.recoverCatching { context.startActivity(web) }
@@ -420,7 +422,7 @@ fun IconPickerScreen(
 ) {
     val store = runtime.icons
     val scope = rememberCoroutineScope()
-    val agentName = runtime.agents.default?.name?.lowercase() ?: "an agent"
+    val agentName = runtime.agents.default?.name?.lowercase() ?: stringResource(R.string.fork_an_agent)
     val source = store.sourceOf(app)
     // The pack in use first, as that's where an icon matching the others is.
     var browsing by remember { mutableStateOf(store.pack?.info ?: store.packs.firstOrNull()) }
@@ -435,7 +437,7 @@ fun IconPickerScreen(
                 }
             }
         }
-    OverlayPanel("icon", onDismiss, contentWidth = ReadingWidth) {
+    OverlayPanel(stringResource(R.string.fork_icon), onDismiss, contentWidth = ReadingWidth) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             AppIcon(runtime.androidApps.icons[app.key], runtime.androidApps.masks[app.key], app.spoken, 64.dp)
             Column(Modifier.weight(1f).padding(start = 14.dp)) {
@@ -450,25 +452,25 @@ fun IconPickerScreen(
             }
         }
         FlowRow(Modifier.padding(top = 8.dp)) {
-            if (source == IconFiles.Source.File) BracketAction("reset", Palette.red) { scope.launch { store.reset(app) } }
+            if (source == IconFiles.Source.File) BracketAction(stringResource(R.string.fork_icons_reset), Palette.red) { scope.launch { store.reset(app) } }
             if (source == IconFiles.Source.Pack || source == IconFiles.Source.Backdrop) {
-                BracketAction("keep its own", Palette.accent) { scope.launch { store.pickOwn(app).also { onDismiss() } } }
+                BracketAction(stringResource(R.string.fork_icons_keep_own), Palette.accent) { scope.launch { store.pickOwn(app).also { onDismiss() } } }
             }
-            BracketAction("image", Palette.accent) { pickImage.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }
-            BracketAction("draw with $agentName", Palette.accent) { onTask(IconTask.Draw(app)) }
+            BracketAction(stringResource(R.string.fork_icons_image), Palette.accent) { pickImage.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }
+            BracketAction(stringResource(R.string.fork_icons_draw_with, agentName), Palette.accent) { onTask(IconTask.Draw(app)) }
         }
         // Which agent draws it, when there's a choice.
         if (runtime.agents.installed.size > 1) AgentChoice(runtime, onSetup = { onTask(IconTask.Setup) })
-        if (failed) BasicText("that image couldn't be read", style = Mono.copy(color = Palette.red, fontSize = TextSize.Small))
+        if (failed) BasicText(stringResource(R.string.fork_icons_image_unreadable), style = Mono.copy(color = Palette.red, fontSize = TextSize.Small))
         if (store.packs.isEmpty()) {
-            Heading("icon packs") { FindPacks() }
+            Heading(R.string.fork_icons_packs) { FindPacks() }
             BasicText(
-                "install an icon pack to pick from its icons here",
+                stringResource(R.string.fork_icons_install_pack),
                 style = Mono.copy(color = Palette.muted, fontSize = TextSize.Small),
             )
             return@OverlayPanel
         }
-        Heading("pick from") { FindPacks() }
+        Heading(R.string.fork_icons_pick_from) { FindPacks() }
         LazyRow(
             Modifier.bleed(PanelPadding),
             contentPadding = PaddingValues(horizontal = PanelPadding),
@@ -488,7 +490,7 @@ fun IconPickerScreen(
             }
         }
         Spacer(Modifier.height(8.dp))
-        SearchField(query, { query = it }, onGo = {}, placeholder = "search icons")
+        SearchField(query, { query = it }, onGo = {}, placeholder = stringResource(R.string.fork_icons_search_icons))
         Spacer(Modifier.height(8.dp))
         val pack by produceState<IconPack?>(null, browsing) { value = browsing?.let { store.open(it) } }
         val p = pack
@@ -501,7 +503,7 @@ fun IconPickerScreen(
                 val suggested = p.nameFor(app.component, Calendar.getInstance().get(Calendar.DAY_OF_MONTH))
                 (listOfNotNull(suggested) + searchDrawables(p.names, query)).distinct()
             }
-        if (names.isEmpty()) BasicText("no icon in ${p.label} matches", style = Mono.copy(color = Palette.muted))
+        if (names.isEmpty()) BasicText(stringResource(R.string.fork_icons_no_match, p.label), style = Mono.copy(color = Palette.muted))
         LazyVerticalGrid(
             GridCells.Adaptive(64.dp),
             Modifier.weight(1f),

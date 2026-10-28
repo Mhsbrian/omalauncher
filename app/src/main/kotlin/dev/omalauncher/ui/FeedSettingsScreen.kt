@@ -1,6 +1,8 @@
 package dev.omalauncher.ui
 
 import androidx.compose.foundation.background
+import dev.omalauncher.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -45,7 +47,7 @@ fun FeedSettingsScreen(
 ) {
     val s = store.settings
     val update = store::update
-    OverlayPanel("feed", onDismiss, contentWidth = ReadingWidth) {
+    OverlayPanel(stringResource(R.string.fork_settings_feed), onDismiss, contentWidth = ReadingWidth) {
         LazyColumn(verticalArrangement = Arrangement.spacedBy(2.dp)) {
             item {
                 Choice("feed", listOf("on", "off"), if (s.enabled) 0 else 1) { i -> update { it.copy(enabled = i == 0) } }
@@ -74,7 +76,7 @@ fun FeedSettingsScreen(
                     handle != null
                 }
                 if (s.xHandles != FeedCatalog.defaultX) {
-                    BracketAction("reset to the default accounts", Palette.muted) { update { it.copy(xHandles = FeedCatalog.defaultX) } }
+                    BracketAction(stringResource(R.string.fork_feed_reset_accounts), Palette.muted) { update { it.copy(xHandles = FeedCatalog.defaultX) } }
                 }
                 Hint("x has no free api for reading; posts come through api.fxtwitter.com, an open-source bridge, which can be slow or miss an account now and then")
             }
@@ -245,6 +247,6 @@ private fun AddField(
                 modifier = Modifier.fillMaxWidth(),
             )
         }
-        BracketAction("add", Palette.accent, onClick = ::add)
+        BracketAction(stringResource(R.string.fork_feed_add), Palette.accent, onClick = ::add)
     }
 }

@@ -12,6 +12,8 @@ class Compiler private constructor(
     private val ast: WidgetAst,
     /** The file, to quote a value in a warning. */
     private val src: String,
+    /** The language `strings` and `lang()` give, like en or id: the phone's, unless a check asks for another. */
+    private val language: String,
 ) {
     companion object {
         const val MAX_NODES = 500
@@ -25,7 +27,7 @@ class Compiler private constructor(
          * instead of failing on what they don't know. Bump it with every
          * addition a widget could depend on: nodes, properties, builtins.
          */
-        const val LEVEL = 15
+        const val LEVEL = 16
         private const val MAX_ASSET_BYTES = 2 shl 20
 
         /** Pages as far out as a file can ask for; past Int's range, the pages either side of them would wrap. */
@@ -34,9 +36,12 @@ class Compiler private constructor(
         /** An app icon is a shape or two drawn in SVG, not a picture. */
         private const val MAX_ICON_CHARS = 16 * 1024
 
-        fun compile(src: String): Program =
+        fun compile(
+            src: String,
+            language: String = phoneLanguage(),
+        ): Program =
             try {
-                Compiler(Parser.parse(src), src).program()
+                Compiler(Parser.parse(src), src, language).program()
             } catch (e: StackOverflowError) {
                 // `((((...` or `1+1+1+...` thousands deep: parsing and compiling recurse per level.
                 throw CompileError("too deeply nested", 0)
@@ -215,6 +220,9 @@ class Compiler private constructor(
     private val commands = LinkedHashSet<String>()
     private val warnings = LinkedHashSet<String>()
 
+    /** What `str.x` names, from [Decl.Strings]: the phone's language's, or en's where it has none; null without strings. */
+    private var texts: Map<String, Expr>? = null
+
     /** The commands that are fixed text, so their programs can be read off them. */
     private val scripts = LinkedHashSet<String>()
 
@@ -307,6 +315,11 @@ class Compiler private constructor(
                 is Decl.Component -> {
                     if (d.name in components || d.name in KINDS) fail("'${d.name}' is already a node", d.pos)
                     components[d.name] = component(d)
+                }
+                is Decl.Strings -> {
+                    val g = strings(d)
+                    reserve(d.name, d.pos)
+                    globals[slots[d.name]!!] = g
                 }
                 is Decl.Meta, is Decl.Requires, is Decl.Trigger -> {}
             }
@@ -844,6 +857,57 @@ class Compiler private constructor(
         val bytes = runCatching { Base64.getDecoder().decode(d.base64) }.getOrElse { fail("asset '${d.name}' isn't valid base64", d.pos) }
         if (bytes.size > MAX_ASSET_BYTES) fail("asset '${d.name}' is over 2 MB", d.pos)
         return Global.Asset(d.name, bytes)
+    }
+
+    /**
+     * `strings { en { ... } id { ... } }` as `str`: the set for the phone's language, with en's for any it lacks. A text
+     * that takes values, `items: n => "${n} items"`, isn't in the map: `str.items(count)` applies it where it's called.
+     */
+    private fun strings(d: Decl.Strings): Global {
+        since(STRINGS_DECL, d.pos)
+        val en = d.sets.firstOrNull { it.first == "en" }?.second ?: fail("strings needs en { }: every text in English, which shows where another language has none", d.pos)
+        val english = en.associateBy { it.name }
+        for ((lang, fields) in d.sets) {
+            for (f in fields) {
+                val e = english[f.name] ?: fail("$lang has ${f.name}, which en doesn't: en has every text, in English", f.pos)
+                val n = (e.value as? Expr.Lambda)?.params?.size
+                if ((f.value as? Expr.Lambda)?.params?.size != n) {
+                    fail(if (n == null) "${f.name} is text in en, so it is in $lang too" else "${f.name} takes $n value${if (n == 1) "" else "s"} in en, so it does in $lang too", f.pos)
+                }
+            }
+            val missing = english.keys - fields.map { it.name }.toSet()
+            if (missing.isNotEmpty()) {
+                warnings += "${Source(src).lineCol(d.pos).let { "${it.first}:${it.second}" }}: $lang has no ${missing.joinToString()}, so those show in English"
+            }
+        }
+        val mine = d.sets.firstOrNull { it.first == language }?.second.orEmpty().associateBy { it.name }
+        val chosen = en.associate { it.name to (mine[it.name] ?: it).value }
+        texts = chosen
+        return Global.Let(d.name, ex(Expr.MapLit(chosen.filterValues { it !is Expr.Lambda }.toList(), d.pos), root))
+    }
+
+    /** Whether [e] is `str`, the file's [Decl.Strings], and not a local of that name. */
+    private fun isTexts(
+        e: Expr,
+        s: Scope,
+    ) = texts != null && e is Expr.Name && e.name == STRINGS && lookup(STRINGS, s) is Ref.Slot
+
+    private fun text(
+        name: String,
+        pos: Int,
+    ): Expr = texts!![name] ?: fail("strings has no $name; add it to en { }", pos)
+
+    /** `str.items(count)`: the text that takes values, applied to them. */
+    private fun textCall(
+        e: Expr.Call,
+        s: Scope,
+    ): Ev {
+        val f = text(e.name, e.pos) as? Expr.Lambda ?: fail("str.${e.name} is text; it takes no values: str.${e.name}", e.pos)
+        val args = e.args.drop(1).map { ex(it, s) }
+        val n = f.params.size
+        if (args.size != n || e.named.isNotEmpty()) fail("str.${e.name} takes $n value${if (n == 1) "" else "s"}, like str.${e.name}(${f.params.joinToString()})", e.pos)
+        val body = ex(f.body, Scope(root, f.params))
+        return Ev(null) { env -> body(Env(env.host, env, Array(n) { args[it](env) })) }
     }
 
     private fun let(d: Decl.Let): Global {
@@ -1520,6 +1584,10 @@ class Compiler private constructor(
                 }
             }
             is Expr.Member -> {
+                if (isTexts(e.e, s) && text(e.name, e.pos) is Expr.Lambda) {
+                    val n = (text(e.name, e.pos) as Expr.Lambda).params.size
+                    fail("str.${e.name} takes $n value${if (n == 1) "" else "s"}: str.${e.name}(…)", e.pos)
+                }
                 val o = ex(e.e, s)
                 fold(listOf(o)) { env -> Builtins.member(o(env), e.name) }
             }
@@ -1651,6 +1719,8 @@ class Compiler private constructor(
         e: Expr.Call,
         s: Scope,
     ): Ev {
+        // str.count(n) is a text that takes values; get(str, key) and the like are the built-ins they are.
+        if (e.args.isNotEmpty() && isTexts(e.args[0], s) && (e.name in texts!! || e.name !in Builtins.all)) return textCall(e, s)
         if (e.name == "speech") fail("speech(...) is an action and gives nothing back: tap with onTap: speech(\"toggle\"), and read what's heard from source said = android.speech", e.pos)
         if (e.name in Builtins.actions) fail("${e.name}(...) is an action; use it in a handler like onTap", e.pos)
         if (e.name in setOf("history", "prev")) fail("${e.name}(...) keeps samples over time, so it only works as: let x = ${e.name}(...)", e.pos)
@@ -1678,6 +1748,8 @@ class Compiler private constructor(
         if (e.args.size < b.min || e.args.size > b.max) {
             fail("${e.name} takes ${if (b.min == b.max) "${b.min}" else "${b.min}-${b.max}"} arguments, not ${e.args.size}", e.pos)
         }
+        // The language the file is compiled for, the one strings picks: a launcher recompiles when the phone's changes.
+        if (e.name == "lang") return Ev.of(Str(language))
         // A secret in a request's URL, as enc(token): see [requestUrl].
         val urlSecret = (e.args.singleOrNull() as? Expr.Name)?.takeIf { e.name == "enc" && inUrl && isSecret(it, s) }
         val args = if (urlSecret != null) listOf(withSecrets { ex(urlSecret, s) }) else e.args.map { ex(it, s) }

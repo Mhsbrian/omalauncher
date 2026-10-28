@@ -1891,4 +1891,43 @@ class LangTest {
         slider.handlers["onChange"]!!.run(Env.root(host), listOf(Num(70.0)))
         assertEquals(Num(70.0), host.slots[0])
     }
+
+    /** A widget with strings, compiled for [language], showing [expr]. */
+    private fun texts(
+        expr: String,
+        language: String,
+        decls: String = "",
+    ): String {
+        val src = "widget \"t\" {\n meta { owl: 16 }\n strings {\n  en { feels: \"feels\"; today: \"today\"; items: n => n == 1 ? \"1 item\" : \"${'$'}{n} items\" }\n  id { feels: \"terasa\"; items: n => \"${'$'}{n} item\" }\n }\n$decls\nText { text: $expr }\n}"
+        val p = Compiler.compile(src, language)
+        return ((p.root.single() as WNode.Element).props["text"]!!(Env.root(TestHost(p)))).toString()
+    }
+
+    @Test fun stringsPickThePhonesLanguageAndFallBackToEnglish() {
+        assertEquals("terasa", texts("str.feels", "id"))
+        assertEquals("feels", texts("str.feels", "en"))
+        assertEquals("feels", texts("str.feels", "de"))
+        // id has no today: en's shows.
+        assertEquals("today", texts("str.today", "id"))
+        assertEquals("1 item", texts("str.items(1)", "en"))
+        assertEquals("3 items", texts("str.items(n)", "en", "state n = 3"))
+        assertEquals("3 item", texts("str.items(n)", "id", "state n = 3"))
+        assertEquals("id", texts("lang()", "id"))
+        // A built-in on the whole map, for a text picked by a value.
+        assertEquals("terasa", texts("get(str, k)", "id", "state k = \"feels\""))
+    }
+
+    @Test fun stringsCatchWhatDoesntMatchEnglish() {
+        fun error(strings: String, use: String = "str.a") = compileError("widget \"t\" {\n meta { owl: 16 }\n strings { $strings }\n Text { text: $use }\n}")
+        assertTrue(error("en { a: \"a\" }", "str.b").contains("strings has no b"))
+        assertTrue(error("id { a: \"a\" }").contains("strings needs en { }"))
+        assertTrue(error("en { a: \"a\" } id { a: \"a\"; b: \"b\" }").contains("id has b, which en doesn't"))
+        assertTrue(error("en { a: n => \"${'$'}{n}\" }").contains("str.a takes 1 value"))
+        assertTrue(error("en { a: \"a\" }", "str.a(1)").contains("str.a is text"))
+        assertTrue(error("en { a: n => \"${'$'}{n}\" } id { a: \"a\" }").contains("a takes 1 value in en, so it does in id too"))
+        assertTrue(error("EN { a: \"a\" }").contains("its code in lowercase"))
+        assertTrue(compileError("widget \"t\" {\n strings { en { a: \"a\" } }\n Text { text: str.a }\n}").contains("owl 16"))
+        val warned = Compiler.compile("widget \"t\" {\n meta { owl: 16 }\n strings { en { a: \"a\"; b: \"b\" } id { a: \"x\" } }\n Text { text: str.a }\n}", "en").warnings
+        assertEquals(listOf("3:2: id has no b, so those show in English"), warned)
+    }
 }

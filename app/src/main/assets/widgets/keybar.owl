@@ -3,7 +3,7 @@ keybar "terminal key bar" {
   // yours to change: ask your agent to edit them. .stock-keybar.owl next to it is this file as the launcher ships it, kept
   // up to date: compare the two to see what changed in a newer launcher. If this file is gone or doesn't compile, the
   // stock keys show instead.
-  meta { description: "The key bar over the keyboard while typing in a terminal: esc, tab, ctrl, alt, the arrows, copy, paste and photos"; version: "1.1"; license: "MIT"; category: "system"; owl: 15 }
+  meta { description: "The key bar over the keyboard while typing in a terminal: esc, tab, ctrl, alt, the arrows, copy, paste and photos"; version: "1.2"; license: "MIT"; category: "system"; owl: 16 }
   // The launcher's chevron; currentColor takes the tint.
   asset chevron = base64"PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0iY3VycmVudENvbG9yIiBkPSJNNy40MSwxNS40MUwxMiwxMC44M2w0LjU5LDQuNThMMTgsMTRsLTYsLTYgLTYsNnoiLz48L3N2Zz4="
   // Material Design Icons' copy, paste and image, for the clipboard keys and the one that pastes photos.
@@ -11,6 +11,11 @@ keybar "terminal key bar" {
   asset pasteIcon = base64"PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0iY3VycmVudENvbG9yIiBkPSJNMTksMjBINVY0SDdWN0gxN1Y0SDE5TTEyLDJBMSwxIDAgMCwxIDEzLDNBMSwxIDAgMCwxIDEyLDRBMSwxIDAgMCwxIDExLDNBMSwxIDAgMCwxIDEyLDJNMTksMkgxNC44MkMxNC40LDAuODQgMTMuMywwIDEyLDBDMTAuNywwIDkuNiwwLjg0IDkuMTgsMkg1QTIsMiAwIDAsMCAzLDRWMjBBMiwyIDAgMCwwIDUsMjJIMTlBMiwyIDAgMCwwIDIxLDIwVjRBMiwyIDAgMCwwIDE5LDJaIi8+PC9zdmc+"
   asset photo = base64"PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0iY3VycmVudENvbG9yIiBkPSJNMTksMTlINVY1SDE5TTE5LDNINUEyLDIgMCAwLDAgMyw1VjE5QTIsMiAwIDAsMCA1LDIxSDE5QTIsMiAwIDAsMCAyMSwxOVY1QTIsMiAwIDAsMCAxOSwzTTEzLjk2LDEyLjI5TDExLjIxLDE1LjgzTDkuMjUsMTMuNDdMNi41LDE3SDE3LjVMMTMuOTYsMTIuMjlaIi8+PC9zdmc+"
   // Whether ctrl, alt and shift are latched: "off", "once" (for the next key) or "locked".
+  // The names TalkBack reads for the icon keys, in the phone's language where it has a set.
+  strings {
+    en { copy: "copy"; paste: "paste"; photos: "photos" }
+    id { copy: "salin"; paste: "tempel"; photos: "foto" }
+  }
   source kb = android.modifiers
   // The key under the finger, drawn pressed.
   state down = ""
@@ -28,7 +33,7 @@ keybar "terminal key bar" {
       {label: "up", key: "up", repeats: true, arrow: 0},
       {label: "end", key: "end"},
       {label: "pgup", key: "pgup", repeats: true},
-      {label: "copy", key: "ctrl+insert", icon: copyIcon},
+      {label: str.copy, key: "ctrl+insert", icon: copyIcon},
       {label: "|", key: "|"}
     ],
     [
@@ -39,8 +44,8 @@ keybar "terminal key bar" {
       {label: "down", key: "down", repeats: true, arrow: 180},
       {label: "right", key: "right", repeats: true, arrow: 90},
       {label: "pgdn", key: "pgdn", repeats: true},
-      {label: "paste", key: "shift+insert", icon: pasteIcon},
-      {label: "photos", images: true, icon: photo}
+      {label: str.paste, key: "shift+insert", icon: pasteIcon},
+      {label: str.photos, images: true, icon: photo}
     ]
   ]
 
