@@ -473,6 +473,15 @@ fun HomeScreen(
                     }
                 }
             },
+            invite = {
+                WidgetInvite(runtime.agents.default?.name, onBrowse = { state.show(SettingsPage.Store) }) {
+                    if (linuxState == LinuxState.Installed) {
+                        state.withAgent(runtime, "New widget") { newOwlCommand(it, OwlKind.Widget) }
+                    } else {
+                        state.show(SettingsPage.Linux)
+                    }
+                }
+            },
             // Home turns to where a tile the user just added went; a shipped one that doesn't fit, as on a short
             // screen's first home, moves without taking home off page 1.
             onNoRoom = { item ->
@@ -549,6 +558,38 @@ private fun FaceInvite(
                 style = Mono,
             )
             // Pulled left by the buttons' own padding, so the first bracket lines up with the text.
+            Column(Modifier.offset(x = (-8).dp)) {
+                BracketAction("create with ${agent?.lowercase() ?: "an agent"}", Palette.accent, onClick = onCreate)
+                BracketAction("browse store", Palette.accent, onClick = onBrowse)
+            }
+        }
+    }
+}
+
+/**
+ * An empty tile page, the one after the last or page 1 of an empty home: in [FaceInvite]'s style, an invitation to
+ * have [agent] build a widget, or to take one from the store.
+ */
+@Composable
+private fun WidgetInvite(
+    agent: String?,
+    onBrowse: () -> Unit,
+    onCreate: () -> Unit,
+) {
+    Box(Modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) {
+        Column(
+            Modifier
+                .widthIn(max = 360.dp)
+                .frame(1.dp, Palette.border, Palette.background.copy(alpha = 0.85f))
+                .padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            BasicText("room for widgets", style = Mono.copy(color = Palette.accent))
+            BasicText(
+                "Nothing on this page yet. Fill it with widgets: a clock, the weather, a todo list, your agents at work. " +
+                    "Say what you want and ${agent ?: "an agent"} builds it.",
+                style = Mono,
+            )
             Column(Modifier.offset(x = (-8).dp)) {
                 BracketAction("create with ${agent?.lowercase() ?: "an agent"}", Palette.accent, onClick = onCreate)
                 BracketAction("browse store", Palette.accent, onClick = onBrowse)
