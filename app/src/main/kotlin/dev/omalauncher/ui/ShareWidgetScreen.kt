@@ -39,6 +39,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
@@ -83,6 +84,7 @@ fun ShareWidgetScreen(
     onDismiss: () -> Unit,
 ) {
     val context = LocalContext.current
+    val resources = LocalResources.current
     val scope = rememberCoroutineScope()
     val file = spec.file
     val name = spec.name
@@ -144,7 +146,7 @@ fun ShareWidgetScreen(
                                                 val id = withContext(Dispatchers.IO) { Paste.upload(Share.minify(text), userAgent()) }
                                                 withContext(Dispatchers.Default) { qrCode(Share.pasteLink(id)) }
                                             }.onSuccess { pasted = it }
-                                                .onFailure { uploadError = (it as? ShareError)?.message ?: context.getString(R.string.store_something_wrong) }
+                                                .onFailure { uploadError = (it as? ShareError)?.message ?: resources.getString(R.string.store_something_wrong) }
                                             uploading = false
                                         }
                                     }
@@ -175,20 +177,20 @@ fun ShareWidgetScreen(
                                         Intent(Intent.ACTION_SEND)
                                             .setType("image/png")
                                             .putExtra(Intent.EXTRA_STREAM, uri)
-                                            .putExtra(Intent.EXTRA_SUBJECT, context.getString(R.string.store_share_subject, name))
+                                            .putExtra(Intent.EXTRA_SUBJECT, resources.getString(R.string.store_share_subject, name))
                                             .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                                     // The chooser's preview reads the image through the clip.
-                                    send.clipData = ClipData.newRawUri(context.getString(R.string.store_share_code_clip, name), uri)
-                                    context.startActivity(Intent.createChooser(send, context.getString(R.string.store_share_chooser, name)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                                    send.clipData = ClipData.newRawUri(resources.getString(R.string.store_share_code_clip, name), uri)
+                                    context.startActivity(Intent.createChooser(send, resources.getString(R.string.store_share_chooser, name)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
                                 }
                             }
                         }
                         if (sendable) BracketAction(stringResource(R.string.store_share_link), Palette.accent) {
-                            val send = Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, link).putExtra(Intent.EXTRA_SUBJECT, context.getString(R.string.store_share_subject, name))
-                            context.startActivity(Intent.createChooser(send, context.getString(R.string.store_share_chooser, name)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                            val send = Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, link).putExtra(Intent.EXTRA_SUBJECT, resources.getString(R.string.store_share_subject, name))
+                            context.startActivity(Intent.createChooser(send, resources.getString(R.string.store_share_chooser, name)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
                         }
                         if (sendable) BracketAction(stringResource(if (copied) R.string.store_copied else R.string.store_copy_link), Palette.foreground) {
-                            context.getSystemService(ClipboardManager::class.java).setPrimaryClip(ClipData.newPlainText(context.getString(R.string.store_share_subject, name), link))
+                            context.getSystemService(ClipboardManager::class.java).setPrimaryClip(ClipData.newPlainText(resources.getString(R.string.store_share_subject, name), link))
                             copied = true
                         }
                     }
@@ -250,6 +252,7 @@ private fun StoreIssue(
     text: String,
 ) {
     val context = LocalContext.current
+    val resources = LocalResources.current
     val scope = rememberCoroutineScope()
     // The folder is the maintainer's to pick; only the rest of the review applies. Under the kind's own folder, or a face
     // or an app is turned down for being one.
@@ -271,8 +274,8 @@ private fun StoreIssue(
             runCatching { withContext(Dispatchers.IO) { Paste.upload(text, userAgent(), Paste.STORE_DAYS) } }
                 .onSuccess { id ->
                     val url = Submit.issueUrl(Market.REPO, spec.name, Catalog.metaText(spec.program?.meta?.get("description")).orEmpty(), id, spec.kind)
-                    if (!context.openUrl(url)) error = context.getString(R.string.store_no_browser, url)
-                }.onFailure { error = (it as? ShareError)?.message ?: context.getString(R.string.store_something_wrong) }
+                    if (!context.openUrl(url)) error = resources.getString(R.string.store_no_browser, url)
+                }.onFailure { error = (it as? ShareError)?.message ?: resources.getString(R.string.store_something_wrong) }
             uploading = false
         }
     }
