@@ -1,5 +1,6 @@
 package dev.omalauncher.ui
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -35,7 +36,7 @@ import kotlinx.coroutines.withContext
  */
 private class Component(
     val name: String,
-    val use: String,
+    @StringRes val use: Int,
     val license: String,
     val notice: String,
     val url: String,
@@ -52,7 +53,7 @@ private val COMPONENTS =
     listOf(
         Component(
             "PRoot",
-            "runs the optional Linux system",
+            R.string.licenses_use_proot,
             "gpl-2.0",
             "Copyright (C) 2015 STMicroelectronics. Built from Termux's 5.1.107.96 with omalauncher's patches; the binary's libtalloc.so.2 dependency is renamed to libtalloc.so.",
             "https://proot-me.github.io",
@@ -60,7 +61,7 @@ private val COMPONENTS =
         ),
         Component(
             "talloc",
-            "memory allocator used by PRoot",
+            R.string.licenses_use_talloc,
             "lgpl-3.0",
             "Copyright (C) Andrew Tridgell 2004, Stefan Metzmacher 2006. Termux build of 2.5.0, renamed to libtalloc.so. The LGPL adds to the GPL 3.0 below it.",
             "https://talloc.samba.org",
@@ -68,7 +69,7 @@ private val COMPONENTS =
         ),
         Component(
             "libandroid-shmem",
-            "shared memory for PRoot",
+            R.string.licenses_use_shmem,
             "bsd-3-clause",
             "Copyright (c) 2013, Sergii Pylypenko\nCopyright (c) 2017, Fredrik Fornwall\nAll rights reserved.",
             "https://github.com/termux/libandroid-shmem",
@@ -76,7 +77,7 @@ private val COMPONENTS =
         ),
         Component(
             "Mesa",
-            "OpenGL on Adreno GPUs in the optional Linux system",
+            R.string.licenses_use_mesa,
             "mit",
             "Copyright (C) 1999-2007 Brian Paul and the Mesa contributors. Mesa 26.2.4 with omalauncher's " +
                 "zink patch. Most files are MIT; the rest are under the permissive licenses in Mesa's licenses/ directory.",
@@ -85,7 +86,7 @@ private val COMPONENTS =
         ),
         Component(
             "wayland-protocols",
-            "protocol files bundled with Mesa",
+            R.string.licenses_use_wayland,
             "mit",
             "Copyright © 2008-2013 Kristian Høgsberg\nCopyright © 2010-2013 Intel Corporation\n" +
                 "Copyright © 2013 Rafael Antognolli\nCopyright © 2013 Jasper St. Pierre\nCopyright © 2014 Jonas Ådahl\n" +
@@ -94,58 +95,58 @@ private val COMPONENTS =
         ),
         Component(
             "Omarchy",
-            "theme colors bundled for first run",
+            R.string.licenses_use_omarchy,
             "mit",
             "Copyright (c) David Heinemeier Hansson",
             "https://github.com/omacom/omarchy",
         ),
-        Component("Nerd Fonts", "symbol font", "mit", "Copyright (c) 2014 Ryan L McIntyre", "https://www.nerdfonts.com"),
+        Component("Nerd Fonts", R.string.licenses_use_nerd_fonts, "mit", "Copyright (c) 2014 Ryan L McIntyre", "https://www.nerdfonts.com"),
         Component(
             "Weather Icons",
-            "weather glyphs in the symbol font",
+            R.string.licenses_use_weather_icons,
             "ofl-1.1",
             "Copyright (c) Erik Flowers. Licensed under the SIL Open Font License 1.1.",
             "https://erikflowers.github.io/weather-icons/",
         ),
         Component(
             "Material Design Icons",
-            "glyphs in the symbol font",
+            R.string.licenses_use_mdi,
             APACHE,
             "Copyright (c) Pictogrammers",
             "https://pictogrammers.com/library/mdi/",
         ),
         Component(
             "Compose Multiplatform",
-            "user interface",
+            R.string.licenses_use_compose,
             APACHE,
             "Copyright 2020-2026 JetBrains s.r.o. and respective authors and developers",
             "https://github.com/JetBrains/compose-multiplatform",
         ),
         Component(
             "Android Jetpack",
-            "activity, Compose and other AndroidX libraries",
+            R.string.licenses_use_jetpack,
             APACHE,
             "Copyright The Android Open Source Project",
             "https://developer.android.com/jetpack/androidx",
         ),
         Component(
             "Kotlin and kotlinx.coroutines",
-            "language runtime",
+            R.string.licenses_use_kotlin,
             APACHE,
             "Copyright 2010-2026 JetBrains s.r.o. and Kotlin Programming Language contributors",
             "https://kotlinlang.org",
         ),
         Component(
             "Apache Commons Compress",
-            "unpacks downloads",
+            R.string.licenses_use_commons_compress,
             APACHE,
             "Apache Commons Compress\nCopyright 2002-2026 The Apache Software Foundation\n\n" +
                 "This product includes software developed at The Apache Software Foundation (https://www.apache.org/).",
             "https://commons.apache.org/proper/commons-compress/",
         ),
-        Component("AndroidSVG", "draws SVG icons", APACHE, "Copyright 2013 Paul LeBeau, Cave Rock Software Ltd.", "https://bigbadaboom.github.io/androidsvg/"),
-        Component("ZXing", "draws the QR codes widgets are shared with", APACHE, "Copyright 2007-2025 ZXing authors", "https://github.com/zxing/zxing"),
-        Component("JSON-java", "reads and writes JSON", "public-domain", "Public Domain.", "https://github.com/stleary/JSON-java"),
+        Component("AndroidSVG", R.string.licenses_use_androidsvg, APACHE, "Copyright 2013 Paul LeBeau, Cave Rock Software Ltd.", "https://bigbadaboom.github.io/androidsvg/"),
+        Component("ZXing", R.string.licenses_use_zxing, APACHE, "Copyright 2007-2025 ZXing authors", "https://github.com/zxing/zxing"),
+        Component("JSON-java", R.string.licenses_use_json, "public-domain", "Public Domain.", "https://github.com/stleary/JSON-java"),
     )
 
 /** Third-party notices, opened from settings. Tapping an entry shows its full license text. */
@@ -169,7 +170,7 @@ fun LicensesScreen(onDismiss: () -> Unit) {
                     Row(Modifier.clickable { open = if (expanded) null else c.name }, verticalAlignment = Alignment.CenterVertically) {
                         Column(Modifier.weight(1f)) {
                             BasicText(c.name, style = Mono.copy(fontSize = TextSize.Item))
-                            BasicText("${c.license} · ${c.use}", style = Mono.copy(color = Palette.muted, fontSize = TextSize.Small))
+                            BasicText("${c.license} · ${stringResource(c.use)}", style = Mono.copy(color = Palette.muted, fontSize = TextSize.Small))
                         }
                         Symbol(if (expanded) Glyph.ChevronDown else Glyph.ChevronRight, Palette.accent, fontSize = TextSize.Title)
                     }

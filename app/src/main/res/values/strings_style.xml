@@ -101,10 +101,10 @@
     <string name="style_retry">retry</string>
     <string name="style_download_themes">download themes</string>
 
-    <!-- Backgrounds. The brackets mark a button. -->
-    <string name="style_add_image">[ + image ]</string>
+    <!-- Backgrounds. -->
+    <string name="style_add_image">+ image</string>
     <string name="style_wallpaper_active">✓ android wallpaper &amp; system colors follow the theme (system colors update after the screen turns off)</string>
-    <string name="style_wallpaper_use">[ use as android wallpaper + system colors ]</string>
+    <string name="style_wallpaper_use">use as android wallpaper + system colors</string>
     <string name="style_remove_background_title">remove background?</string>
 
     <string name="style_terminal_hint">terminals opened from now on · more with pacman, like ttf-cascadia-code</string>
@@ -149,7 +149,7 @@
     <string name="gestures_has_errors">%1$s (has errors)</string>
     <!-- %1$s is the file name of a panel that is gone. -->
     <string name="gestures_missing">%1$s (missing)</string>
-    <string name="gestures_edit">[ edit ]</string>
+    <string name="gestures_edit">edit</string>
     <string name="gestures_hint">panels are owl files, the drawer among them: edit them like widgets, or create one with your agent from home\'s menu. with nothing on swipe up, tapping the bar still opens the drawer</string>
     <!-- Home's error banner, for a panel that doesn't compile. -->
     <string name="gestures_stock_drawer">the stock drawer</string>

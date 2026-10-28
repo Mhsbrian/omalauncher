@@ -293,7 +293,7 @@ private fun EditFile(
             .padding(horizontal = 8.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        BasicText(stringResource(R.string.gestures_edit), Modifier.padding(end = 8.dp), style = Mono.copy(color = Palette.accent))
+        BasicText("[ ${stringResource(R.string.gestures_edit)} ]", Modifier.padding(end = 8.dp), style = Mono.copy(color = Palette.accent))
         BasicText(spec.file.name, style = Mono.copy(color = Palette.muted, fontSize = TextSize.Small))
     }
 }

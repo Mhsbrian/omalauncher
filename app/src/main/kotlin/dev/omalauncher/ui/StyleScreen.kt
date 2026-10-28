@@ -376,7 +376,7 @@ private fun BackgroundSection(
                     .clickable { pickImage.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
                 contentAlignment = Alignment.Center,
             ) {
-                BasicText(stringResource(R.string.style_add_image), style = Mono.copy(color = Palette.accent))
+                BasicText("[ ${stringResource(R.string.style_add_image)} ]", style = Mono.copy(color = Palette.accent))
             }
         }
     }
@@ -395,7 +395,7 @@ private fun BackgroundSection(
                 style = Mono.copy(color = Palette.green),
             )
         } else {
-            BasicText(stringResource(R.string.style_wallpaper_use), style = Mono.copy(color = Palette.accent))
+            BasicText("[ ${stringResource(R.string.style_wallpaper_use)} ]", style = Mono.copy(color = Palette.accent))
         }
     }
     removing?.let { file ->

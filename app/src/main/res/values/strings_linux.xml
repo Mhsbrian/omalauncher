@@ -197,4 +197,21 @@
     <string name="licenses_header">Omalauncher %1$s · © 2026 Simon Schubert\n\nIt includes the open source software below.</string>
     <string name="licenses_website">website</string>
     <string name="licenses_source">source code</string>
+    <!-- What each open source component does in the app, after its license. -->
+    <string name="licenses_use_proot">runs the optional Linux system</string>
+    <string name="licenses_use_talloc">memory allocator used by PRoot</string>
+    <string name="licenses_use_shmem">shared memory for PRoot</string>
+    <string name="licenses_use_mesa">OpenGL on Adreno GPUs in the optional Linux system</string>
+    <string name="licenses_use_wayland">protocol files bundled with Mesa</string>
+    <string name="licenses_use_omarchy">theme colors bundled for first run</string>
+    <string name="licenses_use_nerd_fonts">symbol font</string>
+    <string name="licenses_use_weather_icons">weather glyphs in the symbol font</string>
+    <string name="licenses_use_mdi">glyphs in the symbol font</string>
+    <string name="licenses_use_compose">user interface</string>
+    <string name="licenses_use_jetpack">activity, Compose and other AndroidX libraries</string>
+    <string name="licenses_use_kotlin">language runtime</string>
+    <string name="licenses_use_commons_compress">unpacks downloads</string>
+    <string name="licenses_use_androidsvg">draws SVG icons</string>
+    <string name="licenses_use_zxing">draws the QR codes widgets are shared with</string>
+    <string name="licenses_use_json">reads and writes JSON</string>
 </resources>

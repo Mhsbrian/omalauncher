@@ -28,9 +28,6 @@ android {
 
     buildFeatures { buildConfig = true }
 
-    // Lists the translations in res/ for Android 13's per-app language setting.
-    androidResources { generateLocaleConfig = true }
-
     externalNativeBuild {
         cmake { path = file("src/main/cpp/CMakeLists.txt") }
     }
@@ -58,6 +55,8 @@ android {
     }
 
     buildTypes {
+        // en-XA and ar-XB: text that stays plain English or left-to-right there isn't in res/ yet.
+        debug { isPseudoLocalesEnabled = true }
         release {
             // Shrinks the APK and drops what the app doesn't use, like the owl module's unused parts.
             isMinifyEnabled = true
