@@ -657,9 +657,8 @@ internal fun Heading(
     text: String,
     actions: @Composable RowScope.() -> Unit = {},
 ) {
-    Row(Modifier.fillMaxWidth().padding(top = 20.dp, bottom = 6.dp), verticalAlignment = Alignment.CenterVertically) {
-        BasicText(text, Modifier.weight(1f), style = Mono.copy(color = Palette.accent), softWrap = false)
-        actions()
+    ActionsRow(Modifier.fillMaxWidth().padding(top = 20.dp, bottom = 6.dp), actions) {
+        BasicText(text, style = Mono.copy(color = Palette.accent), softWrap = false)
     }
 }
 
