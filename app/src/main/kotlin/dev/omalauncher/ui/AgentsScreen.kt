@@ -9,7 +9,9 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import dev.omalauncher.R
 import dev.omalauncher.Runtime
 import dev.omalauncher.linux.AGENTS
 import dev.omalauncher.linux.Agent
@@ -25,9 +27,9 @@ fun AgentsScreen(
 ) {
     val store = runtime.agents
     val scope = rememberCoroutineScope()
-    OverlayPanel("coding agents", onDismiss, contentWidth = ReadingWidth) {
+    OverlayPanel(stringResource(R.string.agents_title), onDismiss, contentWidth = ReadingWidth) {
         BasicText(
-            "Installed with mise, like Omarchy. Logins open in your browser; paste keys with the keyboard's clipboard.",
+            stringResource(R.string.agents_intro),
             Modifier.padding(vertical = 8.dp),
             style = Mono.copy(color = Palette.muted, fontSize = TextSize.Small),
         )
@@ -62,18 +64,18 @@ private fun AgentRow(
             actions = {
                 // Keys on install or remove wait out the job, for what it ends with.
                 when {
-                    state is JobState.Working -> BasicText("${state.action}…", style = Mono.copy(color = Palette.accent))
+                    state is JobState.Working -> BasicText("${stringResource(state.action)}…", style = Mono.copy(color = Palette.accent))
                     installed -> {
-                        BracketAction("open", Palette.green, Modifier.takesPassedKeys(), onOpen)
-                        BracketAction("remove", Palette.red, Modifier.passesKeys(), onRemove)
+                        BracketAction(stringResource(R.string.agents_open), Palette.green, Modifier.takesPassedKeys(), onOpen)
+                        BracketAction(stringResource(R.string.agents_remove), Palette.red, Modifier.passesKeys(), onRemove)
                     }
-                    else -> BracketAction("install", Palette.accent, Modifier.takesPassedKeys().passesKeys(), onInstall)
+                    else -> BracketAction(stringResource(R.string.agents_install), Palette.accent, Modifier.takesPassedKeys().passesKeys(), onInstall)
                 }
             },
         ) {
             Column {
                 BasicText(agent.name, style = Mono.copy(fontSize = TextSize.Item))
-                BasicText(agent.description, style = Mono.copy(color = Palette.muted, fontSize = TextSize.Small))
+                BasicText(stringResource(agent.description), style = Mono.copy(color = Palette.muted, fontSize = TextSize.Small))
             }
         }
         JobLog(state)

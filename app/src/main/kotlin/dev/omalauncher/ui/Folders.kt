@@ -63,6 +63,8 @@ import androidx.compose.ui.layout.layout
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.unit.min
+import androidx.compose.ui.res.stringResource
+import dev.omalauncher.R
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.toRect
 import androidx.compose.ui.zIndex
@@ -86,9 +88,11 @@ fun FolderTile(
     onTap: () -> Unit,
 ) {
     val bare = LauncherStyle.bareAppIcons
+    val spoken = folder.name?.let { stringResource(R.string.home_folder_named, it) } ?: stringResource(R.string.home_folder)
     BoxWithConstraints(
         modifier
             .tileFrame(focused)
+            .clearAndSetSemantics { contentDescription = spoken }
             .pointerInput(folder.key) { detectTapGestures(onTap = { onTap() }) }
             .padding(4.dp),
     ) {
@@ -401,15 +405,17 @@ private fun FolderName(
     onName: () -> Unit,
 ) {
     val density = LocalDensity.current
+    val spoken = name ?: stringResource(R.string.fork_folder_name_this)
+    val rename = stringResource(R.string.fork_folder_rename)
     Box(
         Modifier
             .offset { IntOffset(at.left, at.top) }
             .size(with(density) { at.width.toDp() }, with(density) { at.height.toDp() })
             .graphicsLayer { alpha = LinearOutSlowInEasing.transform(phase(progress(), 0.3f, 0.65f)) }
             .clearAndSetSemantics {
-                contentDescription = name ?: "name this folder"
+                contentDescription = spoken
                 role = Role.Button
-                onClick("rename folder") {
+                onClick(rename) {
                     onName()
                     true
                 }
@@ -417,7 +423,7 @@ private fun FolderName(
         contentAlignment = Alignment.CenterStart,
     ) {
         BasicText(
-            name ?: "[ name ]",
+            name ?: stringResource(R.string.fork_folder_name_button),
             style = Mono.copy(color = if (name != null) Palette.accent else Palette.muted, fontSize = TextSize.Body),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,

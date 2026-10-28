@@ -70,6 +70,8 @@ import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import dev.omalauncher.R
 import androidx.compose.ui.unit.toOffset
 import kotlinx.coroutines.launch
 
@@ -931,7 +933,7 @@ private fun TiledPage(
             } else {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     BasicText(
-                        if (isFacePage(page) && arrange.carry?.item?.isFace != true) "only a face goes here" else "drop here",
+                        stringResource(if (isFacePage(page) && arrange.carry?.item?.isFace != true) R.string.home_drop_face_only else R.string.home_drop_here),
                         Modifier.background(Palette.background.copy(alpha = 0.8f)).padding(horizontal = 12.dp, vertical = 6.dp),
                         style = Mono,
                     )

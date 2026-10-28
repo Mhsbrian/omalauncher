@@ -52,6 +52,8 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import dev.omalauncher.R
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupPositionProvider
 import androidx.compose.ui.window.PopupProperties
@@ -192,7 +194,7 @@ fun RefreshButton(
             } else {
                 Modifier
             }
-        Image(Icons.Refresh, if (loading) "refreshing" else "refresh", Modifier.size(20.dp).then(turn), colorFilter = ColorFilter.tint(if (loading) Palette.accent else Palette.muted))
+        Image(Icons.Refresh, stringResource(if (loading) R.string.home_refreshing else R.string.home_refresh), Modifier.size(20.dp).then(turn), colorFilter = ColorFilter.tint(if (loading) Palette.accent else Palette.muted))
     }
 }
 
@@ -355,7 +357,7 @@ fun JobLog(
     val log =
         when (state) {
             is JobState.Working -> state.log
-            is JobState.Failed -> listOf("failed:") + state.log
+            is JobState.Failed -> listOf(stringResource(R.string.home_job_failed)) + state.log
             JobState.Idle -> return
         }
     if (log.isEmpty()) return

@@ -157,7 +157,12 @@ internal val SINCE =
         // owl 15: dictation, what the user says on a tap becoming text the widget reads.
         listOf("android.speech", "speech").associateWith { 15 } +
         // owl 15: the battery's current, charge and time to full, and the charger's, for a charging widget.
-        mapOf("android.power" to 15)
+        mapOf("android.power" to 15) +
+        // owl 16: texts per language, the phone's picked, and the language itself, for an API that takes it.
+        mapOf(STRINGS_DECL to 16, "lang" to 16)
+
+/** `strings { ... }`, named like this in [SINCE]. */
+internal const val STRINGS_DECL = "strings { }"
 
 /** `animate offset: ...`, named like this in [SINCE]. */
 internal const val ANIMATE_OFFSET = "animate offset"

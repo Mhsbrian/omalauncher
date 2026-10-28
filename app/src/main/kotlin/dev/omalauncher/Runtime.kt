@@ -595,7 +595,7 @@ class Runtime(
     ): String {
         launchedNames[appId]?.let { return it }
         linuxApps.apps.firstOrNull { it.matches(appId) }?.let { return it.name }
-        return title.ifEmpty { appId.ifEmpty { "Linux" } }
+        return title.ifEmpty { appId.ifEmpty { context.getString(R.string.home_linux_window) } }
     }
 
     /** The agent running in a Linux window: one started for it, or one named after it. */

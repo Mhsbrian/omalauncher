@@ -7,6 +7,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import dev.omalauncher.R
 import dev.omalauncher.ui.Speech
 import dev.omalauncher.widgets.lang.Null
 import dev.omalauncher.widgets.lang.Obj
@@ -108,6 +109,6 @@ class Dictation(
         speech.cancel()
         this.owner = owner
         final = ""
-        speech.error = "microphone permission needed"
+        speech.error = context.getString(R.string.prompt_speech_mic_permission)
     }
 }

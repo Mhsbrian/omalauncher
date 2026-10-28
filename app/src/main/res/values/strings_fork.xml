@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This fork's own UI text (feed, folders, backup, icon packs, swipe-down actions), apart from upstream's strings_*.xml so syncs merge cleanly. -->
+<!-- Not in Indonesian (values-in) yet: Android shows these in English there. -->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
+    <!-- Shared -->
+    <string name="fork_cancel">cancel</string>
+    <string name="fork_save">save</string>
+    <string name="fork_remove">remove</string>
+    <string name="fork_rename">rename</string>
+    <string name="fork_icon">icon</string>
+    <string name="fork_an_agent">an agent</string>
+
+    <!-- Settings rows -->
+    <string name="fork_settings_icons">icons</string>
+    <string name="fork_settings_feed">feed</string>
+    <string name="fork_settings_backup">backup &amp; restore</string>
+    <string name="fork_settings_backup_subtitle">the home screen, its widgets and folders, to a file</string>
+
+    <!-- Swipe down: Android's own actions -->
+    <string name="fork_gesture_notifications">notifications</string>
+    <string name="fork_gesture_quick_settings">quick settings</string>
+    <string name="fork_gesture_home_menu">home menu</string>
+
+    <!-- Home menu -->
+    <string name="fork_home_new_icon_pack">new icon pack with %1$s</string>
+    <string name="fork_home_new_icon_pack_an_agent">new icon pack with an agent</string>
+    <string name="fork_home_feed_on">[x] feed · swipe right</string>
+    <string name="fork_home_feed_off">[ ] feed</string>
+
+    <!-- Folders -->
+    <string name="fork_folder_name_title">name folder</string>
+    <string name="fork_folder_name_hint">leave it empty for no name</string>
+    <string name="fork_folder_name_this">name this folder</string>
+    <string name="fork_folder_rename">rename folder</string>
+    <string name="fork_folder_name_button">[ name ]</string>
+
+    <!-- Backup & restore -->
+    <string name="fork_backup_back_up">back up to a file</string>
+    <string name="fork_backup_restore_from_file">restore from a file</string>
+    <string name="fork_backup_undo">undo the last restore</string>
+    <string name="fork_backup_restore">restore</string>
+
+    <!-- Feed settings -->
+    <string name="fork_feed_reset_accounts">reset to the default accounts</string>
+    <string name="fork_feed_add">add</string>
+
+    <!-- Icons -->
+    <string name="fork_style_icon_pack">icon pack</string>
+    <string name="fork_icons_apps_own">apps\' own</string>
+    <string name="fork_icons_other_apps">other apps</string>
+    <string name="fork_icons_on_backdrop">on backdrop</string>
+    <string name="fork_icons_as_is">as is</string>
+    <string name="fork_icons_drawn_by">drawn by</string>
+    <string name="fork_icons_apps">apps</string>
+    <string name="fork_icons_search_apps">search apps</string>
+    <string name="fork_icons_install_linux">install linux to draw with agents</string>
+    <string name="fork_icons_install_agent">install a coding agent</string>
+    <string name="fork_icons_fill_in">fill in %1$d</string>
+    <string name="fork_icons_change">change it</string>
+    <string name="fork_icons_find_packs">find packs</string>
+    <string name="fork_icons_reset">reset</string>
+    <string name="fork_icons_keep_own">keep its own</string>
+    <string name="fork_icons_image">image</string>
+    <string name="fork_icons_draw_with">draw with %1$s</string>
+    <string name="fork_icons_image_unreadable">that image couldn\'t be read</string>
+    <string name="fork_icons_packs">icon packs</string>
+    <string name="fork_icons_install_pack">install an icon pack to pick from its icons here</string>
+    <string name="fork_icons_pick_from">pick from</string>
+    <string name="fork_icons_search_icons">search icons</string>
+    <string name="fork_icons_no_match">no icon in %1$s matches</string>
+</resources>
