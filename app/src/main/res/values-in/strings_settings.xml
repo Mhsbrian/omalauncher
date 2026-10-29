@@ -10,6 +10,8 @@
     </plurals>
     <string name="settings_gestures">gestur</string>
     <string name="settings_gestures_subtitle">atas: %1$s · bawah: %2$s</string>
+    <string name="settings_language">bahasa</string>
+    <string name="settings_language_phone">bahasa ponsel</string>
     <string name="settings_linux">linux</string>
     <string name="settings_linux_installed">terpasang · hapus</string>
     <string name="settings_linux_installing_percent">memasang %1$d%% · %2$s</string>

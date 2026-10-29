@@ -13,6 +13,7 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import dev.omalauncher.AppLanguage
 import dev.omalauncher.BuildConfig
 import dev.omalauncher.LauncherData
 import dev.omalauncher.Runtime
@@ -45,6 +46,7 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.withLock
@@ -581,7 +583,8 @@ class WidgetEngine(
                 snapshotFlow { loaded }.first { it }
                 snapshotFlow { runtime.style.style[Style.COLUMNS] }.collect { layout.regrid(it, pages.map(::itemsOn)) }
             }
-            // A new phone language: files with strings { } or lang() compile anew for it.
+            // A new phone language, or one picked in settings: files with strings { } or lang() compile anew for it.
+            launch { AppLanguage.language.drop(1).collect { changes.trySend(false) } }
             context.registerComponentCallbacks(
                 object : ComponentCallbacks {
                     override fun onConfigurationChanged(newConfig: Configuration) {
