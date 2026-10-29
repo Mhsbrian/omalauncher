@@ -19,9 +19,9 @@ panel "app drawer" {
     id {
       personal: "pribadi"; work: "kerja"; apps: "aplikasi"; linux: "linux"; shortcuts: "pintasan"; android: "android"
       workApps: "aplikasi kerja"; workPaused: "aplikasi kerja dijeda"; linuxApps: "aplikasi linux"
-      pin: "tambah ke beranda"; info: "info aplikasi"; uninstall: "copot"; remove: "hapus"; edit: "edit"; share: "bagikan"
-      settings: "pengaturan"; turnOn: "aktifkan"; pause: "jeda"; installing: "memasang…"; installLinux: "pasang linux"
-      open: "buka"; ask: "tanya"; askInstallLinux: "tanya agen · pasang linux"; askInstallAgent: "tanya agen · pasang satu"
+      pin: "tambah ke layar utama"; info: "info aplikasi"; uninstall: "uninstal"; remove: "hapus"; edit: "edit"; share: "bagikan"
+      settings: "setelan"; turnOn: "aktifkan"; pause: "jeda"; installing: "menginstal…"; installLinux: "instal linux"
+      open: "buka"; ask: "tanya"; askInstallLinux: "tanya agen · instal linux"; askInstallAgent: "tanya agen · instal satu"
       askAgent: (bin, text) => "tanya ${bin}: ${text}"
     }
     es {

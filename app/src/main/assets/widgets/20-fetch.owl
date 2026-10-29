@@ -26,9 +26,9 @@ widget "fetch" {
       network: "jaringan"; launcher: "launcher"; security: "keamanan"; build: "build"; locale: "bahasa"; cores: "inti"
       storage: "penyimpanan"; speed: "kecepatan"; received: "diterima"; sent: "dikirim"; mobile: "seluler"
       level: "level"; temperature: "suhu"; voltage: "tegangan"; health: "kondisi"; cycles: "siklus"
-      technology: "teknologi"; version: "versi"; explicit: "eksplisit"; upgraded: "diperbarui"; never: "belum pernah"
-      unknown: "tidak diketahui"; installLinux: "pasang linux"
-      notInstalled: "belum terpasang. arch linux arm menambahkan terminal, agen, dan pacman ke launcher."
+      technology: "teknologi"; version: "versi"; explicit: "diinstal manual"; upgraded: "diperbarui"; never: "belum pernah"
+      unknown: "tidak diketahui"; installLinux: "instal linux"
+      notInstalled: "belum terinstal. arch linux arm menambahkan terminal, agen, dan pacman ke launcher."
       upTo: ghz => " · hingga ${ghz} GHz"
       androidApps: n => "${n} aplikasi android"
       // android.battery's status, health and plug.
