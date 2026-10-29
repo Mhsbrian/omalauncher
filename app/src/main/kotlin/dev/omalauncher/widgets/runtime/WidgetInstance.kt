@@ -75,6 +75,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.select
 import java.io.File
 import dev.omalauncher.widgets.lang.textOrNull
+import dev.omalauncher.widgets.lang.textFields
 
 /** What widgets need from the launcher: guest commands, Android data and actions. */
 interface Services {
@@ -555,7 +556,7 @@ class WidgetInstance(
             return
         }
         if (name == "sound") {
-            args.firstOrNull()?.takeIf { it != Null }?.let { sound(it.toString()) }
+            args.firstOrNull().textOrNull()?.let { sound(it) }
             return
         }
         // An agent or an app opening on its own, from a timer or a fetched value, over whatever the user is doing: like
@@ -909,7 +910,7 @@ class WidgetInstance(
         val each = program.triggers.withIndex().filter { it.value.each == slot }
         snapshotFlow {
             val url = eval(g.arg!!, root, g.name)
-            Triple(url, (g.headers?.let { eval(it, root, g.name) } as? Obj)?.fields.orEmpty().mapValues { it.value.toString() }, g.pin?.let { eval(it, root, g.name) }?.takeIf { it != Null }?.toString())
+            Triple(url, g.headers?.let { eval(it, root, g.name) }.textFields(), g.pin?.let { eval(it, root, g.name) }.textOrNull())
         }.collectLatest { (url, headers, pin) ->
             if (url == Null) return@collectLatest status(false, "")
             val job = currentCoroutineContext()[Job]
@@ -1206,8 +1207,8 @@ class WidgetInstance(
                     try {
                         val r =
                             if (g.kind == "http") {
-                                val headers = (g.headers?.let { eval(it, root, g.name) } as? Obj)?.fields.orEmpty().mapValues { it.value.toString() }
-                                val pin = g.pin?.let { eval(it, root, g.name) }?.takeIf { it != Null }?.toString()
+                                val headers = g.headers?.let { eval(it, root, g.name) }.textFields()
+                                val pin = g.pin?.let { eval(it, root, g.name) }.textOrNull()
                                 services.http(target, headers, g.timeout, pin = pin)
                             } else {
                                 services.cmd(target, g.timeout)

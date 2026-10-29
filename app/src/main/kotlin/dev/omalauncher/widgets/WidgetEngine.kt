@@ -1,5 +1,6 @@
 package dev.omalauncher.widgets
 
+import dev.omalauncher.widgets.lang.sha256Hex
 import android.content.ComponentCallbacks
 import android.content.Context
 import android.content.res.Configuration
@@ -35,7 +36,6 @@ import dev.omalauncher.widgets.lang.OwlKind
 import dev.omalauncher.widgets.lang.Program
 import dev.omalauncher.widgets.lang.Source
 import dev.omalauncher.widgets.lang.phoneLanguage
-import dev.omalauncher.widgets.market.Review
 import dev.omalauncher.widgets.market.Shared
 import dev.omalauncher.widgets.runtime.WidgetInstance
 import kotlinx.coroutines.CoroutineScope
@@ -896,7 +896,7 @@ class WidgetEngine(
         val stamp = file.lastModified()
         val bytes = runCatching { file.readBytes() }.getOrElse { return broken(file, previous, stamp, it.message ?: "can't read", "") }
         val text = String(bytes)
-        val hash = Review.sha256(bytes)
+        val hash = sha256Hex(bytes)
         hashes[file.name] = hash
         return try {
             val p = Compiler.compile(text)
@@ -1035,7 +1035,7 @@ class WidgetEngine(
             path: String,
             target: File,
             policy: Policy,
-        ) = Managed(target, policy) { context.assets.open(path).use { it.readBytes() } }
+        ) = Managed.asset(context, path, target, policy)
 
         val assets = context.assets
         return buildList {
@@ -1053,7 +1053,7 @@ class WidgetEngine(
     fun guestManaged(): List<Managed> =
         listOf("AGENTS.md", "CLAUDE.md").map { Managed.text(File(proot.home, it), Policy.Seeded) { AGENT_POINTER } } +
             listOf("owl-check", "owl-send").map { bin ->
-                Managed(File(proot.rootfs, "usr/local/bin/$bin"), Policy.Owned, executable = true) { context.assets.open("$bin.sh").use { it.readBytes() } }
+                Managed.asset(context, "$bin.sh", File(proot.rootfs, "usr/local/bin/$bin"), Policy.Owned, executable = true)
             }
 
     companion object {

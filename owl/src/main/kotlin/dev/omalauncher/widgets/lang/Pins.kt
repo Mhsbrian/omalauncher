@@ -1,7 +1,5 @@
 package dev.omalauncher.widgets.lang
 
-import java.security.MessageDigest
-
 /** `pin:` values: a certificate's SHA-256, which a server with a certificate of its own is trusted by. */
 object Pins {
     private val HEX = Regex("[0-9a-f]{64}")
@@ -10,5 +8,5 @@ object Pins {
     fun normalize(pin: String): String? = pin.lowercase().filter { it != ':' && !it.isWhitespace() }.takeIf { HEX.matches(it) }
 
     /** The SHA-256 of a certificate's DER bytes, as [normalize] gives a pin. */
-    fun of(der: ByteArray): String = MessageDigest.getInstance("SHA-256").digest(der).joinToString("") { "%02x".format(it) }
+    fun of(der: ByteArray): String = sha256Hex(der)
 }

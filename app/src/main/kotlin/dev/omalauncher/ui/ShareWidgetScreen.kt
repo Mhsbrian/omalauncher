@@ -1,7 +1,6 @@
 package dev.omalauncher.ui
 
 import android.content.ClipData
-import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
@@ -50,7 +49,9 @@ import com.google.zxing.qrcode.QRCodeWriter
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
 import dev.omalauncher.BuildConfig
 import dev.omalauncher.R
+import dev.omalauncher.copyText
 import dev.omalauncher.openUrl
+import dev.omalauncher.shareText
 import dev.omalauncher.widgets.Market
 import dev.omalauncher.widgets.WidgetSpec
 import dev.omalauncher.widgets.market.Catalog
@@ -186,11 +187,10 @@ fun ShareWidgetScreen(
                             }
                         }
                         if (sendable) BracketAction(stringResource(R.string.store_share_link), Palette.accent) {
-                            val send = Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, link).putExtra(Intent.EXTRA_SUBJECT, resources.getString(R.string.store_share_subject, name))
-                            context.startActivity(Intent.createChooser(send, resources.getString(R.string.store_share_chooser, name)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                            context.shareText(link, resources.getString(R.string.store_share_subject, name), resources.getString(R.string.store_share_chooser, name))
                         }
                         if (sendable) BracketAction(stringResource(if (copied) R.string.store_copied else R.string.store_copy_link), Palette.foreground) {
-                            context.getSystemService(ClipboardManager::class.java).setPrimaryClip(ClipData.newPlainText(resources.getString(R.string.store_share_subject, name), link))
+                            context.copyText(resources.getString(R.string.store_share_subject, name), link)
                             copied = true
                         }
                     }

@@ -1413,8 +1413,7 @@ class Compiler private constructor(
             val target = url(env)
             // Like any action whose value hasn't loaded: a null URL sends nothing.
             if (target != Null) {
-                val h = (headers?.invoke(env) as? Obj)?.fields.orEmpty().mapValues { it.value.toString() }
-                env.host.post(target.toString(), body?.invoke(env) ?: Null, h, slot, method, pin?.invoke(env)?.takeIf { it != Null }?.toString())
+                env.host.post(target.toString(), body?.invoke(env) ?: Null, headers?.invoke(env).textFields(), slot, method, pin?.invoke(env).textOrNull())
             }
         }
     }

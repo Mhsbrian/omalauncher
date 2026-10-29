@@ -1,12 +1,12 @@
 package dev.omalauncher.widgets
 
+import dev.omalauncher.copyText
+import dev.omalauncher.registerNotExported
+import dev.omalauncher.shareText
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
-import android.content.BroadcastReceiver
-import android.content.ClipData
-import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
@@ -60,7 +60,7 @@ import dev.omalauncher.openHttp
 import dev.omalauncher.pin
 import dev.omalauncher.openUrl
 import dev.omalauncher.readUpTo
-import dev.omalauncher.sha256Hex
+import dev.omalauncher.widgets.lang.sha256Hex
 import dev.omalauncher.upgrade.writeAtomically
 import dev.omalauncher.widgets.lang.Builtins
 import dev.omalauncher.widgets.lang.KeyNames
@@ -265,18 +265,8 @@ class WidgetServices(
                 .flowOn(Dispatchers.Default)
             "battery" ->
                 callbackFlow {
-                    val receiver =
-                        object : BroadcastReceiver() {
-                            override fun onReceive(
-                                c: Context,
-                                intent: Intent,
-                            ) {
-                                trySend(battery())
-                            }
-                        }
-                    val filter = IntentFilter(Intent.ACTION_BATTERY_CHANGED)
                     // The broadcast is sticky: registering delivers the current state at once.
-                    if (Build.VERSION.SDK_INT >= 33) context.registerReceiver(receiver, filter, Context.RECEIVER_NOT_EXPORTED) else context.registerReceiver(receiver, filter)
+                    val receiver = context.registerNotExported(IntentFilter(Intent.ACTION_BATTERY_CHANGED)) { trySend(battery()) }
                     awaitClose { context.unregisterReceiver(receiver) }
                 }.distinctUntilChanged()
             else -> null
@@ -696,7 +686,7 @@ class WidgetServices(
             "haptic" -> view?.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
             "open" -> openApp(arg)
             "ask" -> ask(arg, args.getOrNull(1).textOrNull())
-            "appAction" -> args.getOrNull(1)?.takeIf { it != Null }?.let { appAction(arg, it.toString()) }
+            "appAction" -> args.getOrNull(1).textOrNull()?.let { appAction(arg, it) }
             "workApps" -> workApps(arg)
         }
         // Anything the action changed should show up without waiting for the next interval.
@@ -1036,15 +1026,14 @@ class WidgetServices(
     }
 
     private fun copy(text: String) {
-        context.getSystemService(ClipboardManager::class.java).setPrimaryClip(ClipData.newPlainText("widget", text))
+        context.copyText("widget", text)
         // Android 13+ confirms copies itself.
         if (Build.VERSION.SDK_INT < 33) Toast.makeText(context, R.string.widgets_copied, Toast.LENGTH_SHORT).show()
     }
 
     /** share(text): Android's share sheet, to send the text to any app. */
     private fun share(text: String) {
-        val send = Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, text)
-        context.startActivity(Intent.createChooser(send, null).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+        context.shareText(text)
     }
 
     private var notificationId = 1000
