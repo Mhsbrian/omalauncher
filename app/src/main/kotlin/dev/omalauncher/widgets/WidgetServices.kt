@@ -784,6 +784,7 @@ class WidgetServices(
         pin: String?,
         opened: ((String) -> Boolean) -> Unit,
         onText: (String) -> Unit,
+        onBinary: () -> Unit,
     ) {
         val pinned = pin?.let { Pins.normalize(it) ?: throw IOException("pin: isn't a SHA-256 (64 hex digits): $it") }
         // Each holds a thread and a connection the whole time its page shows.
@@ -792,7 +793,7 @@ class WidgetServices(
             throw IOException("over $MAX_WEBSOCKETS WebSockets are open at once on the pages around this one")
         }
         try {
-            connectWebSocket(url, headers, pinned, opened, onText)
+            connectWebSocket(url, headers, pinned, opened, onText, onBinary)
         } catch (e: IOException) {
             throw withContext(Dispatchers.IO) { LocalNetwork.hint(context, url) }?.let { IOException("${e.message}; $it", e) } ?: e
         } finally {
@@ -809,6 +810,7 @@ class WidgetServices(
         pinned: String?,
         opened: ((String) -> Boolean) -> Unit,
         onText: (String) -> Unit,
+        onBinary: () -> Unit,
     ) {
         val socket = AtomicReference<WebSocket?>()
         val gone = AtomicBoolean()
@@ -826,7 +828,7 @@ class WidgetServices(
                     if (gone.get()) return@thread ws.cancel()
                     // Handlers send on the main thread; WebSocket writes on a thread of its own.
                     opened(ws::send)
-                    val closed = ws.listen(onText)
+                    val closed = ws.listen(onText) { onBinary() }
                     // Going away (a server restarting) or no code is how a connection ends; anything else says why.
                     if (closed.code !in setOf(1000, 1001, 1005)) {
                         throw IOException("the server closed it with ${closed.code}" + closed.reason.ifEmpty { null }?.let { ": $it" }.orEmpty())

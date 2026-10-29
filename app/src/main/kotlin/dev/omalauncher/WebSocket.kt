@@ -6,6 +6,7 @@ import java.io.EOFException
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
+import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.Socket
 import java.net.SocketTimeoutException
@@ -17,6 +18,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
 import javax.net.ssl.HostnameVerifier
 import javax.net.ssl.HttpsURLConnection
 import javax.net.ssl.SNIHostName
@@ -26,11 +28,11 @@ import javax.net.ssl.SSLSocketFactory
 import kotlin.concurrent.thread
 
 /**
- * A WebSocket client (RFC 6455): text and binary messages, without extensions, subprotocols, proxies or
- * redirects. [connect] does the handshake; [listen] then reads on the caller's thread until the connection
- * ends, while [send], [close] and [cancel] may be called from any thread, Android's main thread too: they
- * return at once and leave the network to threads of their own. scripts/autobahn.sh runs it through the
- * Autobahn TestSuite.
+ * A WebSocket client (RFC 6455): text and binary messages, without extensions, proxies or redirects, and
+ * with a subprotocol only when a Sec-WebSocket-Protocol header offers one. [connect] does the handshake;
+ * [listen] then reads on the caller's thread until the connection ends, while [send], [close] and [cancel]
+ * may be called from any thread, Android's main thread too: they return at once and leave the network to
+ * threads of their own. scripts/autobahn.sh runs it through the Autobahn TestSuite.
  */
 class WebSocket private constructor(
     private val socket: Socket,
@@ -291,6 +293,12 @@ class WebSocket private constructor(
         /** Like http(...)'s answers, a message is capped so a runaway server can't fill memory. */
         const val MAX_MESSAGE = 1 shl 20
 
+        /** How long one address gets before the next one is tried alongside it (RFC 8305 suggests 250 ms). */
+        private const val STAGGER_MS = 250L
+
+        /** Addresses of a host tried at most. */
+        private const val MAX_ADDRESSES = 6
+
         private const val ACCEPT_GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
 
         /** Cuts connections whose close handshake takes too long; one daemon thread for all of them. */
@@ -335,9 +343,8 @@ class WebSocket private constructor(
                 }
             }
 
-            val tcp = Socket()
+            val tcp = connectTcp(InetAddress.getAllByName(host).toList(), port, connectTimeout)
             try {
-                tcp.connect(InetSocketAddress(host, port), connectTimeout)
                 tcp.soTimeout = connectTimeout
                 tcp.tcpNoDelay = true
                 val socket =
@@ -374,12 +381,14 @@ class WebSocket private constructor(
                 output.write(request.toByteArray(Charsets.UTF_8))
                 output.flush()
 
-                val status = readLine(input)
+                // The whole answer, not each read: a server dripping it a byte at a time would keep soTimeout from firing.
+                val deadline = System.nanoTime() + connectTimeout * 1_000_000L
+                val status = readLine(input, deadline)
                 val code = status.split(' ').getOrNull(1)?.toIntOrNull()
                 if (!status.startsWith("HTTP/1.1 ") || code == null) throw IOException("not an HTTP answer: $status")
                 val answer = mutableMapOf<String, String>()
                 while (true) {
-                    val line = readLine(input)
+                    val line = readLine(input, deadline)
                     if (line.isEmpty()) break
                     if (answer.size > 100) throw IOException("too many headers in the answer")
                     val colon = line.indexOf(':')
@@ -392,13 +401,18 @@ class WebSocket private constructor(
                 if (code != 101) throw IOException("HTTP $code for $url: ${status.substringAfter(" $code").trim()}")
                 val expected =
                     Base64.getEncoder().encodeToString(MessageDigest.getInstance("SHA-1").digest((key + ACCEPT_GUID).toByteArray(Charsets.US_ASCII)))
+                // Subprotocols offered in [headers], like graphql-ws's; the server may pick one of them.
+                val offered =
+                    headers.filterKeys { it.equals("Sec-WebSocket-Protocol", ignoreCase = true) }.values
+                        .flatMap { it.split(',') }.map { it.trim() }
+                val chosen = answer["sec-websocket-protocol"]?.trim().orEmpty()
                 when {
                     !answer["upgrade"].equals("websocket", ignoreCase = true) -> throw IOException("the server didn't upgrade to a WebSocket")
                     answer["connection"]?.split(',')?.none { it.trim().equals("upgrade", ignoreCase = true) } != false ->
                         throw IOException("the server didn't upgrade the connection")
                     answer["sec-websocket-accept"] != expected -> throw IOException("the server didn't accept our key")
                     !answer["sec-websocket-extensions"].isNullOrBlank() -> throw IOException("the server chose extensions we didn't offer")
-                    !answer["sec-websocket-protocol"].isNullOrBlank() -> throw IOException("the server chose a subprotocol we didn't offer")
+                    chosen.isNotEmpty() && chosen !in offered -> throw IOException("the server chose the subprotocol $chosen, which we didn't offer")
                 }
                 socket.soTimeout = pingEvery
                 return WebSocket(socket, input, output, maxMessage)
@@ -408,12 +422,70 @@ class WebSocket private constructor(
             }
         }
 
-        /** An HTTP header line without its CRLF. */
-        private fun readLine(input: InputStream): String {
+        /**
+         * Connects to whichever of a host's [addresses] answers first (RFC 8305's Happy Eyeballs, simply): they
+         * take turns between IPv6 and IPv4, and each next one starts [STAGGER_MS] after the one before, so a
+         * network with broken IPv6 falls back to IPv4 at once instead of waiting out [timeout]. The others are
+         * closed. Fails with the first address's error when none connects.
+         */
+        internal fun connectTcp(
+            addresses: List<InetAddress>,
+            port: Int,
+            timeout: Int,
+        ): Socket {
+            val (first, other) = addresses.partition { it.javaClass == addresses[0].javaClass }
+            val order = (0 until maxOf(first.size, other.size)).flatMap { listOfNotNull(first.getOrNull(it), other.getOrNull(it)) }.take(MAX_ADDRESSES)
+            val sockets = order.map { Socket() }
+            // Each attempt's socket, or its IOException, by index.
+            val results = LinkedBlockingQueue<Pair<Int, Any>>()
+            val done = AtomicBoolean()
+            order.forEachIndexed { i, address ->
+                thread(name = "websocket-connect", isDaemon = true) {
+                    if (i > 0) Thread.sleep(i * STAGGER_MS)
+                    if (done.get()) return@thread
+                    results.put(
+                        i to
+                            try {
+                                sockets[i].connect(InetSocketAddress(address, port), timeout)
+                                sockets[i]
+                            } catch (e: IOException) {
+                                e
+                            },
+                    )
+                }
+            }
+            val errors = arrayOfNulls<IOException>(order.size)
+            val deadline = System.nanoTime() + timeout * 1_000_000L
+            try {
+                repeat(order.size) {
+                    val (i, r) =
+                        results.poll(deadline - System.nanoTime(), TimeUnit.NANOSECONDS)
+                            ?: throw SocketTimeoutException("no answer from ${order.first().hostAddress} in $timeout ms")
+                    if (r is Socket) {
+                        done.set(true)
+                        sockets.forEachIndexed { j, s -> if (j != i) s.close() }
+                        return r
+                    }
+                    errors[i] = r as IOException
+                }
+                throw errors.filterNotNull().let { e -> e.first().apply { e.drop(1).forEach(::addSuppressed) } }
+            } catch (e: IOException) {
+                done.set(true)
+                sockets.forEach { it.close() }
+                throw e
+            }
+        }
+
+        /** An HTTP header line without its CRLF; the handshake times out at [deadline] ([System.nanoTime]). */
+        private fun readLine(
+            input: InputStream,
+            deadline: Long,
+        ): String {
             val line = ByteArrayOutputStream()
             while (true) {
                 val b = input.read()
                 if (b < 0) throw EOFException("the server ended the connection during the handshake")
+                if (System.nanoTime() > deadline) throw SocketTimeoutException("the server took too long to answer the handshake")
                 if (b == '\n'.code) break
                 if (line.size() > 8 * 1024) throw IOException("a header line over 8 KB in the answer")
                 line.write(b)

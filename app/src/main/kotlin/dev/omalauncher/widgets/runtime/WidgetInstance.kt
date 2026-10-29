@@ -7,7 +7,6 @@ import dev.omalauncher.widgets.lang.PersistedValues
 import dev.omalauncher.widgets.lang.TriggerKind
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -100,8 +99,9 @@ interface Services {
 
     /**
      * `ws(...)`: connects to a WebSocket server and hands [opened] a way to send text, then each text message
-     * to [onText], on the connection's own thread, until the connection ends (returning) or breaks (an
-     * IOException); cancelling closes it. With a [pin], to a wss:// server with that certificate only.
+     * to [onText] and each binary one to [onBinary], on the connection's own thread, until the connection
+     * ends (returning) or breaks (an IOException); cancelling closes it. With a [pin], to a wss:// server
+     * with that certificate only.
      */
     suspend fun webSocket(
         url: String,
@@ -109,6 +109,7 @@ interface Services {
         pin: String?,
         opened: ((String) -> Boolean) -> Unit,
         onText: (String) -> Unit,
+        onBinary: () -> Unit,
     ): Unit = throw java.io.IOException("WebSockets aren't available here")
 
     /**
@@ -918,18 +919,20 @@ class WidgetInstance(
                 // The server ending it with 1000 isn't an error, though it may end each one at once.
                 var err = ""
                 // From the connection's thread: null once it's open, then each message, parsed there. A widget that
-                // can't keep up loses the oldest, and hears so once.
-                val dropped = java.util.concurrent.atomic.AtomicBoolean()
-                val messages = Channel<Value?>(MAX_WS_QUEUE, BufferOverflow.DROP_OLDEST) { dropped.set(true) }
+                // can't keep up loses the oldest, and hears so.
+                val messages = WsInbox<Value?>(MAX_WS_QUEUE, MAX_WS_QUEUE_TEXT)
+                // Binary messages aren't read; the first one wakes the loop to say so.
+                val binary = java.util.concurrent.atomic.AtomicBoolean()
                 try {
                     coroutineScope {
                         launch {
-                            for (m in messages) {
-                                if (dropped.getAndSet(false)) report("${g.name}: over $MAX_WS_QUEUE messages came faster than the widget took them; the oldest were skipped")
-                                if (m == null) {
-                                    status(true, "")
-                                    continue
+                            var binaryTold = false
+                            messages.take({ report("${g.name}: messages came faster than the widget took them; the oldest were skipped") }) { m ->
+                                if (!binaryTold && binary.get()) {
+                                    binaryTold = true
+                                    report("${g.name}: the server sends binary messages, which ws(...) skips; only text ones become its value")
                                 }
+                                if (m == null) return@take status(true, "")
                                 if (g.status) {
                                     out = m
                                     status(true, "")
@@ -949,10 +952,11 @@ class WidgetInstance(
                                     // A connection that opened just as the page left is already closing.
                                     if (job?.isActive != false) {
                                         senders[slot] = send
-                                        messages.trySend(null)
+                                        messages.put(null, 0)
                                     }
                                 },
-                                onText = { text -> messages.trySend(if (g.json) Json.parseOrText(text) else Str(text)) },
+                                onText = { text -> messages.put(if (g.json) Json.parseOrText(text) else Str(text), text.length) },
+                                onBinary = { if (binary.compareAndSet(false, true)) messages.put(null, 0) },
                             )
                         } finally {
                             // What came before it ended is still taken in.
@@ -1309,6 +1313,9 @@ class WidgetInstance(
 
         /** Messages a ws(...) source holds while the main thread is busy, before it drops the oldest. */
         private const val MAX_WS_QUEUE = 256
+
+        /** And characters of them in all: parsed, a few 1 MB messages take far more memory than their text. */
+        private const val MAX_WS_QUEUE_TEXT = 2L shl 20
 
         /** How long a ws(...) source waits before connecting again, at first and at most. */
         private const val WS_RETRY_MS = 1_000L

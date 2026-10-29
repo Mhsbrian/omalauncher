@@ -185,7 +185,8 @@ open), closes when it doesn't, connects again when its URL, headers or pin chang
 waits a second, then longer each time it fails, up to a minute. At most 8 are open at once, all
 widgets together. The URL is listed for review as `websocket wss://…`, under the same rule as `http`'s,
 and a `pin:` trusts a server's own certificate as it does there. Messages are text; a server's binary
-ones are dropped.
+ones are skipped, and the widget says so. A server that speaks a subprotocol gets it as a header,
+`ws(url, {"Sec-WebSocket-Protocol": "graphql-transport-ws"})`. `examples/75-live-price` is a whole one.
 
 The value is the latest message, so it's what to show when each message says the whole state. When
 each one says what changed, an event or one line of a chat, `on x each { }` runs for every message, in
