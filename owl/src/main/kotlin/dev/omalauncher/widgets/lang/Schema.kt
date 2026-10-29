@@ -159,7 +159,9 @@ internal val SINCE =
         // owl 15: the battery's current, charge and time to full, and the charger's, for a charging widget.
         mapOf("android.power" to 15) +
         // owl 16: texts per language, the phone's picked, and the language itself, for an API that takes it.
-        mapOf(STRINGS_DECL to 16, "lang" to 16)
+        mapOf(STRINGS_DECL to 16, "lang" to 16) +
+        // owl 17: a list pulled down past its top, to fetch again.
+        mapOf("onPull" to 17)
 
 /** `strings { ... }`, named like this in [SINCE]. */
 internal const val STRINGS_DECL = "strings { }"
@@ -240,6 +242,8 @@ internal val HANDLER_PARAMS =
         "onDrag" to listOf("dx", "dy", "x", "y"),
         // How fast the finger was moving as it let go, in dp a second: a flick dismisses what a slow drag puts back.
         "onDragEnd" to listOf("vx", "vy"),
+        // A Column or Grid that scrolls, pulled down past its top and let go there: refresh(), mostly.
+        "onPull" to emptyList(),
         "onChange" to listOf("value"),
         "onSubmit" to listOf("value"),
         "onDismiss" to emptyList(),
@@ -248,7 +252,7 @@ internal val HANDLER_PARAMS =
     )
 
 /** Handlers only some nodes have. */
-internal val HANDLER_KINDS = mapOf("onChange" to setOf("Slider", "Input"), "onSubmit" to setOf("Input"), "onDismiss" to setOf("Popup"))
+internal val HANDLER_KINDS = mapOf("onChange" to setOf("Slider", "Input"), "onSubmit" to setOf("Input"), "onDismiss" to setOf("Popup"), "onPull" to setOf("Column", "Grid"))
 
 /** What triggers bind in their statements. */
 internal val TRIGGER_PARAMS = mapOf("on" to listOf("value", "old"))

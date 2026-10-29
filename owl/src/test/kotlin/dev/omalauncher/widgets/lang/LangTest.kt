@@ -1400,6 +1400,17 @@ class LangTest {
         compileError("widget {\n meta { owl: 13 }\n component C() { Box { } }\n C { drag: horizontal } }").let { assertTrue(it, it.contains("drag goes on the node inside C")) }
     }
 
+    /** onPull runs when a list that scrolls is pulled down past its top (owl 17). */
+    @Test fun pullToRefresh() {
+        Compiler.compile("widget {\n meta { owl: 17 }\n Column { scroll: true; onPull: refresh(); Text { text: 1 } } }")
+        Compiler.compile("widget {\n meta { owl: 17 }\n Column { lazy: true; onPull: refresh(); Text { text: 1 } } }")
+        Compiler.compile("widget {\n meta { owl: 17 }\n Grid { lazy: true; onPull: refresh(); Text { text: 1 } } }")
+        compileError("widget {\n meta { owl: 16 }\n Column { scroll: true; onPull: refresh() } }").let { assertTrue(it, it.contains("onPull needs owl 17")) }
+        compileError("widget {\n meta { owl: 17 }\n Column { onPull: refresh() } }").let { assertTrue(it, it.contains("add scroll: true or lazy: true")) }
+        compileError("widget {\n meta { owl: 17 }\n Grid { onPull: refresh() } }").let { assertTrue(it, it.contains("add lazy: true")) }
+        compileError("widget {\n meta { owl: 17 }\n Box { onPull: refresh() } }").let { assertTrue(it, it.contains("onPull only works on Column and Grid")) }
+    }
+
     /** ripple: false turns off the press shown on a node that takes taps (owl 14). */
     @Test fun rippleOff() {
         Compiler.compile("widget {\n meta { owl: 14 }\n state n = 0\n Box { ripple: false; onTap: n = n + 1 } }")

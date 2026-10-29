@@ -27,7 +27,7 @@ class Compiler private constructor(
          * instead of failing on what they don't know. Bump it with every
          * addition a widget could depend on: nodes, properties, builtins.
          */
-        const val LEVEL = 16
+        const val LEVEL = 17
         private const val MAX_ASSET_BYTES = 2 shl 20
 
         /** Pages as far out as a file can ask for; past Int's range, the pages either side of them would wrap. */
@@ -1089,6 +1089,9 @@ class Compiler private constructor(
                 if (h.name == "onKey") fail("onKey goes at the top of a panel, next to onSubmit", h.pos)
                 if (h.name == "onDragEnd" && body.handlers.none { it.name == "onDrag" }) fail("onDragEnd runs when an onDrag drag ends: add onDrag", h.pos)
                 HANDLER_KINDS[h.name]?.let { kinds -> if (n.type !in kinds) fail("${h.name} only works on ${kinds.joinToString(" and ")}", h.pos) }
+                if (h.name == "onPull" && body.props.none { it.name == "lazy" || n.type == "Column" && it.name == "scroll" }) {
+                    fail("onPull runs when a list is pulled down past its top: add ${if (n.type == "Column") "scroll: true or " else ""}lazy: true", h.pos)
+                }
                 if (h.name == "onLongPress" && inScreen == false && !isFace) {
                     fail("long-press on a tile belongs to the home screen, which lifts it to move and resize it; onLongPress works in faces, apps and a screen { }", h.pos)
                 }

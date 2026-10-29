@@ -679,6 +679,12 @@ class WidgetInstance(
 
     private fun refresh() = refreshes.update { it + 1 }
 
+    /** Sources running their command or fetch right now; what a pulled list's spinner waits for. */
+    private var fetches by mutableIntStateOf(0)
+
+    /** Whether a source is fetching. Reads state, so it can be observed. */
+    fun fetching() = fetches > 0
+
     /**
      * Runs the sources while [active] is true (home screen showing this page or
      * a neighbour); otherwise they wait without polling.
@@ -789,7 +795,14 @@ class WidgetInstance(
                                     last = arg
                                     lastAt = System.currentTimeMillis()
                                     // A failed fetch (offline, or a server's rate limit) is tried again in half a minute.
-                                    lastWait = if (update(slot, g)) wait else minOf(wait, RETRY_MS)
+                                    fetches++
+                                    val fetched =
+                                        try {
+                                            update(slot, g)
+                                        } finally {
+                                            fetches--
+                                        }
+                                    lastWait = if (fetched) wait else minOf(wait, RETRY_MS)
                                 }
                                 // Clocks tick on the second (or minute) boundary so displays change in step;
                                 // other intervals count from the start of the update, however long it took.
