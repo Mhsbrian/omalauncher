@@ -56,6 +56,24 @@ widget "fetch" {
         "failing": "fallando", "wireless": "inalámbrica", "dock": "base"
       }, w, w)
     }
+    pt {
+      uptime: "uptime"; packages: "pacotes"; display: "tela"; theme: "tema"; memory: "memória"; disk: "disco"
+      battery: "bateria"; apps: "apps"; byDefault: "padrão"; phone: "telefone"; hardware: "hardware"
+      network: "rede"; launcher: "launcher"; security: "segurança"; build: "build"; locale: "idioma"; cores: "núcleos"
+      storage: "armazenamento"; speed: "velocidade"; received: "recebido"; sent: "enviado"; mobile: "dados móveis"
+      level: "nível"; temperature: "temperatura"; voltage: "tensão"; health: "saúde"; cycles: "ciclos"
+      technology: "tecnologia"; version: "versão"; explicit: "explícitos"; upgraded: "atualizado"; never: "nunca"
+      unknown: "desconhecido"; installLinux: "instalar linux"
+      notInstalled: "não instalado. o arch linux arm adiciona um terminal, agentes e o pacman ao launcher."
+      upTo: ghz => " · até ${ghz} GHz"
+      androidApps: n => "${n} apps android"
+      // android.battery's status, health and plug.
+      word: w => get({
+        "charging": "carregando", "plugged in": "na tomada", "on battery": "na bateria", "good": "boa",
+        "overheating": "superaquecida", "dead": "inutilizável", "over voltage": "sobretensão", "cold": "fria",
+        "failing": "falhando", "wireless": "sem fio", "dock": "dock"
+      }, w, w)
+    }
   }
 
   // The phone, from Android: works without Linux.

@@ -84,6 +84,39 @@ widget "today" {
         "Last Quarter": "cuarto menguante", "Waning Crescent": "menguante"
       }, phase, lower(phase)) + " · ${lit}% iluminada"
     }
+    pt {
+      title: "clima"; loading: "clima…"; offline: "clima offline"; city: "cidade · vazio = auto"
+      feels: "sensação"; humidity: "umidade"; rainToday: "chuva hoje"; uv: "índice uv"; pressure: "pressão"
+      visibility: "visibilidade"; next24: "próximas 24 horas"; now: "agora"; days: "3 dias"; today: "hoje"
+      sunrise: "nascer do sol"; sunset: "pôr do sol"; moon: "lua"; kmh: "km/h"; yr: "abrir yr.no ↗"
+      sky: (code, desc) => get({
+        "113": "céu limpo", "116": "parcialmente nublado", "119": "nublado", "122": "encoberto", "143": "névoa",
+        "176": "chuva isolada", "179": "neve isolada", "182": "chuva com neve isolada", "185": "garoa congelante isolada",
+        "200": "trovoada", "227": "neve com vento", "230": "nevasca", "248": "neblina", "260": "neblina congelante",
+        "263": "garoa fraca isolada", "266": "garoa fraca", "281": "garoa congelante", "284": "garoa congelante forte",
+        "293": "chuva fraca isolada", "296": "chuva fraca", "299": "às vezes chuva moderada", "302": "chuva moderada",
+        "305": "às vezes chuva forte", "308": "chuva forte", "311": "chuva congelante fraca", "314": "chuva congelante forte",
+        "317": "chuva com neve fraca", "320": "chuva com neve forte", "323": "neve fraca isolada", "326": "neve fraca",
+        "329": "neve moderada isolada", "332": "neve moderada", "335": "neve forte isolada", "338": "neve forte",
+        "350": "granizo miúdo", "353": "pancadas de chuva fracas", "356": "pancadas de chuva fortes", "359": "aguaceiro",
+        "362": "pancadas de chuva com neve fracas", "365": "pancadas de chuva com neve fortes", "368": "pancadas de neve fracas",
+        "371": "pancadas de neve fortes", "374": "pancadas de granizo miúdo fracas", "377": "pancadas de granizo miúdo fortes",
+        "386": "chuva fraca com trovões", "389": "chuva forte com trovões", "392": "neve fraca com trovões",
+        "395": "neve forte com trovões"
+      }, code, lower(trim(desc)))
+      // Eight points: the sixteen's in-between ones go to the nearer of north, east, south and west.
+      wind: dir => "vento " + get({
+        "N": "norte", "NNE": "norte", "NE": "nordeste", "ENE": "leste", "E": "leste", "ESE": "leste",
+        "SE": "sudeste", "SSE": "sul", "S": "sul", "SSW": "sul", "SW": "sudoeste", "WSW": "oeste",
+        "W": "oeste", "WNW": "oeste", "NW": "noroeste", "NNW": "norte"
+      }, dir, lower(dir))
+      uvLevel: uv => uv >= 8 ? "muito alto" : uv >= 6 ? "alto" : uv >= 3 ? "moderado" : "baixo"
+      phase: (phase, lit) => get({
+        "New Moon": "lua nova", "Waxing Crescent": "crescente", "First Quarter": "quarto crescente",
+        "Waxing Gibbous": "crescente gibosa", "Full Moon": "lua cheia", "Waning Gibbous": "minguante gibosa",
+        "Last Quarter": "quarto minguante", "Waning Crescent": "minguante"
+      }, phase, lower(phase)) + " · ${lit}% iluminada"
+    }
   }
 
   source now = clock every 1m
