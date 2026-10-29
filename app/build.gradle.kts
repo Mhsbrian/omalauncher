@@ -40,6 +40,10 @@ android {
         }
     }
 
+    // Every language's text in every install: settings can pick a language the phone isn't set to (AppLanguage), and
+    // Play's language splits would only carry the phone's.
+    bundle { language { enableSplit = false } }
+
     // android.util.Log and friends are no-ops in JVM tests instead of throwing.
     testOptions { unitTests.isReturnDefaultValues = true }
 
