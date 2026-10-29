@@ -43,8 +43,7 @@ enum class SettingsPage {
     Licenses,
     Gestures,
 
-    /** This fork's: the feed's sources and refresh, backup & restore, and icon packs and each app's icon. */
-    Feed,
+    /** This fork's: backup & restore, and icon packs and each app's icon. */
     Backup,
     Icons,
 }
@@ -120,7 +119,6 @@ private fun SettingsPage(
                 onLinux = { stack.push(SettingsPage.Linux) },
                 onLicenses = { stack.push(SettingsPage.Licenses) },
                 onGestures = { stack.push(SettingsPage.Gestures) },
-                onFeed = { stack.push(SettingsPage.Feed) },
                 onBackup = { stack.push(SettingsPage.Backup) },
                 onIcons = { stack.push(SettingsPage.Icons) },
             )
@@ -170,7 +168,6 @@ private fun SettingsPage(
         SettingsPage.Linux -> LinuxScreen(runtime, onDismiss = close)
         SettingsPage.Licenses -> LicensesScreen(onDismiss = close)
         SettingsPage.Gestures -> GesturesScreen(runtime, onDismiss = close, onAgent = ::agent)
-        SettingsPage.Feed -> FeedSettingsScreen(runtime.feed, onDismiss = close)
         SettingsPage.Backup -> BackupScreen(onDismiss = close)
         SettingsPage.Icons -> IconsPage(runtime, onDismiss = close, open = { stack.push(it) })
     }

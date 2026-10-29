@@ -57,7 +57,6 @@ fun SettingsScreen(
     onLinux: () -> Unit,
     onLicenses: () -> Unit,
     onGestures: () -> Unit,
-    onFeed: () -> Unit,
     onBackup: () -> Unit,
     onIcons: () -> Unit,
 ) {
@@ -110,7 +109,6 @@ fun SettingsScreen(
                     SettingsRow(R.string.settings_agents, needsLinux, onLinux)
                 },
                 SettingsRow(R.string.settings_packages, if (installed) stringResource(R.string.settings_packages_subtitle) else needsLinux, if (installed) onPackages else onLinux),
-                SettingsRow(R.string.fork_settings_feed, feedStatus(runtime.feed.settings), onFeed),
                 SettingsRow(R.string.fork_settings_backup, stringResource(R.string.fork_settings_backup_subtitle), onBackup),
                 if (localNetworkMissing) {
                     SettingsRow(R.string.settings_local_network, stringResource(R.string.settings_local_network_subtitle)) {

@@ -59,7 +59,7 @@ private sealed interface BackupStep {
 
 /**
  * Backs the home screen up to a file and restores it from one: pinned apps, folders, widgets
- * and their data, where everything sits, the theme, style and gestures, the feed's settings. A backup
+ * and their data, where everything sits, the theme, style, gestures and language. A backup
  * outlives the app, so the home screen survives an uninstall, a new signing key or a new phone.
  */
 @Composable
@@ -102,7 +102,7 @@ fun BackupScreen(onDismiss: () -> Unit) {
             SectionLabel("back up")
             Note(
                 "saves your home screen to a file you pick: pinned apps and folders, widgets with their data, " +
-                    "where everything sits, the theme, style and gestures, the feed's settings. Linux itself isn't in it.",
+                    "where everything sits, the theme, style, gestures and language. Linux itself isn't in it.",
             )
             now?.let { Line("now: " + describe(it)) }
             Line(last.first.takeIf { it > 0 }?.let { "last backup: ${date(it)}" + (last.second?.let { n -> " · $n" } ?: "") } ?: "no backup yet")

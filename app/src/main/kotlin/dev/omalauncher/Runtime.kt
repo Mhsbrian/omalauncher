@@ -16,7 +16,6 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.toArgb
-import dev.omalauncher.feed.FeedStore
 import dev.omalauncher.icons.IconStore
 import dev.omalauncher.linux.AGENTS
 import dev.omalauncher.linux.Agent
@@ -111,9 +110,6 @@ class Runtime(
     val updates = SystemUpdates(proot, pacman, agents)
     val gpu = Gpu(context, proot, pacman)
 
-    /** The feed that slides in from the left of the first home page. */
-    val feed = FeedStore(context)
-
     /** The launcher's own provided files (default widgets, their docs); see [Provisioner]. */
     private val launcherFiles = Provisioner(proot.filesDir, LauncherData.LAUNCHER_MANIFEST, listOf(widgets::managed, style::managed, icons::managed))
 
@@ -160,6 +156,11 @@ class Runtime(
     init {
         // Saved, so removing Linux later doesn't bring the first-run screen back.
         if (launcherReady) prefs.edit().putBoolean(SETUP_DONE, true).apply()
+        // This fork's feed is gone (upstream's faces and widgets do it): its settings, what was read and its cache go too.
+        scope.launch(Dispatchers.IO) {
+            context.deleteSharedPreferences("feed")
+            File(context.cacheDir, "feed.json").delete()
+        }
         themes.loadPalette()
         // An agent or the user edited style.toml; the rest of the style is read where it's drawn.
         style.onExternalChange = { old, new ->

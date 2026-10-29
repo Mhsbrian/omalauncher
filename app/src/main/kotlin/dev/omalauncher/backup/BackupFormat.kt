@@ -51,7 +51,6 @@ internal object BackupFormat {
             // restoring such a backup, and for an older launcher. rendered_by only says Linux's theme files
             // were written here, so they're written again.
             PrefsPart("themes", null, reset = setOf("rendered_by"), exclude = setOf("rendered_by")),
-            PrefsPart("feed", setOf("settings")),
             // The terminal's text size and font before style.toml, what swiping up and down on home do
             // (settings > gestures) and the language picked in settings; the rest of these preferences are this install's.
             PrefsPart(

@@ -112,9 +112,6 @@ fun HomeMenu(
             state.homeMenuOpen = false
             state.show(SettingsPage.Store)
         }
-        // Toggles in place, so the menu shows what it did.
-        val feed = runtime.feed.settings.enabled
-        MenuItem(if (feed) stringResource(R.string.fork_home_feed_on) else stringResource(R.string.fork_home_feed_off)) { runtime.feed.update { it.copy(enabled = !feed) } }
         Box(Modifier.padding(horizontal = 12.dp, vertical = 10.dp)) {
             ThemeStrip(
                 runtime.themes,
