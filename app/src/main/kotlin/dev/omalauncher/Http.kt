@@ -32,13 +32,16 @@ fun openHttp(
  * handshake with a message that says the SHA-256 it had.
  */
 fun HttpsURLConnection.pin(pin: String) {
-    sslSocketFactory = pinnedFactories.getOrPut(pin) { pinnedFactory(pin) }
+    sslSocketFactory = pinnedSocketFactory(pin)
     // The handshake checked the certificate; its names don't matter.
     hostnameVerifier = HostnameVerifier { _, _ -> true }
 }
 
 /** One factory per pin: the same one each time lets Android reuse a pinned connection. */
 private val pinnedFactories = ConcurrentHashMap<String, SSLSocketFactory>()
+
+/** Sockets that trust only the certificate [pin] names, as [pin] describes; they check no host names. */
+fun pinnedSocketFactory(pin: String): SSLSocketFactory = pinnedFactories.getOrPut(pin) { pinnedFactory(pin) }
 
 private fun pinnedFactory(pin: String): SSLSocketFactory {
     val trust =

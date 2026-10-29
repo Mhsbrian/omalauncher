@@ -34,4 +34,4 @@ file only this phone runs, `owl: 12` is fine; for the store, a lower level reach
 - **14**: a face's `edge`, with `screenTop`, `screenLeft` and `screenRight` in a face, and `ripple`
 - **15**: a panel's `keyboard`, `pickImages`, `android.speech` and `speech`, `android.power`, and `launcher("page:N")`, which older launchers ignore
 - **16**: `strings { }` and `str`, and `lang()`
-- **17**: `onPull`, `pin:` on `http` and `post`
+- **17**: `onPull`, `pin:` on `http`, `post` and `ws`, `ws`, `send` and `on … each`

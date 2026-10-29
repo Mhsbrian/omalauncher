@@ -162,8 +162,8 @@ internal val SINCE =
         mapOf(STRINGS_DECL to 16, "lang" to 16) +
         // owl 17: a list pulled down past its top, to fetch again.
         mapOf("onPull" to 17) +
-        // owl 17: servers with a certificate of their own, pinned.
-        mapOf(HTTP_PIN to 17)
+        // owl 17: servers with a certificate of their own, pinned; WebSockets, and a trigger for each of their messages.
+        listOf(HTTP_PIN, "ws", "send", ON_EACH).associateWith { 17 }
 
 /** `strings { ... }`, named like this in [SINCE]. */
 internal const val STRINGS_DECL = "strings { }"
@@ -183,7 +183,7 @@ internal val VOLUME_STREAMS = setOf("media", "ring", "notification", "alarm")
 /** `state x = null secret`, named like this in [SINCE]. */
 internal const val SECRET = "secret"
 
-/** `pin:` on http(...) and post(...), named like this in [SINCE]. */
+/** `pin:` on http(...), post(...) and ws(...), named like this in [SINCE]. */
 internal const val HTTP_PIN = "pin:"
 
 /** `method:` on post(...), named like this in [SINCE]. */
@@ -224,6 +224,9 @@ internal const val FMT_TIME_ZONE = "fmtTime with a time zone or language"
 internal const val FLATTEN_DEPTH = "flatten with a depth"
 
 internal const val ON_FIRST = "on … first"
+
+/** `on x each { }`, named like this in [SINCE]. */
+internal const val ON_EACH = "on … each"
 
 internal const val HANDLER_IF = "if in a handler"
 

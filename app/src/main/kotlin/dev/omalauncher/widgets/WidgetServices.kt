@@ -47,6 +47,15 @@ import dev.omalauncher.linux.Proot
 import dev.omalauncher.linux.ShellPool
 import dev.omalauncher.linux.ShellResult
 import dev.omalauncher.SecretBox
+import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.resume
+import kotlin.concurrent.thread
+import java.util.concurrent.atomic.AtomicReference
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicBoolean
+import kotlinx.coroutines.suspendCancellableCoroutine
+import dev.omalauncher.WebSocket
+import dev.omalauncher.LocalNetwork
 import dev.omalauncher.openHttp
 import dev.omalauncher.pin
 import dev.omalauncher.openUrl
@@ -120,6 +129,9 @@ import kotlin.math.roundToInt
 import dev.omalauncher.widgets.lang.textOrNull
 
 private const val MAX_HTTP_BYTES = 1 shl 20
+
+/** WebSockets open at once; a widget's page and its neighbours are live together. */
+private const val MAX_WEBSOCKETS = 8
 
 /** Why a request whose response is over [MAX_HTTP_BYTES] failed; it isn't tried again any sooner than its interval. */
 internal const val HTTP_TOO_BIG = "the response is over 1 MB, more than a widget reads"
@@ -761,10 +773,72 @@ class WidgetServices(
                 }
                 ShellResult("", "too many redirects", -1)
             } catch (e: IOException) {
-                ShellResult("", e.message ?: e.toString(), -1)
+                ShellResult("", listOfNotNull(e.message ?: e.toString(), LocalNetwork.hint(context, url)).joinToString("; "), -1)
             }
         }
 
+
+    override suspend fun webSocket(
+        url: String,
+        headers: Map<String, String>,
+        pin: String?,
+        opened: ((String) -> Boolean) -> Unit,
+        onText: (String) -> Unit,
+    ) {
+        val pinned = pin?.let { Pins.normalize(it) ?: throw IOException("pin: isn't a SHA-256 (64 hex digits): $it") }
+        // Each holds a thread and a connection the whole time its page shows.
+        if (webSockets.incrementAndGet() > MAX_WEBSOCKETS) {
+            webSockets.decrementAndGet()
+            throw IOException("over $MAX_WEBSOCKETS WebSockets are open at once on the pages around this one")
+        }
+        try {
+            connectWebSocket(url, headers, pinned, opened, onText)
+        } catch (e: IOException) {
+            throw withContext(Dispatchers.IO) { LocalNetwork.hint(context, url) }?.let { IOException("${e.message}; $it", e) } ?: e
+        } finally {
+            webSockets.decrementAndGet()
+        }
+    }
+
+    /** WebSocket connections open now, all widgets together. */
+    private val webSockets = AtomicInteger()
+
+    private suspend fun connectWebSocket(
+        url: String,
+        headers: Map<String, String>,
+        pinned: String?,
+        opened: ((String) -> Boolean) -> Unit,
+        onText: (String) -> Unit,
+    ) {
+        val socket = AtomicReference<WebSocket?>()
+        val gone = AtomicBoolean()
+        suspendCancellableCoroutine { cont ->
+            // Leaving the page says goodbye; the socket's thread finishes the close handshake on its own.
+            cont.invokeOnCancellation {
+                gone.set(true)
+                socket.get()?.close(1001)
+            }
+            // A thread of its own: the connection blocks it for as long as it's open.
+            thread(name = "owl-ws", isDaemon = true) {
+                try {
+                    val ws = WebSocket.connect(url, headers, pinned)
+                    socket.set(ws)
+                    if (gone.get()) return@thread ws.cancel()
+                    // Handlers send on the main thread; WebSocket writes on a thread of its own.
+                    opened(ws::send)
+                    val closed = ws.listen(onText)
+                    // Going away (a server restarting) or no code is how a connection ends; anything else says why.
+                    if (closed.code !in setOf(1000, 1001, 1005)) {
+                        throw IOException("the server closed it with ${closed.code}" + closed.reason.ifEmpty { null }?.let { ": $it" }.orEmpty())
+                    }
+                    cont.resume(Unit)
+                } catch (e: Exception) {
+                    // Anything else thrown here would take the launcher down; the source reports it and connects again.
+                    cont.resumeWithException(e as? IOException ?: IOException(e.message ?: e.toString(), e))
+                }
+            }
+        }
+    }
 
     override fun seal(plain: ByteArray) = SecretBox.seal(plain)
 

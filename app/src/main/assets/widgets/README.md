@@ -62,7 +62,7 @@ that read it redraw. Properties are separated by newlines or `;`.
 A file holds declarations, then the nodes it shows:
 
 - `source x = cmd("...") every 5s` runs a bash command in this Arch system, and `x` is its output (`json` parses
-  it). `http("https://...")` fetches from Android, with no Linux needed; `stream`, `file` and `clock` are sources
+  it). `http("https://...")` fetches from Android, with no Linux needed, and `ws("wss://...")` listens to a WebSocket; `stream`, `file` and `clock` are sources
   too, and `android.battery`, `android.media`, `android.notifications` and more read the phone.
 - `state x = 0` is a value handlers change (`persist` keeps it across restarts), and `let x = ...` a value worked
   out from the others, again whenever they change.
@@ -89,7 +89,7 @@ declarations.md, nodes.md, expressions.md and handlers.md; a face, an app, a pan
 
 | read | for |
 |---|---|
-| docs/declarations.md | sources (`cmd`, `http`, `stream`, `file`, `clock`), state, lets, triggers (`every`, `at`, `when`, `on`), putting values into commands and URLs, `requires` and working without Linux |
+| docs/declarations.md | sources (`cmd`, `http`, `ws`, `stream`, `file`, `clock`), state, lets, triggers (`every`, `at`, `when`, `on`, `on … each`), putting values into commands and URLs, `requires` and working without Linux |
 | docs/android.md | the phone's data: battery, media, notifications, volume, the next alarm, modes, apps, the drawer, agents |
 | docs/expressions.md | operators and every function, dates and times, numbers, changing lists and maps, chance |
 | docs/nodes.md | every node and its properties, the tile's size, text in pieces, fonts, gradients, frosted glass, images from the web, components, Terminal |

@@ -61,6 +61,12 @@ interface Host {
         pin: String?,
     ) {}
 
+    /** `send(source, message)`: [message] on the connection of the ws(...) source in [slot], a map or list as JSON. */
+    fun send(
+        slot: Int,
+        message: Value,
+    ) {}
+
     val budget: Budget
 
     /** A problem at run time, shown to the widget's author; never thrown. */
@@ -264,7 +270,7 @@ sealed interface Global {
         val headers: Ev? = null,
         /** cmd, stream or file that runs only while Linux is installed, and stays null until then. */
         val optional: Boolean = false,
-        /** http(..., pin: "…"): the SHA-256 of the only certificate the server may show. */
+        /** http(..., pin: "…") or ws(..., pin: "…"): the SHA-256 of the only certificate the server may show. */
         val pin: Ev? = null,
     ) : Global
 
@@ -332,6 +338,11 @@ class Trigger(
      * type it with typeText and pressKey, which other triggers can't (see WidgetInstance).
      */
     val dictation: Boolean = false,
+    /**
+     * `on feed each { }`: the slot of the ws(...) source whose every message runs it, in the order they came,
+     * repeats too, with `value` the message; it watches nothing else (see WidgetInstance).
+     */
+    val each: Int? = null,
 )
 
 class Program(
