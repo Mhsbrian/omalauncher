@@ -55,6 +55,9 @@
     <string name="home_refresh">actualizar</string>
     <string name="home_refreshing">actualizando</string>
     <string name="home_job_failed">falló:</string>
+    <string name="home_job_whole_log">toca para ver el registro completo</string>
+    <string name="home_job_less">menos</string>
+    <string name="home_job_copy">copiar</string>
     <string name="home_settings">configuración</string>
 
     <string name="home_linux_window">Linux</string>
