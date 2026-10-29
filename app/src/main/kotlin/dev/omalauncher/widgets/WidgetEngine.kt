@@ -534,7 +534,8 @@ class WidgetEngine(
                 dir.mkdirs()
                 checkDir.mkdirs()
                 // Requests from before this start have been given up on: owl-send waits a few seconds at most.
-                inboxDir.deleteRecursively()
+                // The guest can write here: a link in the inbox's place must not take what it points to with it.
+                runCatching { LauncherData.deleteTree(inboxDir) }
                 inboxDir.mkdirs()
                 markets.forEach { it.load() }
             }
