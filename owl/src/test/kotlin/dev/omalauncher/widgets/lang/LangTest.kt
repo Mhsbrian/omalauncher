@@ -62,8 +62,9 @@ class LangTest {
             headers: Map<String, String>,
             slot: Int?,
             method: String,
+            pin: String?,
         ) {
-            actions += "post $slot $url $body $headers" + (if (method != "POST") " $method" else "")
+            actions += "post $slot $url $body $headers" + (if (method != "POST") " $method" else "") + (pin?.let { " pin $it" } ?: "")
         }
     }
 
@@ -309,6 +310,29 @@ class LangTest {
         assertTrue(compileError("app \"t\" {\n meta { owl: 11 }\n back: true\n onBack: post(\"https://x.test/\", null, {}, method: \"PUT\")\n Text { text: 1 } }").contains("needs owl 12"))
         assertTrue(compileError(app + "method: \"HEAD\")\n Text { text: 1 } }").contains("method: is one of"))
         assertTrue(compileError(app + "retries: 3)\n Text { text: 1 } }").contains("no other named arguments"))
+    }
+
+    /** pin: trusts one certificate (owl 17), on http(...) and post(...). */
+    @Test fun pinnedRequests() {
+        val pin = "AB:" + "cd".repeat(31)
+        val p =
+            Compiler.compile(
+                "app \"t\" {\n meta { owl: 17 }\n source h = http(\"https://pc.lan:8759/a\", {}, pin: \"$pin\") json\n back: true\n" +
+                    " onBack: post(\"https://pc.lan:8759/h/1\", null, {}, method: \"delete\", pin: \"$pin\")\n" +
+                    " Text { text: h } }",
+            )
+        val host = TestHost(p)
+        assertEquals(pin, (p.globals[0] as Global.Source).pin!!(Env.root(host)).toString())
+        p.onBack!!.run(Env.root(host), emptyList())
+        assertEquals(listOf("post null https://pc.lan:8759/h/1 null {} DELETE pin $pin"), host.actions)
+        assertEquals(setOf("http GET https://pc.lan:8759/a", "http DELETE https://pc.lan:8759/h/1"), p.commands.toSet())
+        assertEquals("ab" + "cd".repeat(31), Pins.normalize(pin))
+        assertEquals(null, Pins.normalize("abcd"))
+        val app = "app \"t\" {\n meta { owl: 17 }\n back: true\n onBack: post(\"https://x.test/\", null, {}, "
+        assertTrue(compileError("widget {\n meta { owl: 16 }\n source h = http(\"https://x.test/\", {}, pin: \"$pin\")\n Text { text: h } }").contains("needs owl 17"))
+        assertTrue(compileError(app + "pin: \"abcd\")\n Text { text: 1 } }").contains("64 hex digits"))
+        assertTrue(compileError("widget {\n meta { owl: 17 }\n source h = http(\"http://x.test/\", {}, pin: \"$pin\")\n Text { text: h } }").contains("pin: needs an https:// URL"))
+        assertTrue(compileError("widget {\n meta { owl: 17 }\n source h = http(\"https://x.test/\", {}, retries: 3)\n Text { text: h } }").contains("http takes pin:, and no other"))
     }
 
     /** A secret only goes into a request's headers and body, or a check that it's set (owl 12). */

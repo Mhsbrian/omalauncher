@@ -48,6 +48,7 @@ import dev.omalauncher.linux.ShellPool
 import dev.omalauncher.linux.ShellResult
 import dev.omalauncher.SecretBox
 import dev.omalauncher.openHttp
+import dev.omalauncher.pin
 import dev.omalauncher.openUrl
 import dev.omalauncher.readUpTo
 import dev.omalauncher.sha256Hex
@@ -58,6 +59,7 @@ import dev.omalauncher.widgets.lang.Lst
 import dev.omalauncher.widgets.lang.Null
 import dev.omalauncher.widgets.lang.Num
 import dev.omalauncher.widgets.lang.Obj
+import dev.omalauncher.widgets.lang.Pins
 import dev.omalauncher.widgets.lang.Str
 import dev.omalauncher.widgets.lang.Value
 import dev.omalauncher.widgets.lang.WidgetError
@@ -112,6 +114,7 @@ import java.io.File
 import java.io.IOException
 import java.net.URL
 import java.util.concurrent.ConcurrentHashMap
+import javax.net.ssl.HttpsURLConnection
 import kotlin.math.abs
 import kotlin.math.roundToInt
 import dev.omalauncher.widgets.lang.textOrNull
@@ -705,9 +708,15 @@ class WidgetServices(
         timeoutSeconds: Int,
         body: ByteArray?,
         method: String,
+        pin: String?,
     ): ShellResult =
         withContext(Dispatchers.IO) {
             if (!url.startsWith("https://") && !url.startsWith("http://")) return@withContext ShellResult("", "not an http(s) URL: $url", -1)
+            val pinned =
+                pin?.let {
+                    if (!url.startsWith("https://")) return@withContext ShellResult("", "pin: needs an https:// URL: $url", -1)
+                    Pins.normalize(it) ?: return@withContext ShellResult("", "pin: isn't a SHA-256 (64 hex digits): $it", -1)
+                }
             try {
                 var target = URL(url)
                 var sendMethod = if (body != null) method else "GET"
@@ -718,6 +727,7 @@ class WidgetServices(
                     val connection = openHttp(target.toString(), timeoutSeconds * 1000, timeoutSeconds * 1000)
                     try {
                         connection.instanceFollowRedirects = false
+                        if (pinned != null) (connection as HttpsURLConnection).pin(pinned)
                         connection.setRequestProperty("User-Agent", "omalauncher-widgets")
                         if (origin(target) == origin(URL(url))) headers.forEach { (k, v) -> connection.setRequestProperty(k, v) }
                         connection.requestMethod = sendMethod
@@ -730,6 +740,8 @@ class WidgetServices(
                         val code = connection.responseCode
                         val location = connection.getHeaderField("Location")
                         if (code in REDIRECTS && location != null) {
+                            // The pin is for this one server; wherever else it points isn't known to be it.
+                            if (pinned != null) return@withContext ShellResult("", "a pinned request was redirected (to $location), not followed", -1)
                             val next = redirect(code, target, URL(target, location), sendMethod, sendBody)
                             target = next.url
                             sendMethod = next.method

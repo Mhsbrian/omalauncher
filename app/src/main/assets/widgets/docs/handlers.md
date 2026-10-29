@@ -47,7 +47,7 @@ after it in its block (and blocks inside them), and needs a name not used for a 
 | `ask(text)` | opens a terminal with the default agent answering `text`, as sending it from the prompt bar does; `ask(text, "codex")` asks that installed agent. Without one installed it opens the agents settings. The store's reviewer sees what a widget asks (owl 10) |
 | `copy(text)` | copies text to the Android clipboard |
 | `notify("title", "text")` | posts an Android notification (if the launcher may post them) |
-| `post("https://...", body, headers)` | sends an HTTP POST from Android: a map or list `body` goes as JSON, text as it is; `headers` is a map like `http(...)`'s. `x = post(...)` puts the answer into the state `x` when it arrives: `{code, ok, out, err}`, with `out` parsed when it's JSON and `err` why it failed (code -1 when no answer came: offline, a timeout, a redirect it didn't follow). `method: "PUT"`, `"PATCH"` or `"DELETE"` sends that instead (owl 12). Never retried; a null URL sends nothing. When it succeeds, the widget's sources run again. See Sending (owl 8) |
+| `post("https://...", body, headers)` | sends an HTTP POST from Android: a map or list `body` goes as JSON, text as it is; `headers` is a map like `http(...)`'s. `x = post(...)` puts the answer into the state `x` when it arrives: `{code, ok, out, err}`, with `out` parsed when it's JSON and `err` why it failed (code -1 when no answer came: offline, a timeout, a redirect it didn't follow). `method: "PUT"`, `"PATCH"` or `"DELETE"` sends that instead (owl 12), and `pin:` trusts one certificate of a server of your own (owl 17). Never retried; a null URL sends nothing. When it succeeds, the widget's sources run again. See Sending (owl 8) |
 | `url("https://...")` | opens in the Android browser. Other links open in the app that takes them: `tel:` the dialer, `geo:` maps, `mailto:` email |
 | `share(text)` | opens Android's share sheet with the text (owl 7) |
 | `haptic()` | a short tap of haptic feedback, if the user has touch feedback on (owl 7) |
@@ -119,6 +119,22 @@ header: `{Authorization: "Basic ${toBase64(user + ":" + password)}"}` (owl 12). 
 back, and base64url too, padded or not, so `parseJson(fromBase64(split(jwt, ".")[1]))` is what a JWT
 says about itself (when it expires, `exp`); it's null when the text isn't base64. Both work on text,
 not on binary data.
+
+A server on your network with a certificate of its own (self-signed, as a NAS, a router or a desktop app
+makes one) isn't trusted by Android. `pin:` on `http(...)` or `post(...)` trusts that one certificate,
+by its SHA-256, and nothing else, at whatever address it answers (owl 17):
+
+```owl
+widget "pc" {
+  meta { owl: 17 }
+  source pc = http("https://192.168.1.20:8759/api/status", {}, pin: "3F:A1:5C:0B:6E:2D:88:41:9A:C7:13:F0:52:BE:64:D9:07:A3:1E:C8:95:4F:2B:D6:70:18:E3:AC:59:06:B4:9C") every 10s json
+  Text { text: pc.hostname ?? "…" }
+}
+```
+
+The pin is what `openssl x509 -noout -fingerprint -sha256 -in cert.pem` prints, colons or not, and it can
+be a value: a pairing link's fingerprint, kept in a `persist` state. A server showing any other
+certificate fails with an error that says the SHA-256 it showed. A pinned request follows no redirects.
 
 ### Tokens and passwords
 

@@ -161,7 +161,9 @@ internal val SINCE =
         // owl 16: texts per language, the phone's picked, and the language itself, for an API that takes it.
         mapOf(STRINGS_DECL to 16, "lang" to 16) +
         // owl 17: a list pulled down past its top, to fetch again.
-        mapOf("onPull" to 17)
+        mapOf("onPull" to 17) +
+        // owl 17: servers with a certificate of their own, pinned.
+        mapOf(HTTP_PIN to 17)
 
 /** `strings { ... }`, named like this in [SINCE]. */
 internal const val STRINGS_DECL = "strings { }"
@@ -180,6 +182,9 @@ internal val VOLUME_STREAMS = setOf("media", "ring", "notification", "alarm")
 
 /** `state x = null secret`, named like this in [SINCE]. */
 internal const val SECRET = "secret"
+
+/** `pin:` on http(...) and post(...), named like this in [SINCE]. */
+internal const val HTTP_PIN = "pin:"
 
 /** `method:` on post(...), named like this in [SINCE]. */
 internal const val POST_METHOD = "method:"
