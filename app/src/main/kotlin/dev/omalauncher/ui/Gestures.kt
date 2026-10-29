@@ -420,7 +420,7 @@ private fun GestureRow(
 }
 
 /** Just under the anchor, lined up with its end, and kept on screen. */
-private object BelowAnchorEnd : PopupPositionProvider {
+internal object BelowAnchorEnd : PopupPositionProvider {
     override fun calculatePosition(
         anchorBounds: IntRect,
         windowSize: IntSize,

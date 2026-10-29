@@ -82,10 +82,18 @@ class BackupFormatTest {
         val launcher = BackupFormat.PREFS.first { it.name == "launcher" }
         val l =
             prefsToJson(
-                mapOf("setup_done" to true, "gpu_wanted" to true, "terminal_font" to "JetBrains Mono", "gesture_swipe_up" to "none", "gesture_swipe_down" to "quick_settings"),
+                mapOf(
+                    "setup_done" to true,
+                    "gpu_wanted" to true,
+                    "terminal_font" to "JetBrains Mono",
+                    "gesture_swipe_up" to "none",
+                    "gesture_swipe_down" to "quick_settings",
+                    "language" to "id",
+                ),
                 launcher,
             )
-        assertEquals(setOf("terminal_font", "gesture_swipe_up", "gesture_swipe_down"), l.keys().asSequence().toSet())
+        // The language picked in settings goes with the home screen to a new phone.
+        assertEquals(setOf("terminal_font", "gesture_swipe_up", "gesture_swipe_down", "language"), l.keys().asSequence().toSet())
     }
 
     @Test fun restoringAWholeFileClearsItFirst() {
