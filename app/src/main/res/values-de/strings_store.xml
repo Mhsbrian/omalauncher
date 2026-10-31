@@ -19,11 +19,11 @@
     <string name="store_kind_keybar">tastenleiste</string>
 
     <!-- Beside the grid on a wide screen, before one is picked. -->
-    <string name="store_pick_widget">wähle ein widget, um zu sehen, was es installiert und ausführt</string>
-    <string name="store_pick_face">wähle ein face, um zu sehen, was es installiert und ausführt</string>
-    <string name="store_pick_app">wähle eine app, um zu sehen, was sie installiert und ausführt</string>
-    <string name="store_pick_panel">wähle ein panel, um zu sehen, was es installiert und ausführt</string>
-    <string name="store_pick_keybar">wähle eine tastenleiste, um zu sehen, was sie installiert und ausführt</string>
+    <string name="store_pick_widget">tipp ein widget an und sieh, was es installiert und ausführt</string>
+    <string name="store_pick_face">tipp ein face an und sieh, was es installiert und ausführt</string>
+    <string name="store_pick_app">tipp eine app an und sieh, was sie installiert und ausführt</string>
+    <string name="store_pick_panel">tipp ein panel an und sieh, was es installiert und ausführt</string>
+    <string name="store_pick_keybar">tipp eine tastenleiste an und sieh, was sie installiert und ausführt</string>
 
     <!-- %1$d is how many there are, %2$s what they are, like "widgets". -->
     <string name="store_search">%1$d %2$s durchsuchen</string>
@@ -49,7 +49,7 @@
 
     <!-- %1$s is what they are, like "widgets"; %2$s the store's repo, like "SimonSchubert/omarchy-widgets". -->
     <string name="store_reviewed">geprüfte %1$s von github.com/%2$s</string>
-    <string name="store_loading">wird geladen…</string>
+    <string name="store_loading">lädt…</string>
     <!-- %1$s is what they are, like "widgets". -->
     <string name="store_empty">noch keine %1$s</string>
     <string name="store_no_new">keine neuen %1$s</string>
@@ -58,7 +58,7 @@
     <string name="store_no_match">keine treffer für „%1$s“</string>
 
     <!-- A card's status line. -->
-    <string name="store_update_available">update verfügbar</string>
+    <string name="store_update_available">update da</string>
     <string name="store_installed">✓ installiert</string>
     <string name="store_needs_newer">braucht neueren launcher</string>
     <string name="store_needs_linux">braucht linux</string>
@@ -71,8 +71,8 @@
     <string name="store_badge_new">neu</string>
 
     <!-- An entry's page. %1$d is the version of the widget language it needs. -->
-    <string name="store_needs_newer_detail">braucht einen neueren launcher (owl %1$d); zum installieren den launcher aktualisieren</string>
-    <string name="store_may_have_changes">enthält vielleicht deine änderungen; aktualisieren ersetzt sie</string>
+    <string name="store_needs_newer_detail">braucht einen neueren launcher (owl %1$d); aktualisier den launcher, dann klappt\'s</string>
+    <string name="store_may_have_changes">hat vielleicht deine änderungen drin; aktualisieren ersetzt sie</string>
     <string name="store_you_changed">von dir geändert; aktualisieren ersetzt deine änderungen</string>
     <!-- %1$s is the installed version, %2$s the new one. -->
     <string name="store_update_anyway">trotzdem aktualisieren %1$s → %2$s</string>
@@ -90,8 +90,8 @@
     <!-- %1$s is its name. -->
     <string name="store_uninstall_confirm">%1$s deinstallieren?</string>
     <string name="store_remove_confirm">%1$s entfernen?</string>
-    <string name="store_remove_file">Die Datei kommt nach .removed/ im Widgets-Ordner.</string>
-    <string name="store_remove_files">Die Dateien kommen nach .removed/ im Widgets-Ordner.</string>
+    <string name="store_remove_file">Die Datei landet in .removed/ im Widgets-Ordner.</string>
+    <string name="store_remove_files">Die Dateien landen in .removed/ im Widgets-Ordner.</string>
     <string name="store_changed_since_approval">befehle oder pakete haben sich seit der von dir freigegebenen version geändert</string>
 
     <!-- Where one added went. -->
@@ -101,8 +101,8 @@
     <string name="store_added_panel">✓ in den gesten-einstellungen</string>
     <string name="store_added_keybar">✓ in deinem widgets-ordner</string>
 
-    <string name="store_needs_linux_app">braucht Linux: führt befehle in Arch aus und erscheint daher in der app-übersicht, sobald du Linux in den einstellungen installierst</string>
-    <string name="store_needs_linux_widget">braucht Linux: führt befehle in Arch aus und wartet daher als platzhalter, bis du Linux in den einstellungen installierst</string>
+    <string name="store_needs_linux_app">braucht Linux: führt befehle in Arch aus und taucht deshalb erst in der app-übersicht auf, wenn du Linux in den einstellungen installierst</string>
+    <string name="store_needs_linux_widget">braucht Linux: führt befehle in Arch aus und wartet deshalb als platzhalter, bis du Linux in den einstellungen installierst</string>
 
     <!-- %1$s lists them by package manager, like "pacman: jq, curl; aur: yay". -->
     <string name="store_installs_packages">installiert pakete: %1$s</string>
@@ -113,17 +113,17 @@
     <!-- What's happening to an entry, while it is. -->
     <string name="store_installing">wird installiert…</string>
     <string name="store_updating">wird aktualisiert…</string>
-    <string name="store_adding_pages">seiten werden hinzugefügt…</string>
+    <string name="store_adding_pages">fügt seiten hinzu…</string>
     <!-- %1$s is why, an error message from the system. -->
-    <string name="store_load_failed">store konnte nicht geladen werden: %1$s</string>
-    <string name="store_download_mismatch">der download passt nicht zur geprüften version; versuche es später erneut</string>
+    <string name="store_load_failed">konnte den store nicht laden: %1$s</string>
+    <string name="store_download_mismatch">der download passt nicht zur geprüften version; versuch\'s später nochmal</string>
     <!-- %1$s is why, an error message. -->
-    <string name="store_install_failed">installation fehlgeschlagen: %1$s</string>
+    <string name="store_install_failed">installieren hat nicht geklappt: %1$s</string>
 
     <!-- A widget someone shared with you. %1$s is what it is, like "widget". -->
     <string name="store_shared_title">geteilt: %1$s</string>
     <!-- %1$s is the site it's on, like "dpaste.com". -->
-    <string name="store_shared_fetching">wird von %1$s geladen…</string>
+    <string name="store_shared_fetching">lädt von %1$s…</string>
     <string name="store_shared_unreadable">nicht lesbar</string>
     <!-- %1$s is why. -->
     <string name="store_shared_not_widget">Dieser Link enthält kein Widget: %1$s.</string>
@@ -132,9 +132,9 @@
     <string name="store_shared_unnamed_widget">ein widget</string>
     <!-- %1$s is its version and size when it says them, like " · v1.2 · 4x2", or nothing; %2$.1f its size in kilobytes. -->
     <string name="store_shared_info">mit dir geteilt%1$s · %2$.1f KB</string>
-    <string name="store_shared_warning">Füge es nur hinzu, wenn du dem Absender vertraust. Es führt die Befehle unten in deinem Namen in Arch aus, mit Zugriff auf deine Dateien und das Netzwerk.</string>
+    <string name="store_shared_warning">Füg es nur hinzu, wenn du dem Absender vertraust. Es führt die Befehle unten als du in Arch aus und kommt an deine Dateien und ins Netz.</string>
     <!-- %1$d is the version of the widget language it needs. -->
-    <string name="store_shared_needs_newer">braucht einen neueren launcher (owl %1$d); zum hinzufügen den launcher aktualisieren</string>
+    <string name="store_shared_needs_newer">braucht einen neueren launcher (owl %1$d); aktualisier den launcher, dann klappt\'s</string>
     <!-- %1$s is its name. -->
     <string name="store_shared_replace">zuvor geteilte version von %1$s ersetzen</string>
     <string name="store_add_to_drawer">zur app-übersicht hinzufügen</string>
@@ -151,9 +151,9 @@
     <string name="store_share_unreadable">%1$s nicht lesbar</string>
     <!-- %1$s is a file name, %2$d the most a launcher takes. -->
     <string name="store_share_too_big">%1$s ist größer als %2$d KB, mehr als ein launcher annimmt</string>
-    <string name="store_uploading">wird hochgeladen…</string>
+    <string name="store_uploading">lädt hoch…</string>
     <string name="store_share_get_code">QR-code erstellen</string>
-    <string name="store_something_wrong">etwas ist schiefgelaufen</string>
+    <string name="store_something_wrong">da ist was schiefgegangen</string>
     <!-- %1$s is the site, like "dpaste.com"; %2$d how many days it keeps it. -->
     <string name="store_share_uploads">lädt es öffentlich für %2$d tage auf %1$s hoch</string>
     <string name="store_share_send_link">Oder sende den Link: dauerhaft, das ganze Widget steckt darin.</string>
@@ -183,7 +183,7 @@
     <!-- %1$s is the site, like "dpaste.com". -->
     <string name="store_issue_uploads">lädt es öffentlich zur prüfung auf %1$s hoch</string>
     <!-- %1$s is why. -->
-    <string name="store_upload_failed">✗ hochladen fehlgeschlagen: %1$s</string>
+    <string name="store_upload_failed">✗ hochladen hat nicht geklappt: %1$s</string>
 
     <!-- An app asks to put one of its shortcuts on the home screen. -->
     <string name="store_pin_title">zum startbildschirm hinzufügen?</string>
@@ -200,20 +200,20 @@
     <!-- %1$s is the theme's name. -->
     <string name="store_theme_install_confirm">%1$s installieren?</string>
     <!-- %1$s is where it comes from, like "github.com/owner/repo". -->
-    <string name="store_theme_install_message">Von %1$s. Linux übernimmt die Farben und Hintergründe, nicht die Skripte oder Terminal-Configs.</string>
+    <string name="store_theme_install_message">Von %1$s. Linux bekommt die Farben und Hintergründe, aber nicht die Skripte oder Terminal-Configs.</string>
     <!-- %2$s is the name of the user's own theme it replaces. -->
-    <string name="store_theme_install_message_replaces">Von %1$s. Linux übernimmt die Farben und Hintergründe, nicht die Skripte oder Terminal-Configs.\n\nEs ersetzt dein %2$s.</string>
+    <string name="store_theme_install_message_replaces">Von %1$s. Linux bekommt die Farben und Hintergründe, aber nicht die Skripte oder Terminal-Configs.\n\nEs ersetzt dein %2$s.</string>
     <!-- %2$s is the name of Omarchy's theme of the same name. -->
-    <string name="store_theme_install_message_over">Von %1$s. Linux übernimmt die Farben und Hintergründe, nicht die Skripte oder Terminal-Configs.\n\nEs überdeckt Omarchys %2$s; entfernst du es, kommt das wieder.</string>
+    <string name="store_theme_install_message_over">Von %1$s. Linux bekommt die Farben und Hintergründe, aber nicht die Skripte oder Terminal-Configs.\n\nEs überdeckt Omarchys %2$s; entfernst du es, ist das wieder da.</string>
     <!-- %1$s is the theme's name, %2$d how many megabytes have downloaded. -->
-    <string name="store_theme_installing">%1$s wird installiert… %2$d MB</string>
+    <string name="store_theme_installing">installiert %1$s… %2$d MB</string>
     <!-- %1$s is why, an error message from the system. -->
-    <string name="store_theme_catalog_failed">omarchy.org/themes konnte nicht geladen werden: %1$s</string>
-    <string name="store_theme_page_changed">die seite hat sich geändert und ist nicht lesbar</string>
+    <string name="store_theme_catalog_failed">konnte omarchy.org/themes nicht laden: %1$s</string>
+    <string name="store_theme_page_changed">die seite hat sich geändert, lesen klappt nicht mehr</string>
     <!-- %1$s is what the user gave as the theme's repo. -->
     <string name="store_theme_not_github">kein GitHub-repo: %1$s</string>
     <!-- %1$s is the repo, like "github.com/owner/repo". -->
     <string name="store_theme_not_on_github">%1$s ist nicht auf GitHub</string>
-    <string name="store_theme_no_colors">keine colors.toml oder alacritty.toml vorhanden</string>
-    <string name="store_theme_cant_move">theme lässt sich nicht an seinen platz verschieben</string>
+    <string name="store_theme_no_colors">hat keine colors.toml oder alacritty.toml</string>
+    <string name="store_theme_cant_move">kann das theme nicht an seinen platz schieben</string>
 </resources>

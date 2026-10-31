@@ -61,9 +61,9 @@
     <string name="style_keybar_edited">bearbeitet</string>
     <string name="style_keybar_edit">mit agent bearbeiten</string>
     <string name="style_keybar_back_to_stock">zurück zum standard</string>
-    <string name="style_keybar_gone">%1$s fehlt, daher erscheinen die standardtasten</string>
+    <string name="style_keybar_gone">%1$s fehlt, also gibt\'s die standardtasten</string>
     <string name="style_keybar_restore_title">zurück zu den standardtasten?</string>
-    <string name="style_keybar_restore_message">Deine keybar.owl wird durch die ersetzt, die dieser Launcher mitbringt.</string>
+    <string name="style_keybar_restore_message">Deine keybar.owl wird durch die vom Launcher ersetzt.</string>
     <string name="style_replace">ersetzen</string>
 
     <string name="style_browse">durchsuchen</string>
@@ -76,11 +76,11 @@
     <string name="style_remove_theme_title">%1$s entfernen?</string>
     <string name="style_remove_theme_builtin">Deine Änderungen daran gehen verloren; Omarchys Version bleibt.</string>
     <string name="style_remove_deleted">Es wird vom Smartphone und aus Linux gelöscht.</string>
-    <string name="style_themes_downloading">Omarchys andere Themes werden von github.com/omacom/omarchy heruntergeladen (~70 MB).</string>
-    <string name="style_themes_not_installed">Omarchys Themes sind noch nicht installiert. Sie werden von github.com/omacom/omarchy heruntergeladen (~70 MB).</string>
-    <string name="style_downloading">wird heruntergeladen… %1$d MB</string>
-    <string name="style_failed">fehlgeschlagen: %1$s</string>
-    <string name="style_retry">erneut versuchen</string>
+    <string name="style_themes_downloading">Omarchys andere Themes laden gerade von github.com/omacom/omarchy (~70 MB).</string>
+    <string name="style_themes_not_installed">Omarchys Themes sind noch nicht da. Sie kommen von github.com/omacom/omarchy (~70 MB).</string>
+    <string name="style_downloading">lädt… %1$d MB</string>
+    <string name="style_failed">hat nicht geklappt: %1$s</string>
+    <string name="style_retry">nochmal versuchen</string>
     <string name="style_download_themes">themes herunterladen</string>
 
     <string name="style_add_image">+ bild</string>
@@ -96,11 +96,11 @@
 
     <string name="pages_title">seiten</string>
     <string name="pages_intro">Die Seiten des Startbildschirms, von links nach rechts. Zieh eine an ≡, um sie zu verschieben, oder nimm ≡ per Tastatur mit Enter auf und verschieb sie mit den Pfeiltasten. Der Startbildschirm öffnet mit der ersten Seite mit Kacheln; Faces davor liegen links davon.</string>
-    <string name="pages_loading">wird geladen…</string>
+    <string name="pages_loading">lädt…</string>
     <string name="pages_remove_named">%1$s entfernen?</string>
     <string name="pages_remove_page">diese seite entfernen?</string>
-    <string name="pages_remove_face_message">Die Datei kommt nach .removed/ im Widgets-Ordner.</string>
-    <string name="pages_remove_tiles_message">%1$s. Die Widgets der Seite kommen nach .removed/ im Widgets-Ordner; ihre Apps verschwinden vom Startbildschirm und bleiben installiert.</string>
+    <string name="pages_remove_face_message">Die Datei landet in .removed/ im Widgets-Ordner.</string>
+    <string name="pages_remove_tiles_message">%1$s. Die Widgets der Seite landen in .removed/ im Widgets-Ordner; ihre Apps fliegen vom Startbildschirm, bleiben aber installiert.</string>
     <string name="pages_remove">entfernen</string>
     <plurals name="pages_apps">
         <item quantity="one">%1$d app</item>
@@ -120,7 +120,7 @@
     <string name="gestures_has_errors">%1$s (hat fehler)</string>
     <string name="gestures_missing">%1$s (fehlt)</string>
     <string name="gestures_edit">bearbeiten</string>
-    <string name="gestures_hint">panels sind owl-dateien, die app-übersicht ist eins davon: bearbeite sie wie widgets oder erstelle eins mit deinem agenten über das menü des startbildschirms. liegt auf nach oben wischen nichts, öffnet ein tippen auf die leiste trotzdem die app-übersicht</string>
+    <string name="gestures_hint">panels sind owl-dateien, die app-übersicht auch: bearbeite sie wie widgets oder lass deinen agenten eins bauen, übers menü des startbildschirms. ist nach oben wischen frei, öffnet ein tipp auf die leiste trotzdem die app-übersicht</string>
     <string name="gestures_stock_drawer">die standard-app-übersicht</string>
     <string name="gestures_drawer_shows">die app-übersicht zeigt %1$s</string>
     <string name="gestures_swipe_down_nothing">nach unten wischen öffnet nichts</string>

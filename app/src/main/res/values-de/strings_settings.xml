@@ -21,9 +21,9 @@
     <!-- %2$s is the setup stage, like "download arch linux". -->
     <string name="settings_linux_installing_percent">wird installiert %1$d%% · %2$s</string>
     <string name="settings_linux_installing">wird installiert · %1$s</string>
-    <string name="settings_linux_failed">einrichtung angehalten · erneut versuchen</string>
+    <string name="settings_linux_failed">einrichtung gestoppt · nochmal versuchen</string>
     <string name="settings_linux_removing">wird entfernt…</string>
-    <string name="settings_linux_not_installed">nicht installiert · installiere Arch Linux für terminal-apps und agenten</string>
+    <string name="settings_linux_not_installed">nicht installiert · hol dir Arch Linux für terminal-apps und agenten</string>
     <string name="settings_agents">coding-agenten</string>
     <string name="settings_agents_default">standard: %1$s</string>
     <string name="settings_agents_install">Claude Code, OpenCode, … installieren</string>
@@ -39,8 +39,8 @@
 
     <!-- %1$s is what the running update does, like "upgrading packages". -->
     <string name="settings_system_updating">systemupdate: %1$s…</string>
-    <string name="settings_system_update_failed">ein systemupdate wurde nicht abgeschlossen</string>
-    <string name="settings_retry">erneut versuchen</string>
+    <string name="settings_system_update_failed">ein systemupdate ist nicht fertig geworden</string>
+    <string name="settings_retry">nochmal versuchen</string>
     <string name="settings_system_updates">systemupdates</string>
     <string name="settings_widget_updates">widgets</string>
     <string name="settings_update_all">alle aktualisieren</string>
@@ -51,9 +51,9 @@
     <string name="settings_not_checked">noch nicht geprüft</string>
     <!-- %1$s is how long ago, like "5m ago". -->
     <string name="settings_up_to_date">aktuell · geprüft %1$s</string>
-    <string name="settings_store_unreachable">store nicht erreichbar</string>
+    <string name="settings_store_unreachable">store gerade nicht erreichbar</string>
     <!-- %1$s lists the edited widgets with their versions. -->
-    <string name="settings_updates_held">bearbeitet, daher hier nicht aktualisiert: %1$s · ein update im store ersetzt deine änderungen</string>
+    <string name="settings_updates_held">von dir bearbeitet, also hier nicht aktualisiert: %1$s · ein update im store ersetzt deine änderungen</string>
     <!-- Below a list cut short: how many lines are left out. -->
     <string name="settings_more_lines">+%1$d weitere</string>
     <string name="settings_just_now">gerade eben</string>

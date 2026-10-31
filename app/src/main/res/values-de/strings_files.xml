@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="files_failed">fehlgeschlagen</string>
-    <string name="files_cant_hand_over">%1$s lässt sich nicht an andere apps übergeben</string>
+    <string name="files_failed">hat nicht geklappt</string>
+    <string name="files_cant_hand_over">kann %1$s nicht an andere apps weitergeben</string>
     <string name="files_no_app">keine app kann %1$s öffnen</string>
     <string name="files_leads_to_nothing">das ziel existiert nicht</string>
-    <string name="files_cant_open">%1$s lässt sich nicht öffnen: %2$s</string>
+    <string name="files_cant_open">kann %1$s nicht öffnen: %2$s</string>
     <string name="files_selected">%1$d ausgewählt</string>
     <string name="files_filter_hint">diesen ordner filtern</string>
     <string name="files_home">persönlich</string>
@@ -27,7 +27,7 @@
         <item quantity="one">%1$d element löschen?</item>
         <item quantity="other">%1$d elemente löschen?</item>
     </plurals>
-    <string name="files_delete_message">Das lässt sich nicht rückgängig machen.</string>
+    <string name="files_delete_message">Das kannst du nicht rückgängig machen.</string>
     <string name="files_delete">löschen</string>
     <plurals name="files_items">
         <item quantity="one">%1$d element</item>
@@ -45,8 +45,8 @@
     <string name="files_paste_here">hier einfügen</string>
 
     <string name="editor_title">Editor</string>
-    <string name="editor_cant_read">%1$s lässt sich nicht lesen: %2$s</string>
-    <string name="editor_cant_save">%1$s lässt sich nicht speichern: %2$s</string>
+    <string name="editor_cant_read">kann %1$s nicht lesen: %2$s</string>
+    <string name="editor_cant_save">kann %1$s nicht speichern: %2$s</string>
     <string name="editor_not_found">nicht gefunden</string>
     <string name="editor_find_hint">in datei suchen</string>
     <string name="editor_title_unsaved">%1$s *</string>
@@ -59,7 +59,7 @@
     <string name="editor_show_in_files">in dateien zeigen</string>
     <string name="editor_open_in_micro">in micro öffnen</string>
     <string name="editor_save_confirm">%1$s speichern?</string>
-    <string name="editor_save_confirm_message">Du hast Änderungen, die noch nicht gespeichert sind.</string>
+    <string name="editor_save_confirm_message">Du hast noch ungespeicherte Änderungen.</string>
     <string name="editor_discard">verwerfen</string>
     <string name="editor_key_left">links</string>
     <string name="editor_key_up">hoch</string>
@@ -82,9 +82,9 @@
     <string name="prompt_manage_agents">"  agenten verwalten…"</string>
 
     <string name="prompt_speech_no_recognizer">keine spracherkennung auf diesem smartphone</string>
-    <string name="prompt_speech_refused">die spracherkennung des smartphones lässt keine anderen apps zu</string>
-    <string name="prompt_speech_failed">spracherkennung fehlgeschlagen (%1$d)</string>
-    <string name="prompt_speech_language">spracheingabe ist in dieser sprache nicht verfügbar</string>
-    <string name="prompt_speech_mic_permission">mikrofonberechtigung erforderlich</string>
+    <string name="prompt_speech_refused">die spracherkennung des smartphones lässt andere apps nicht ran</string>
+    <string name="prompt_speech_failed">spracherkennung hat nicht geklappt (%1$d)</string>
+    <string name="prompt_speech_language">spracheingabe gibt\'s in dieser sprache nicht</string>
+    <string name="prompt_speech_mic_permission">mikrofon-berechtigung fehlt</string>
     <string name="prompt_speech_network">spracherkennung braucht eine netzwerkverbindung</string>
 </resources>
