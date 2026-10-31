@@ -106,7 +106,7 @@ class Runtime(
     /** Widgets' speech(...) and android.speech. */
     val dictation = Dictation(context)
 
-    /** Widgets' speak(...), and the voice screen's replies. */
+    /** The voice screen's replies, in the phone's voice. */
     val speaker = Speaker(context)
 
     /** A spoken conversation with a coding agent: the voice screen's (VoiceActivity). */

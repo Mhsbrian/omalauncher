@@ -1218,11 +1218,6 @@ class LangTest {
         Compiler.compile(src.replace("onTap: speech(\"toggle\")", "onTap: speech(\"start\"); onRelease: speech(\"stop\")"))
         assertTrue(compileError(src.replace("typeText(value)", "speech(\"start\")")).contains("not in a trigger"))
         Compiler.compile(src.replace("typeText(value)", "speech(\"stop\")"))
-        // An app, open full screen, may listen as it opens: from owl 18, and only an app.
-        val app = "app \"talk\" {\n meta { owl: 18 }\n source said = android.speech\n state opened = false\n when !opened { opened = true; speech(\"start\") }\n Text { text: said.text } }"
-        Compiler.compile(app)
-        assertTrue(compileError(app.replace("owl: 18", "owl: 17")).contains("needs owl 18"))
-        assertTrue(compileError(app.replace("app \"talk\"", "widget").replace("owl: 18", "owl: 15")).contains("not in a trigger"))
         // Only on said.final may type what was heard: not said.text, though it ends with the same words.
         assertTrue(p.triggers.single().dictation)
         assertFalse(Compiler.compile(src.replace("on said.final", "on said.text")).triggers.single().dictation)

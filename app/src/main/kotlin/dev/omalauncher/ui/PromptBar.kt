@@ -356,6 +356,7 @@ internal fun PromptBar(
                 }
                 MicButton(
                     listening = listening,
+                    voice = linux && runtime.voice.voiceAgents.isNotEmpty(),
                     // A tap opens the voice app, or dictates into the field and stops at the next pause; another tap
                     // stops it sooner.
                     onTap = { if (speech.listening) speech.stop() else tapMic() },
@@ -396,6 +397,8 @@ private const val HOLD_MILLIS = 250L
 @Composable
 private fun MicButton(
     listening: Boolean,
+    /** A tap opens the voice screen: the sound bars rather than the microphone. */
+    voice: Boolean,
     onTap: () -> Unit,
     onHold: () -> Unit,
     onRelease: () -> Unit,
@@ -451,7 +454,19 @@ private fun MicButton(
                 }
             },
         contentAlignment = Alignment.Center,
-    ) { MicIcon(if (listening) Palette.background else Palette.foreground) }
+    ) { if (voice && !listening) VoiceIcon(Palette.foreground) else MicIcon(if (listening) Palette.background else Palette.foreground) }
+}
+
+/** Sound bars, the voice screen's icon, on the same grid as [MicIcon]: what the mic shows when a tap talks to an agent. */
+@Composable
+internal fun VoiceIcon(color: Color) {
+    Canvas(Modifier.size(22.dp)) {
+        val u = size.width / 24f
+        // x and half-height of each bar, as in art/icons/voice.svg.
+        for ((x, h) in listOf(4.5f to 2f, 8.25f to 5f, 12f to 8.5f, 15.75f to 5f, 19.5f to 2f)) {
+            drawLine(color, androidx.compose.ui.geometry.Offset(x * u, (12f - h) * u), androidx.compose.ui.geometry.Offset(x * u, (12f + h) * u), 2.4f * u, StrokeCap.Round)
+        }
+    }
 }
 
 /** A microphone drawn on a 24-unit grid, like the home screen's other icons. */

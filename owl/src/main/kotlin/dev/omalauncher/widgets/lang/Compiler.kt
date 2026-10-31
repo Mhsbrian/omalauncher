@@ -27,7 +27,7 @@ class Compiler private constructor(
          * instead of failing on what they don't know. Bump it with every
          * addition a widget could depend on: nodes, properties, builtins.
          */
-        const val LEVEL = 18
+        const val LEVEL = 17
         private const val MAX_ASSET_BYTES = 2 shl 20
 
         /** Pages as far out as a file can ask for; past Int's range, the pages either side of them would wrap. */
@@ -1358,15 +1358,8 @@ class Compiler private constructor(
                     if ((handlerName == "onPress" || handlerName == "onRelease") && word !in SPEECH_ANYWHERE) {
                         fail("speech(\"${word ?: "…"}\") may ask for the microphone over the widget before the finger lifts: start it in onTap", call.pos)
                     }
-                    // The microphone opens only for a touch, never on a timer or a fetched value; an app, which the user
-                    // just opened full screen, may also start it from a trigger while it's open, to listen as it opens (owl 18).
-                    if (TriggerKind.entries.any { it.word == handlerName } && word != null && word !in SPEECH_ANYWHERE) {
-                        if (ast.kind == OwlKind.App) {
-                            since(APP_SPEECH, call.pos)
-                        } else {
-                            fail("speech(\"$word\") works in onTap, not in a trigger; stop and cancel work anywhere, and an app's triggers may start it too", call.pos)
-                        }
-                    }
+                    // The microphone opens only for a touch, never on a timer or a fetched value.
+                    if (TriggerKind.entries.any { it.word == handlerName } && word != null && word !in SPEECH_ANYWHERE) fail("speech(\"$word\") works in onTap, not in a trigger; stop and cancel work anywhere", call.pos)
                 }
                 if (call.name == "latch") (args.getOrNull(1)?.const as? Str)?.v?.let { if (it !in KeyNames.hows) fail("latch's second value is ${KeyNames.hows.joinToString()}", call.args[1].pos) }
                 if (call.name == "screen" || call.name == "close") screenAction = screenAction ?: call.pos

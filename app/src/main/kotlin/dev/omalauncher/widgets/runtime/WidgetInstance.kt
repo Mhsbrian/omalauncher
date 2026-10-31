@@ -563,7 +563,6 @@ class WidgetInstance(
         }
         // An agent or an app opening on its own, from a timer or a fetched value, over whatever the user is doing: like
         // sound(...), a trigger does it only while the app or screen is open.
-        if (name == "speak" && args.isNotEmpty() && inTrigger && !foreground()) return report("speak(...) in a trigger works only while the app or screen is open")
         if ((name == "ask" || name == "open") && inTrigger && !foreground()) return report("$name(...) in a trigger works only while the app or screen is open")
         // Keys go to whatever window has the keyboard: only from a touch, never on a timer or a fetched value. Or from
         // what the user just said, to this widget's dictation a tap started: on said.final { typeText(value) }.
@@ -572,11 +571,8 @@ class WidgetInstance(
         }
         if (name == "pickImages" && inTrigger) return report("pickImages() works in onTap, not in a trigger")
         val key = args.firstOrNull().textOrNull()
-        // The microphone, like the keys, only from a touch; stopping it from anywhere. An app may start it from a trigger
-        // while it's open, as a voice app listens when it opens.
-        if (name == "speech" && inTrigger && key !in SPEECH_ANYWHERE && !(program.kind == OwlKind.App && foreground())) {
-            return report("speech(\"$key\") works in onTap, not in a trigger" + if (program.kind == OwlKind.App) ", and in an app's only while it's open" else "")
-        }
+        // The microphone, like the keys, only from a touch; stopping it from anywhere.
+        if (name == "speech" && inTrigger && key !in SPEECH_ANYWHERE) return report("speech(\"$key\") works in onTap, not in a trigger")
         if (name == "speech") return key?.let { services.speech(this, it) } ?: Unit
         // Names built from values, which the compiler couldn't check: say so rather than press nothing.
         if (name == "pressKey" && key != null && KeyNames.combo(key) == null) return report("pressKey(\"$key\") names no key; ${KeyNames.help}")

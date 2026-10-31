@@ -12,7 +12,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 
 /**
- * Android's own text-to-speech, in the phone's voice and language: widgets' speak(text) and the voice screen.
+ * Android's own text-to-speech, in the phone's voice and language: the voice screen's replies.
  * Sentences queue up and play one after another; [stop] stops what's playing and drops the rest. Started
  * on first use. Main thread.
  */

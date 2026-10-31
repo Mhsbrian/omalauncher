@@ -1,7 +1,0 @@
-#!/bin/bash
-# ~/voice/send listen | stop | say <text>: hands a request to the running brain; prints why when it can't
-if [ ! -p /tmp/voice.in ] || ! pgrep -f voice/brain.py >/dev/null; then
-  echo "the voice brain isn't running; close the app and open it again"
-  exit 0
-fi
-timeout 2 bash -c 'printf "%s\n" "$1" > /tmp/voice.in' _ "$*" || echo "the voice brain didn't take the request"
