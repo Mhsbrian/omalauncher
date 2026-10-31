@@ -25,6 +25,7 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.GraphicsContext
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.layer.GraphicsLayer
 import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.platform.LocalGraphicsContext
@@ -745,8 +746,10 @@ internal fun ShaderNode(
     val brush = remember(shader) { ShaderBrush(shader) }
     // Reading time keeps the widget's frame clock running, so a shader that never uses it isn't redrawn every frame.
     val readsTime = remember(code) { Compiler.shaderReadsTime(code) }
+    // One that doesn't is kept in its own layer, drawn again only when its uniforms change: otherwise every frame of
+    // anything on the page, a swipe too, ran it over every pixel again (manga on a Galaxy Tab A8: 125 ms of GPU a frame).
     Spacer(
-        modifier.drawBehind {
+        (if (readsTime) modifier else modifier.graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }).drawBehind {
             val started = System.nanoTime()
             shader.setFloatUniform("size", size.width, size.height)
             if (readsTime) shader.setFloatUniform("time", inst.time().toFloat())
