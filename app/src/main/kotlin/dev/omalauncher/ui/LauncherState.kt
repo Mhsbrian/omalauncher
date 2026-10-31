@@ -37,15 +37,12 @@ class LauncherState {
     /** The menu from long-pressing empty home space. */
     var homeMenuOpen by mutableStateOf(false)
 
-    /** The feed left of the first home page; its settings are a settings page ([SettingsPage.Feed]). */
-    val feed = FeedReveal()
-
     /** The app whose icon is being picked from the drawer or home; settings › icons has its own picker. */
     var iconApp by mutableStateOf<dev.omalauncher.AndroidApp?>(null)
 
     /** The open drawer or a full-screen panel hides the home screen; animated widgets stop ticking under it. */
     val homeCovered: Boolean
-        get() = drawer.value > 0.99f || shared != null || sharing != null || feed.progress.value > 0.99f || iconApp != null
+        get() = drawer.value > 0.99f || shared != null || sharing != null || iconApp != null
 
     /** Closes every overlay screen (the home menu, widget sharing). */
     fun closeScreens() {
@@ -53,7 +50,6 @@ class LauncherState {
         shared = null
         sharing = null
         iconApp = null
-        if (feed.isOpen) feed.close()
     }
 
     /** Key of the home tile in edit mode (handles and action bar shown), if any. */

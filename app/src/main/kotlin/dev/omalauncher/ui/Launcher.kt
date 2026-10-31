@@ -105,7 +105,6 @@ private fun DesktopScreen(
             state.iconApp != null -> state.iconApp = null
             runtime.widgets.openScreen != null -> runtime.widgets.openScreen = null
             state.pulled != null -> state.closePull()
-            state.feed.isOpen -> state.feed.close()
             else -> state.close()
         }
     }
@@ -271,8 +270,6 @@ private fun DesktopScreen(
         }
     }
 
-    // The feed draws over the bar, and the screens it opens over it.
-    FeedPanel(runtime, state)
     // Over home and the bar, as it comes down from the top.
     PulledPanel(runtime, state)
     // Full-screen panels draw over the bar.

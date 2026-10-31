@@ -36,7 +36,6 @@ import androidx.compose.foundation.layout.imeAnimationTarget
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.draw.drawWithContent
@@ -386,8 +385,6 @@ fun HomeScreen(
                 Modifier
                     .weight(1f)
                     .fillMaxWidth()
-                    // Dragging past the leftmost page pulls in the feed.
-                    .nestedScroll(rememberFeedScroll(state.feed, runtime.feed.settings.enabled))
                     // Down out of the tiles stops at the recent apps first, which Compose's own search passes over.
                     .focusProperties { onExit = { if (requestedFocusDirection == FocusDirection.Down) state.stripEntry.requestFocus() } }
                     // In landscape there's nothing below for that search to find, so it never leaves: Down, or the arrow
