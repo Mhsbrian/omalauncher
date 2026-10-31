@@ -93,6 +93,10 @@ class VoiceSession(
     private var lastSaid = 0L
     private var lastEvent = 0L
     private var doneAt = 0L
+
+    /** When the turn in progress was asked, and whether anything came back since. */
+    private var asked = 0L
+    private var heardBack = false
     private var restarts = 0
     private var screens = 0
     private val complaints = ArrayDeque<String>()
@@ -172,6 +176,10 @@ class VoiceSession(
         saveSession()
         phase = Phase.Thinking
         lastEvent = System.currentTimeMillis()
+        if (fresh) {
+            asked = lastEvent
+            heardBack = false
+        }
         link?.prompt(said)
     }
 
@@ -365,6 +373,7 @@ class VoiceSession(
                     saveTranscript()
                 }
                 is LinkEvent.Text -> {
+                    heardBack = true
                     var d = e.text
                     if (afterTool && reply.isNotEmpty() && !reply.last().isWhitespace()) d = " " + d.trimStart()
                     afterTool = false
@@ -374,6 +383,7 @@ class VoiceSession(
                     if (phase != Phase.Approval) phase = Phase.Working
                 }
                 LinkEvent.Working -> {
+                    heardBack = true
                     handOver(final = true)
                     afterTool = true
                     if (System.currentTimeMillis() - lastSaid > PROGRESS_MS) say("One moment.")
@@ -385,6 +395,7 @@ class VoiceSession(
                     for (path in e.images) keepImage(path)
                 }
                 is LinkEvent.Ask -> {
+                    heardBack = true
                     val a = Approval(e.id, e.label, e.detail, e.key)
                     if (approveAll || Steps.covered(e.key, always)) {
                         link?.answer(e.id, true, false, null)
@@ -484,6 +495,8 @@ class VoiceSession(
                     doneAt = 0
                     phase = if (approvals.isEmpty()) Phase.Idle else Phase.Approval
                 }
+                // Nothing at all since the prompt: OpenCode out of its free quota leaves a prompt hanging without a word.
+                if (turns > 0 && !heardBack && now - asked > SILENT_MS && notice == null) notice = "no answer from ${agent?.name} yet; it may be out of quota or not signed in"
                 if (turns > 0 && now - lastEvent > QUIET_MS && notice == null) notice = "${agent?.name} has been quiet for two minutes; stop it if it's stuck"
                 if (process != null) main.postDelayed(this, 1000)
             }
@@ -550,6 +563,7 @@ class VoiceSession(
         const val IDLE_STOP_MS = 10 * 60_000L
         const val RESUME_MS = 12 * 3_600_000L
         const val QUIET_MS = 120_000L
+        const val SILENT_MS = 45_000L
         const val PROGRESS_MS = 12_000L
         private val SENTENCE = Regex("[.!?:;](\\s|$)|\\n")
         private val YES = Regex("^\\W*(yes|yeah|yep|sure|ok|okay|allow|allowed|approve|go ahead|do it|go|fine|alright|please do|ja|si|sí|oui)\\b", RegexOption.IGNORE_CASE)
