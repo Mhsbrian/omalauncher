@@ -2,8 +2,8 @@ widget "today" {
   page: 1
   order: 1
   size: 3x3
-  minSize: 3x2
-  meta { description: "The date and the weather where you are, by IP or a city you type. Tap it for the next 24 hours, three days, wind, UV, sun and moon. Tap °C or °F to switch"; version: "1.5"; license: "MIT"; category: "world"; owl: 16 }
+  minSize: 2x2
+  meta { description: "The date and the weather where you are, by IP or a city you type. Tap it for the next 24 hours, three days, wind, UV, sun and moon. Tap °C or °F to switch"; version: "1.7"; license: "MIT"; category: "world"; owl: 16 }
 
   // What it says, in the phone's language where it has a set. wttr names the sky and the moon in English, and
   // its own Indonesian misses newer conditions, so other languages name them from wttr's codes.
@@ -186,7 +186,12 @@ widget "today" {
   }
 
   source now = clock every 1m
-  let short = tileHeight != null && tileHeight < 190
+  // The date on two lines with the forecast row under it needs about 195dp; a 3x3 squeezed by an extra row
+  // (190 on a Pixel 9a) cut the forecast off.
+  let short = tileHeight != null && tileHeight < 200
+  // A low tile (two rows on a phone) has no room for the days ahead; a narrow one (two columns) drops sunrise and sunset.
+  let low = tileHeight != null && tileHeight < 150
+  let narrow = tileWidth != null && tileWidth < 170
   state city = "" persist
   // Blank follows the country. A tap on the degree letter stores C or F.
   state unitChoice = "" persist
@@ -250,14 +255,17 @@ widget "today" {
 
   Column {
     gap: 0
-    // A short tile (a 3x3 on the landscape home screen) gets the date on one line, so the forecast row still fits.
-    if short {
+    // A short tile (a 3x3 on the landscape home screen) gets the date on one line, so the forecast row still fits,
+    // and so does a narrow one, where the month won't fit beside the big day.
+    if short || narrow {
       Row {
         gap: 6
         align: center
         Text { text: fmtTime(now, "d"); fontSize: 20; width: 28; maxLines: 1 }
         Text { text: lower(fmtTime(now, "EEEE")); style: label; color: accent; weight: 1; maxLines: 1 }
-        Text { text: lower(fmtTime(now, "MMMM")); style: small; color: muted; width: 76; align: end; maxLines: 1 }
+        if !narrow {
+          Text { text: lower(fmtTime(now, "MMMM")); style: small; color: muted; width: 76; align: end; maxLines: 1 }
+        }
       }
     } else {
       Row {
@@ -281,46 +289,52 @@ widget "today" {
         align: bottom
         Text { text: weatherIcon(cur.weatherCode, night); font: icon; fontSize: 32; color: sky; width: 26; padding: [0, 0, 0, 3] }
         Text { text: "${get(cur, "temp_" + unit)}°"; fontSize: 28; color: cyan; width: 68; maxLines: 1 }
-        Column {
-          gap: 0
-          weight: 1
-          Text { text: str.sky(cur.weatherCode, cur.weatherDesc[0].value); style: small; align: end; maxLines: 1 }
-          Text { text: "↑${get(day, "maxtemp" + unit)}° ↓${get(day, "mintemp" + unit)}°"; style: small; color: muted; align: end; maxLines: 1; padding: [0, 0, 0, 5] }
-        }
-      }
-      Text { text: "${str.feels} ${get(cur, "FeelsLike" + unit)}° · ${lower(area.areaName[0].value)}"; style: small; color: muted; maxLines: 1 }
-      Spacer { weight: 1 }
-      Spacer { height: 1; fill: width; background: alpha(muted, 0.25) }
-      Spacer { height: 8 }
-      // The next two days (icon from the noon reading), then sunrise and sunset.
-      // Each named from its own date: just after midnight, the forecast from before it still starts yesterday.
-      Row {
-        gap: 4
-        align: center
-        for d, i in drop(wx.weather, 1) key d.date {
+        if !narrow {
           Column {
             gap: 0
             weight: 1
-            align: center
-            Text { text: lower(fmtTime(parseTime(d.date), "EEE")); style: label; color: muted; align: center }
-            Text { text: weatherIcon(d.hourly[4].weatherCode, false); font: icon; fontSize: 18; align: center }
-            Text { text: "${get(d, "maxtemp" + unit)}° ${get(d, "mintemp" + unit)}°"; style: small; align: center; maxLines: 1 }
+            Text { text: str.sky(cur.weatherCode, cur.weatherDesc[0].value); style: small; align: end; maxLines: 1 }
+            Text { text: "↑${get(day, "maxtemp" + unit)}° ↓${get(day, "mintemp" + unit)}°"; style: small; color: muted; align: end; maxLines: 1; padding: [0, 0, 0, 5] }
           }
         }
-        Column {
+      }
+      Text { text: "${str.feels} ${get(cur, "FeelsLike" + unit)}° · ${lower(area.areaName[0].value)}"; style: small; color: muted; maxLines: 1 }
+      if !low {
+        Spacer { weight: 1 }
+        Spacer { height: 1; fill: width; background: alpha(muted, 0.25) }
+        Spacer { height: 8 }
+        // The next two days (icon from the noon reading), then sunrise and sunset.
+        // Each named from its own date: just after midnight, the forecast from before it still starts yesterday.
+        Row {
           gap: 4
-          weight: 1.2
-          Row {
-            gap: 4
-            align: center
-            Text { text: ""; font: icon; fontSize: 14; color: yellow; width: 20 }
-            Text { text: sun[0]; style: small; maxLines: 1; weight: 1 }
+          align: center
+          for d, i in drop(wx.weather, 1) key d.date {
+            Column {
+              gap: 0
+              weight: 1
+              align: center
+              Text { text: lower(fmtTime(parseTime(d.date), "EEE")); style: label; color: muted; align: center }
+              Text { text: weatherIcon(d.hourly[4].weatherCode, false); font: icon; fontSize: 18; align: center }
+              Text { text: "${get(d, "maxtemp" + unit)}° ${get(d, "mintemp" + unit)}°"; style: small; align: center; maxLines: 1 }
+            }
           }
-          Row {
-            gap: 4
-            align: center
-            Text { text: ""; font: icon; fontSize: 14; color: orange; width: 20 }
-            Text { text: sun[1]; style: small; maxLines: 1; weight: 1 }
+          if !narrow {
+            Column {
+              gap: 4
+              weight: 1.2
+              Row {
+                gap: 4
+                align: center
+                Text { text: ""; font: icon; fontSize: 14; color: yellow; width: 20 }
+                Text { text: sun[0]; style: small; maxLines: 1; weight: 1 }
+              }
+              Row {
+                gap: 4
+                align: center
+                Text { text: ""; font: icon; fontSize: 14; color: orange; width: 20 }
+                Text { text: sun[1]; style: small; maxLines: 1; weight: 1 }
+              }
+            }
           }
         }
       }

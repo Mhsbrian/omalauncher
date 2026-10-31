@@ -2,8 +2,8 @@ widget "fetch" {
   page: 1
   order: 2
   size: 3x3
-  minSize: 3x2
-  meta { description: "Your phone at a glance, fastfetch style, with or without Linux: CPU, memory, storage, battery and theme, plus Arch's packages once Linux is installed. Tap it for every detail"; version: "1.9"; license: "MIT"; category: "system"; owl: 16 }
+  minSize: 2x2
+  meta { description: "Your phone at a glance, fastfetch style, with or without Linux: CPU, memory, storage, battery and theme, plus Arch's packages once Linux is installed. Tap it for every detail"; version: "1.10"; license: "MIT"; category: "system"; owl: 16 }
 
   // What it says, in the phone's language where it has a set. Words fastfetch and Linux use as names (os, host,
   // kernel, cpu, shell) stay as they are. Android's battery words come in English, so a set names them itself.
@@ -148,6 +148,13 @@ widget "fetch" {
   // A short tile (the landscape home screen, or 3x2) has room for 8 lines:
   // shell or display, theme and cpu give way to memory, disk and battery.
   let short = tileHeight != null && tileHeight < 190
+  // A low one (two rows on a phone) has room for 6: host, kernel and packages give way too.
+  // A tiny one (two rows on a landscape phone) for 4: memory, disk and battery.
+  let low = tileHeight != null && tileHeight < 150
+  let tiny = tileHeight != null && tileHeight < 110
+  // A narrow tile (two columns on a phone) has room for a label and a number: no os, host or kernel,
+  // uptime in its largest unit, and memory, disk and battery as percentages.
+  let narrow = tileWidth != null && tileWidth < 170
 
   // Bytes a second over the last two reads; null until there are two, and after a reboot restarts the counters.
   state down = null
@@ -178,10 +185,10 @@ widget "fetch" {
     }
   }
 
-  component Line(key, value, size = 10, keyWidth = 50) {
+  component Line(key, value, size = 10, keyWidth = 56) {
     Row {
       gap: 6
-      Text { text: key; fontSize: size; font: mono; color: accent; width: keyWidth }
+      Text { text: key; fontSize: size; font: mono; color: accent; width: keyWidth; maxLines: 1 }
       Text { text: value; fontSize: size; font: mono; maxLines: 1; weight: 1 }
     }
   }
@@ -232,23 +239,45 @@ widget "fetch" {
       }
     }
     Spacer { height: 3 }
-    Line { key: "os"; value: linux ? lx.os : dev == null ? null : "Android ${dev.android}" }
-    Line { key: "host"; value: dev == null ? null : "${dev.maker} ${dev.model}" }
-    Line { key: "kernel"; value: kernel }
-    Line { key: str.uptime; value: sys.uptime == null ? null : fmtDuration(sys.uptime) }
-    Line { key: str.packages; value: linux ? (lx.pkgs == null ? null : onAndroid ? "${lx.pkgs} (pacman), ${sys.apps} (${str.apps})" : "${lx.pkgs} (pacman)") : "${sys.apps} (${str.apps})" }
-    if !short {
-      if linux {
-        Line { key: "shell"; value: lx.shell }
-      } else {
-        Line { key: str.display; value: shown.width == null ? null : "${shown.width}x${shown.height} @ ${shown.hz}Hz" }
+    if narrow {
+      if !tiny {
+        // Uptime's largest unit only: 11h, not 11h 5m.
+        Line { key: str.uptime; value: sys.uptime == null ? null : split(fmtDuration(sys.uptime), " ")[0] }
+        Line { key: str.packages; value: linux ? lx.pkgs : sys.apps }
       }
-      Line { key: str.theme; value: sys.theme ?? str.byDefault }
-      Line { key: "cpu"; value: sys.cpu == null ? null : "${sys.cpu.soc == "" ? sys.cpu.hardware : sys.cpu.soc} (${sys.cpu.cores})" }
+      if !short {
+        Line { key: "cpu"; value: sys.cpu == null ? null : "${sys.cpu.cores}" }
+      }
+      Line { key: str.memory; value: mem == null ? null : "${round(mem.used / mem.total * 100)}%" }
+      Line { key: str.disk; value: disk == null ? null : "${round(disk.used / disk.total * 100)}%" }
+      Line { key: str.battery; value: bat == null ? null : "${bat.level}%" }
+    } else {
+      if !tiny {
+        Line { key: "os"; value: linux ? lx.os : dev == null ? null : "Android ${dev.android}" }
+      }
+      if !low {
+        Line { key: "host"; value: dev == null ? null : "${dev.maker} ${dev.model}" }
+        Line { key: "kernel"; value: kernel }
+      }
+      if !tiny {
+        Line { key: str.uptime; value: sys.uptime == null ? null : fmtDuration(sys.uptime) }
+      }
+      if !low {
+        Line { key: str.packages; value: linux ? (lx.pkgs == null ? null : onAndroid ? "${lx.pkgs} (pacman), ${sys.apps} (${str.apps})" : "${lx.pkgs} (pacman)") : "${sys.apps} (${str.apps})" }
+      }
+      if !short {
+        if linux {
+          Line { key: "shell"; value: lx.shell }
+        } else {
+          Line { key: str.display; value: shown.width == null ? null : "${shown.width}x${shown.height} @ ${shown.hz}Hz" }
+        }
+        Line { key: str.theme; value: sys.theme ?? str.byDefault }
+        Line { key: "cpu"; value: sys.cpu == null ? null : "${sys.cpu.soc == "" ? sys.cpu.hardware : sys.cpu.soc} (${sys.cpu.cores})" }
+      }
+      Line { key: str.memory; value: mem == null ? null : "${fmtBytes(mem.used)} / ${fmtBytes(mem.total)} (${round(mem.used / mem.total * 100)}%)" }
+      Line { key: str.disk; value: disk == null ? null : "${fmtBytes(disk.used)} / ${fmtBytes(disk.total)} (${round(disk.used / disk.total * 100)}%)" }
+      Line { key: str.battery; value: bat == null ? null : "${bat.level}% · ${str.word(bat.status)}" }
     }
-    Line { key: str.memory; value: mem == null ? null : "${fmtBytes(mem.used)} / ${fmtBytes(mem.total)} (${round(mem.used / mem.total * 100)}%)" }
-    Line { key: str.disk; value: disk == null ? null : "${fmtBytes(disk.used)} / ${fmtBytes(disk.total)} (${round(disk.used / disk.total * 100)}%)" }
-    Line { key: str.battery; value: bat == null ? null : "${bat.level}% · ${str.word(bat.status)}" }
   }
 
   screen {
