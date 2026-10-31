@@ -227,6 +227,17 @@
             android:windowSoftInputMode="adjustResize" />
 
         <activity
+            android:name=".VoiceActivity"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden|navigation|density|uiMode"
+            android:exported="false"
+            android:icon="@drawable/voice"
+            android:label="@string/activity_voice"
+            android:launchMode="singleTask"
+            android:resizeableActivity="true"
+            android:taskAffinity="${applicationId}.voice"
+            android:theme="@style/Theme.Omalauncher.Window" />
+
+        <activity
             android:name=".SettingsActivity"
             android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden|navigation|density|uiMode"
             android:exported="false"

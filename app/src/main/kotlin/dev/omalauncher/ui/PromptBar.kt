@@ -192,11 +192,11 @@ internal fun PromptBar(
     }
 
     /**
-     * A tap on the mic: the voice app, a spoken conversation with the agent, when it's installed (a file
-     * [VOICE_APP] among the widgets); dictation into the bar otherwise. Holding the mic always dictates.
+     * A tap on the mic: the voice screen, a spoken conversation with an agent that can talk (Claude Code, Grok);
+     * dictation into the bar without one. Holding the mic always dictates.
      */
     fun tapMic() {
-        if (linux && runtime.widgets.isApp(VOICE_APP)) runtime.openOwlApp(VOICE_APP) else talk(hold = false)
+        if (linux && runtime.voice.voiceAgents.isNotEmpty()) runtime.openVoice() else talk(hold = false)
     }
 
     LaunchedEffect(state.promptRequest) {
@@ -382,9 +382,6 @@ internal fun PromptBar(
         }
     }
 }
-
-/** The voice app's file: the mic opens it instead of dictating when it's installed. */
-private const val VOICE_APP = "voice.owl"
 
 /** How long a press on the mic waits before it counts as hold-to-talk rather than a tap or a passing swipe. */
 private const val HOLD_MILLIS = 250L

@@ -43,6 +43,7 @@ import dev.omalauncher.ui.Gestures
 import dev.omalauncher.ui.KeyboardBridge
 import dev.omalauncher.ui.SettingsPage
 import dev.omalauncher.ui.Speaker
+import dev.omalauncher.voice.VoiceSession
 import dev.omalauncher.ui.TerminalTiles
 import dev.omalauncher.ui.WindowManager
 import dev.omalauncher.ui.bitmapMask
@@ -105,8 +106,11 @@ class Runtime(
     /** Widgets' speech(...) and android.speech. */
     val dictation = Dictation(context)
 
-    /** Widgets' speak(...). */
+    /** Widgets' speak(...), and the voice screen's replies. */
     val speaker = Speaker(context)
+
+    /** A spoken conversation with a coding agent: the voice screen's (VoiceActivity). */
+    val voice by lazy { VoiceSession(context, proot, agents, speaker) }
     val updates = SystemUpdates(proot, pacman, agents)
     val gpu = Gpu(context, proot, pacman)
 
@@ -617,6 +621,11 @@ class Runtime(
     /** Opens the owl app in file [name] in its own task; nothing if it isn't running (removed, or broken). */
     fun openOwlApp(name: String) {
         if (widgets.isApp(name)) InstantActivity.startInstantly(context, OwlAppActivity.intent(context, name))
+    }
+
+    /** Opens the voice screen, a spoken conversation with a coding agent. */
+    fun openVoice() {
+        InstantActivity.startInstantly(context, Intent(context, VoiceActivity::class.java))
     }
 
     /** Opens the Files app, at [path] (a guest path) if given. */
