@@ -57,6 +57,10 @@ import androidx.compose.ui.layout.layout
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntRect
+import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
@@ -240,6 +244,27 @@ private const val MAX_CODE_LINE = 10_000
 
 private fun String.cutLongLines(): String =
     if (lineSequence().none { it.length > MAX_CODE_LINE }) this else lineSequence().joinToString("\n") { if (it.length > MAX_CODE_LINE) it.take(MAX_CODE_LINE) + "…" else it }
+
+/** Just under the anchor, lined up with its start, and kept on screen. */
+val BelowAnchorStart: PopupPositionProvider = BelowAnchor(end = false)
+
+/** Just under the anchor, lined up with its end, and kept on screen. */
+val BelowAnchorEnd: PopupPositionProvider = BelowAnchor(end = true)
+
+private class BelowAnchor(
+    private val end: Boolean,
+) : PopupPositionProvider {
+    override fun calculatePosition(
+        anchorBounds: IntRect,
+        windowSize: IntSize,
+        layoutDirection: LayoutDirection,
+        popupContentSize: IntSize,
+    ) = IntOffset(
+        (if (end) anchorBounds.right - popupContentSize.width else anchorBounds.left)
+            .coerceIn(0, (windowSize.width - popupContentSize.width).coerceAtLeast(0)),
+        (anchorBounds.bottom + 8).coerceAtMost((windowSize.height - popupContentSize.height).coerceAtLeast(0)),
+    )
+}
 
 /**
  * A framed popup list at [position] with [selected] marked; picking one closes it first.
