@@ -26,6 +26,16 @@ class Speaker(
     var speaking by mutableStateOf(false)
         private set
 
+    /**
+     * Why replies aren't heard, for the screen to say: no text-to-speech engine on the phone, or the engine
+     * failing to read (often no voice installed for the language). Null once it reads again.
+     */
+    var problem by mutableStateOf<String?>(null)
+        private set
+
+    /** Starts the engine ahead of the first reply: sooner speech, and [problem] known before anything's said. */
+    fun warmUp() = start()
+
     /** What was asked before the engine was ready, said once it is. */
     private val waiting = ArrayDeque<String>()
     private var next = 0
@@ -54,11 +64,15 @@ class Speaker(
 
     private fun start() {
         if (tts != null) return
-        tts =
+        // With no engine at all, Android reports the failure from inside the constructor, before it returns.
+        var failed = false
+        val engine =
             TextToSpeech(context.applicationContext) { status ->
                 if (status != TextToSpeech.SUCCESS) {
                     Log.w(TAG, "text-to-speech failed to start: $status")
+                    failed = true
                     tts = null
+                    problem = NO_ENGINE
                     waiting.clear()
                     speaking = false
                     return@TextToSpeech
@@ -74,10 +88,18 @@ class Speaker(
                     object : UtteranceProgressListener() {
                         override fun onStart(id: String?) {}
 
-                        override fun onDone(id: String?) = main.post(::finished).let {}
+                        override fun onDone(id: String?) =
+                            main.post {
+                                problem = null
+                                finished()
+                            }.let {}
 
                         @Deprecated("Deprecated in Java")
-                        override fun onError(id: String?) = main.post(::finished).let {}
+                        override fun onError(id: String?) =
+                            main.post {
+                                problem = CANT_READ
+                                finished()
+                            }.let {}
 
                         override fun onStop(
                             id: String?,
@@ -86,8 +108,10 @@ class Speaker(
                     },
                 )
                 ready = true
+                problem = null
                 while (waiting.isNotEmpty()) say(waiting.removeFirst())
             }
+        if (failed) engine.shutdown() else tts = engine
     }
 
     private fun finished() {
@@ -97,10 +121,16 @@ class Speaker(
 
     private fun say(text: String) {
         queued++
-        tts?.speak(text, TextToSpeech.QUEUE_ADD, null, "s${next++}")
+        // Refused (the engine went away): no progress callback comes for it, so it's done now.
+        if (tts?.speak(text, TextToSpeech.QUEUE_ADD, null, "s${next++}") != TextToSpeech.SUCCESS) {
+            problem = CANT_READ
+            finished()
+        }
     }
 
     private companion object {
         const val TAG = "speaker"
+        const val NO_ENGINE = "no text-to-speech on this phone: replies aren't read aloud"
+        const val CANT_READ = "text-to-speech couldn't read the reply; is a voice for its language installed?"
     }
 }

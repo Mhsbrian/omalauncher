@@ -24,32 +24,33 @@ sealed interface LinkEvent {
     /** It started using a tool; what for comes with the [Step]. */
     data object Working : LinkEvent
 
-    /** A tool call, in a few words for the screen ("reading 60-owl.owl"), with the pictures it reads. */
+    /** A tool call ([sub] when a subtask made it), with the pictures it reads. */
     data class Step(
-        val label: String,
+        val act: Act,
         val images: List<String> = emptyList(),
+        val sub: Boolean = false,
     ) : LinkEvent
 
     /** It asks before using a tool: [id] goes back in [AgentLink.answer]. [key] is what "always" allows. */
     data class Ask(
         val id: String,
-        val label: String,
+        val act: Act,
         val detail: String,
         val key: String,
     ) : LinkEvent
 
-    /** A prompt is answered: [error] when it failed, [cancelled] when it was stopped. */
+    /** A prompt is answered: [error] when it failed (empty when it didn't say why), [cancelled] when it was stopped. */
     data class Done(
         val error: String? = null,
         val cancelled: Boolean = false,
     ) : LinkEvent
 
-    /** Something to show, like a retry after a network error. */
-    data class Notice(
-        val text: String,
+    /** It retries after [error], like a network error. */
+    data class Retrying(
+        val error: String,
     ) : LinkEvent
 
-    /** It can't go on: not signed in, no session. */
+    /** It can't go on: not signed in, no session; [message] is its own, empty when it gave none. */
     data class Failed(
         val message: String,
     ) : LinkEvent
@@ -94,11 +95,13 @@ abstract class AgentLink(
 /** How the agent is told it's in a spoken conversation. */
 const val VOICE_PROMPT =
     "You are talking with the user through a voice interface on their phone: what they say reaches you as " +
-        "speech-to-text, which can mishear words, and your replies are read aloud by text-to-speech. Talk like a " +
-        "person in a conversation: usually one to three short sentences, longer only when asked. Answer in the " +
-        "language the user speaks. Never use markdown, lists, headings, code blocks, tables, emoji or URLs; say " +
-        "numbers, paths and symbols the way you'd say them out loud. When you need a tool, first say in a few " +
-        "words what you're about to do."
+        "speech-to-text, which can mishear words, and your replies are read aloud by text-to-speech, so every word " +
+        "takes their time. Talk like a person in a conversation: one to three short sentences, longer only when " +
+        "asked; they'll ask if they want more. Answer, then stop: no preamble, no repeating their question, no " +
+        "offers of further help. Answer in the language the user speaks. Never use markdown, lists, headings, code " +
+        "blocks, tables, emoji or URLs; say numbers, paths and symbols the way you'd say them out loud. For a task " +
+        "with tools, say once in a few words what you're going to do, then work without talking about each step, " +
+        "and at the end say the outcome in a sentence or two, not everything you did."
 
 private fun sh(s: String) = "'" + s.replace("'", "'\\''") + "'"
 
@@ -166,7 +169,7 @@ class ClaudeLink(
             "system" ->
                 when (ev.optString("subtype")) {
                     "init" -> out += LinkEvent.Ready
-                    "api_retry" -> out += LinkEvent.Notice("retrying: " + ev.optString("error", "network"))
+                    "api_retry" -> out += LinkEvent.Retrying(ev.optString("error", "network"))
                 }
             "stream_event" -> {
                 if (!ev.isNull("parent_tool_use_id")) return out
@@ -185,12 +188,12 @@ class ClaudeLink(
                     val input = it.optJSONObject("input") ?: JSONObject()
                     val sub = !ev.isNull("parent_tool_use_id")
                     val images = if (name == "Read") listOfNotNull(input.optString("file_path").takeIf(::isImage)) else emptyList()
-                    out += LinkEvent.Step((if (sub) "  " else "") + Steps.label(name, input), images)
+                    out += LinkEvent.Step(Steps.label(name, input), images, sub)
                 }
             "result" ->
                 out +=
                     if (ev.optBoolean("is_error")) {
-                        LinkEvent.Done(error = ev.optString("result").ifEmpty { ev.optString("subtype", "failed") }.take(200))
+                        LinkEvent.Done(error = ev.optString("result").ifEmpty { ev.optString("subtype") }.take(200))
                     } else {
                         LinkEvent.Done()
                     }
@@ -248,7 +251,7 @@ class AcpLink(
                 JSONObject().put("fs", JSONObject().put("readTextFile", false).put("writeTextFile", false)).put("terminal", false),
             ),
         ) { _, error ->
-            if (error != null) return@call listOf(LinkEvent.Failed(error.optString("message", "it didn't start")))
+            if (error != null) return@call listOf(LinkEvent.Failed(error.optString("message")))
             val id = session
             if (id != null) {
                 loading = true
@@ -263,7 +266,7 @@ class AcpLink(
     private fun newSession() {
         call("session/new", JSONObject().put("cwd", cwd).put("mcpServers", JSONArray())) { result, error ->
             val id = result?.optString("sessionId")?.takeIf { it.isNotEmpty() }
-            if (id == null) return@call listOf(LinkEvent.Failed(error?.optString("message") ?: "no conversation"))
+            if (id == null) return@call listOf(LinkEvent.Failed(error?.optString("message").orEmpty()))
             session = id
             listOf(LinkEvent.Session(id)) + becomeReady()
         }
@@ -301,7 +304,7 @@ class AcpLink(
         call("session/prompt", params) { result, error ->
             inFlight = false
             val stop = result?.optString("stopReason")
-            val done = LinkEvent.Done(error = error?.optString("message", "failed")?.take(200), cancelled = stop == "cancelled")
+            val done = LinkEvent.Done(error = error?.optString("message")?.take(200), cancelled = stop == "cancelled")
             next()
             listOf(done)
         }
@@ -382,24 +385,35 @@ class AcpLink(
     }
 }
 
-/** Tool calls in a few words, and what "always" covers. */
+/**
+ * What a tool call does: a [verb] and what it does it to ([what]: a file, a command's description, a search), put
+ * into words in the phone's language by the voice session.
+ */
+data class Act(
+    val verb: Verb,
+    val what: String = "",
+) {
+    enum class Verb { Run, Read, Write, Edit, Delete, Search, SearchWeb, Subtask, Plan, Tool }
+}
+
+/** Tool calls as [Act]s, and what "always" covers. */
 object Steps {
     fun label(
         name: String,
         input: JSONObject,
-    ): String {
+    ): Act {
         fun base(p: String) = p.trimEnd('/').substringAfterLast('/').ifEmpty { p }
         return when (name) {
-            "Bash" -> "running: " + input.optString("description").ifEmpty { input.optString("command") }.take(60)
-            "Read" -> "reading " + base(input.optString("file_path"))
-            "Write" -> "writing " + base(input.optString("file_path"))
-            "Edit", "NotebookEdit" -> "editing " + base(input.optString("file_path"))
-            "Glob", "Grep" -> ("searching " + input.optString("pattern")).take(60)
-            "WebSearch" -> ("searching the web: " + input.optString("query")).take(60)
-            "WebFetch" -> "reading " + input.optString("url").substringAfter("://").substringBefore('/')
-            "Task" -> "subtask: " + input.optString("description").take(50)
-            "TodoWrite" -> "planning"
-            else -> name.lowercase()
+            "Bash" -> Act(Act.Verb.Run, input.optString("description").ifEmpty { input.optString("command") }.take(60))
+            "Read" -> Act(Act.Verb.Read, base(input.optString("file_path")))
+            "Write" -> Act(Act.Verb.Write, base(input.optString("file_path")))
+            "Edit", "NotebookEdit" -> Act(Act.Verb.Edit, base(input.optString("file_path")))
+            "Glob", "Grep" -> Act(Act.Verb.Search, input.optString("pattern").take(50))
+            "WebSearch" -> Act(Act.Verb.SearchWeb, input.optString("query").take(50))
+            "WebFetch" -> Act(Act.Verb.Read, input.optString("url").substringAfter("://").substringBefore('/'))
+            "Task" -> Act(Act.Verb.Subtask, input.optString("description").take(50))
+            "TodoWrite" -> Act(Act.Verb.Plan)
+            else -> Act(Act.Verb.Tool, name.lowercase())
         }
     }
 
@@ -409,16 +423,17 @@ object Steps {
         return locations + listOf("path", "file_path").mapNotNull { k -> raw.optString(k).takeIf(String::isNotEmpty) }
     }
 
-    fun acpLabel(u: JSONObject): String {
+    fun acpLabel(u: JSONObject): Act {
         val kind = u.optString("kind")
         val title = u.optString("title").trim()
         val raw = u.optJSONObject("rawInput") ?: JSONObject()
         val path = acpPaths(u).firstOrNull()
         return when {
-            kind == "execute" -> "running: " + raw.optString("description").ifEmpty { title.ifEmpty { raw.optString("command") } }.take(60)
+            kind == "execute" -> Act(Act.Verb.Run, raw.optString("description").ifEmpty { title.ifEmpty { raw.optString("command") } }.take(60))
             kind in setOf("read", "edit", "delete") && path != null ->
-                mapOf("read" to "reading", "edit" to "editing", "delete" to "deleting").getValue(kind) + " " + path.trimEnd('/').substringAfterLast('/')
-            else -> title.ifEmpty { kind.ifEmpty { "a tool" } }.take(60)
+                Act(mapOf("read" to Act.Verb.Read, "edit" to Act.Verb.Edit, "delete" to Act.Verb.Delete).getValue(kind), path.trimEnd('/').substringAfterLast('/'))
+            // An empty [Act.what] is "a tool".
+            else -> Act(Act.Verb.Tool, title.ifEmpty { kind }.take(60))
         }
     }
 
@@ -446,18 +461,6 @@ object Steps {
         val allowed = always.filter { it.startsWith("Bash:") }.flatMap { it.removePrefix("Bash:").split(' ') }.toSet()
         val progs = key.removePrefix("Bash:").split(' ').filter { it.isNotEmpty() }.toSet()
         return progs.isNotEmpty() && allowed.containsAll(progs)
-    }
-
-    /** A step as it's said: "running: List widgets" is "run a command: List widgets". */
-    fun spoken(label: String): String {
-        val verbs =
-            listOf(
-                "running: " to "run a command: ", "reading " to "read ", "writing " to "write ", "editing " to "edit ",
-                "deleting " to "delete ", "searching the web: " to "search the web for ", "searching " to "search for ",
-                "subtask: " to "start a subtask: ",
-            )
-        verbs.firstOrNull { label.startsWith(it.first) }?.let { (a, b) -> return b + label.removePrefix(a) }
-        return "use $label"
     }
 }
 

@@ -193,10 +193,11 @@ internal fun PromptBar(
 
     /**
      * A tap on the mic: the voice screen, a spoken conversation with the bar's agent, when it's one that talks there
-     * (Claude Code, Grok, OpenCode); dictation into the bar for the others. Holding the mic always dictates.
+     * (Claude Code, Grok, OpenCode) and the phone has speech recognition; dictation into the bar for the others.
+     * Holding the mic always dictates.
      */
     fun tapMic() {
-        val talker = agent?.takeIf { linux && runtime.voice.talksTo(it) } ?: return talk(hold = false)
+        val talker = agent?.takeIf { linux && runtime.voice.opensFor(it) } ?: return talk(hold = false)
         runtime.voice.prefer(talker)
         runtime.openVoice()
     }
@@ -358,7 +359,7 @@ internal fun PromptBar(
                 }
                 MicButton(
                     listening = listening,
-                    voice = linux && runtime.voice.talksTo(agent),
+                    voice = linux && runtime.voice.opensFor(agent),
                     // A tap opens the voice app, or dictates into the field and stops at the next pause; another tap
                     // stops it sooner.
                     onTap = { if (speech.listening) speech.stop() else tapMic() },

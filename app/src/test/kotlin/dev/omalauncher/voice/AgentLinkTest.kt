@@ -31,7 +31,7 @@ class AgentLinkTest {
                 LinkEvent.Ready,
                 LinkEvent.Text("Two plus"),
                 LinkEvent.Working,
-                LinkEvent.Step("reading a.owl.png", listOf("/root/.config/omalauncher/widgets/.preview/a.owl.png")),
+                LinkEvent.Step(Act(Act.Verb.Read, "a.owl.png"), listOf("/root/.config/omalauncher/widgets/.preview/a.owl.png")),
                 LinkEvent.Done(),
             ),
             events,
@@ -45,7 +45,7 @@ class AgentLinkTest {
             link.read(
                 """{"type":"control_request","request_id":"r1","request":{"subtype":"can_use_tool","tool_name":"Bash","input":{"command":"cd w && rm -rf build","description":"Clean"}}}""",
             ).single() as LinkEvent.Ask
-        assertEquals(LinkEvent.Ask("r1", "running: Clean", "cd w && rm -rf build", "Bash:cd rm"), ask)
+        assertEquals(LinkEvent.Ask("r1", Act(Act.Verb.Run, "Clean"), "cd w && rm -rf build", "Bash:cd rm"), ask)
         assertTrue(link.answer("r1", false, false, "keep it"))
         val resp = written.last().getJSONObject("response")
         assertEquals("r1", resp.getString("request_id"))
@@ -88,14 +88,14 @@ class AgentLinkTest {
             link.read("""{"jsonrpc":"2.0","method":"session/update","params":{"sessionId":"g1","update":{"sessionUpdate":"agent_message_chunk","content":{"type":"text","text":"On it."}}}}"""),
         )
         assertEquals(
-            listOf(LinkEvent.Working, LinkEvent.Step("reading p.png", listOf("/root/p.png"))),
+            listOf(LinkEvent.Working, LinkEvent.Step(Act(Act.Verb.Read, "p.png"), listOf("/root/p.png"))),
             link.read("""{"jsonrpc":"2.0","method":"session/update","params":{"sessionId":"g1","update":{"sessionUpdate":"tool_call","toolCallId":"t1","title":"Read p.png","kind":"read","locations":[{"path":"/root/p.png"}]}}}"""),
         )
         val ask =
             link.read(
                 """{"jsonrpc":"2.0","id":7,"method":"session/request_permission","params":{"sessionId":"g1","toolCall":{"title":"rm","kind":"execute","rawInput":{"command":"rm -rf b"}},"options":[{"optionId":"a1","kind":"allow_once"},{"optionId":"a2","kind":"allow_always"},{"optionId":"r1","kind":"reject_once"}]}}""",
             ).single() as LinkEvent.Ask
-        assertEquals(LinkEvent.Ask("p7", "running: rm", "rm -rf b", "Bash:rm"), ask)
+        assertEquals(LinkEvent.Ask("p7", Act(Act.Verb.Run, "rm"), "rm -rf b", "Bash:rm"), ask)
         assertFalse("ACP can't take words with a refusal", link.answer("p7", true, true, null))
         assertEquals(7, written.last().getInt("id"))
         assertEquals("a2", written.last().getJSONObject("result").getJSONObject("outcome").getString("optionId"))
@@ -128,6 +128,5 @@ class AgentLinkTest {
         assertTrue(Steps.covered(Steps.alwaysKey("Bash", "curl y | head"), always))
         assertFalse(Steps.covered(Steps.alwaysKey("Bash", "cd w && rm -rf build"), always))
         assertFalse(Steps.covered(Steps.alwaysKey("Bash", "FOO=1 cd x; echo $(whoami)"), always))
-        assertEquals("run a command: Clean", Steps.spoken("running: Clean"))
     }
 }

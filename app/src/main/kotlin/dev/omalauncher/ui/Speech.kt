@@ -1,6 +1,8 @@
 package dev.omalauncher.ui
 
+import android.content.ComponentName
 import android.content.Context
+import android.content.res.Resources
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
@@ -49,7 +51,7 @@ class Speech(
     var error by mutableStateOf<String?>(null)
 
     private var recognizer: SpeechRecognizer? = null
-    private var onDevice = Build.VERSION.SDK_INT >= 31 && SpeechRecognizer.isOnDeviceRecognitionAvailable(context)
+    private var onDevice = onDeviceAvailable(context)
     private var finished = ""
 
     /** The current segment's latest partial result, kept should the segment end without a final one. */
@@ -64,9 +66,9 @@ class Speech(
 
     private val main = Handler(Looper.getMainLooper())
 
-    private val onDeviceAvailable get() = Build.VERSION.SDK_INT >= 31 && SpeechRecognizer.isOnDeviceRecognitionAvailable(context)
+    private val onDeviceAvailable get() = onDeviceAvailable(context)
 
-    val available get() = onDeviceAvailable || SpeechRecognizer.isRecognitionAvailable(context)
+    val available get() = available(context)
 
     /**
      * Starts listening; [onDone] gets the full text (maybe empty) once recognition ends.
@@ -134,7 +136,8 @@ class Speech(
     private fun listen() {
         recognizer?.destroy()
         val r =
-            if (onDevice && onDeviceAvailable) {
+            // onDeviceAvailable already means API 31+; the check is spelled out again for lint.
+            if (Build.VERSION.SDK_INT >= 31 && onDevice && onDeviceAvailable) {
                 SpeechRecognizer.createOnDeviceSpeechRecognizer(context)
             } else {
                 SpeechRecognizer.createSpeechRecognizer(context)
@@ -392,6 +395,23 @@ class Speech(
 
     companion object {
         private const val TAG = "speech"
+
+        /** Whether the phone has a speech recognizer at all: on-device, or the default one. */
+        fun available(context: Context) = onDeviceAvailable(context) || SpeechRecognizer.isRecognitionAvailable(context)
+
+        /**
+         * Whether the on-device recognizer is there. Android's own check only reads which one the system names, so
+         * with that app disabled (or never installed) it says yes and listening fails at once (error 10): the named
+         * service has to resolve too.
+         */
+        private fun onDeviceAvailable(context: Context): Boolean {
+            if (Build.VERSION.SDK_INT < 31 || !SpeechRecognizer.isOnDeviceRecognitionAvailable(context)) return false
+            val res = Resources.getSystem()
+            val id = res.getIdentifier("config_defaultOnDeviceSpeechRecognitionService", "string", "android")
+            if (id == 0) return true
+            val component = ComponentName.unflattenFromString(res.getString(id)) ?: return false
+            return runCatching { context.packageManager.getServiceInfo(component, 0).isEnabled && context.packageManager.getApplicationInfo(component.packageName, 0).enabled }.getOrDefault(false)
+        }
 
         /** SpeechRecognizer.ERROR_SERVER_DISCONNECTED, from API 31. */
         private const val ERROR_SERVER_DISCONNECTED = 11
