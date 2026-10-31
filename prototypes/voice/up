@@ -1,0 +1,5 @@
+#!/bin/bash
+echo "== voice processes before update"; pgrep -af "brain.py|claude -p --input-format" | cut -c1-120
+cd ~/voice && curl -sfo brain.py localhost:8765/brain.py && curl -sfo send localhost:8765/send && curl -sfo ~/.config/omalauncher/widgets/voice.owl localhost:8765/voice.owl && owl-check ~/.config/omalauncher/widgets/voice.owl
+echo "== last brain log"; tail -25 /tmp/voice.log 2>/dev/null
+curl -s -T ~/.config/omalauncher/widgets/.preview/voice.owl.screen.png localhost:8765/result

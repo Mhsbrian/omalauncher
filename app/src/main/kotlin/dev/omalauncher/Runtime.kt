@@ -42,6 +42,7 @@ import dev.omalauncher.theme.ThemeStore
 import dev.omalauncher.ui.Gestures
 import dev.omalauncher.ui.KeyboardBridge
 import dev.omalauncher.ui.SettingsPage
+import dev.omalauncher.ui.Speaker
 import dev.omalauncher.ui.TerminalTiles
 import dev.omalauncher.ui.WindowManager
 import dev.omalauncher.ui.bitmapMask
@@ -103,6 +104,9 @@ class Runtime(
 
     /** Widgets' speech(...) and android.speech. */
     val dictation = Dictation(context)
+
+    /** Widgets' speak(...). */
+    val speaker = Speaker(context)
     val updates = SystemUpdates(proot, pacman, agents)
     val gpu = Gpu(context, proot, pacman)
 

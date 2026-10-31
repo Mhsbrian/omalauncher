@@ -1,0 +1,290 @@
+app "voice" {
+  meta { owl: 18 }
+  // no title row: the status line and the orb are the whole header (recent apps still says "voice")
+  title: ""
+  icon: """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round">
+    <path d="M8 20v8M16 14v20M24 8v32M32 14v20M40 20v8"/>
+  </svg>"""
+
+  // The brain: one agent CLI kept running, Claude Code or Grok (~/voice/brain.py); its reply is said by Android's own voice.
+  // One JSON line per change, and a tick every 200 ms while it's busy or listening.
+  source b = stream("python3 ~/voice/brain.py") json
+  // The conversation so far, kept across opens: [{who: you/agent/note/image, text}] ("claude" in older ones).
+  source hist = file("~/voice/history.json") json
+  source said = android.speech
+  // A slower clock of our own, so dictation still ends when the brain's ticks don't come.
+  source now = clock every 1s
+  state heardAt = 0
+  // What went wrong on this side: a request the brain didn't take, nothing heard.
+  state problem = ""
+  // Whether this dictation heard any words at all, whatever the recognizer has cleared by its end.
+  state heardAny = false
+  // Listening starts by itself once per open, as soon as the brain is up.
+  state opened = false
+  // A picture from the transcript, open full screen; "" when none is.
+  state viewing = ""
+  // When "new" was tapped once: it clears the conversation only on a second tap within 4 s.
+  state newAt = 0
+  // The agent menu, open under its name.
+  state picking = false
+  state spokenTurn = 0
+  state spokenN = 0
+
+  let st = b == null ? "starting" : b.state
+  // Which agent is talking, and the ones installed to switch between.
+  let agentName = b == null ? "agent" : lower(b.agentName)
+  let agents = b == null || b.agents == null ? [] : b.agents
+  let t = max(b == null ? 0 : b.t, now * 1000)
+  let listening = said.listening
+  // Claude has a task open: thinking, using tools, or talking between them.
+  let working = b != null && b.busy == true
+  // Claude is waiting for an OK: what it wants to do, until it's allowed or denied.
+  let ask = b == null ? null : b.approve
+  let busy = st == "thinking" || st == "working"
+  let secs = working && b.since > 0 ? floor((t - b.since) / 1000) : 0
+  let elapsed = "${floor(secs / 60)}:${pad(secs % 60, 2, "0")}"
+  let steps = b == null || b.steps == null ? [] : b.steps
+  let current = len(steps) > 0 ? trim(steps.last()) : "thinking"
+  // The orb's size per state, eased between states; its breathing is drawn with the frame clock, not on the brain's ticks.
+  let grow = listening ? 0.92 : st == "speaking" ? 0.86 : busy || ask != null ? 0.74 : 0.7
+  let breathe = listening ? 0.035 : st == "speaking" ? 0.045 : busy ? 0.02 : 0
+  let tint = listening ? green : ask != null ? red : st == "speaking" ? accent : busy ? yellow : muted
+
+  // The transcript, newest first (the list runs from the bottom): what's being said now, Claude's reply as
+  // it streams, then the saved conversation.
+  let past = hist == null || hist == "" ? [] : hist
+  let saying = listening && trim(said.text) != "" ? [{who: "you", text: said.text}] : []
+  let replying = b != null && b.live == true && b.reply != "" ? [{who: "agent", text: b.reply}] : []
+  let items = flatten([saying, replying, past.reverse()])
+  // One size for the orb; it slides from the middle to the top once there's a conversation under it.
+  let orbH = min(screenWidth * 0.6, 240)
+  let talking = len(items) > 0
+
+  // Opening the app is asking to talk: listen right away (owl 18 lets an app start dictation itself while it's open).
+  when b != null && st == "idle" && !opened {
+    opened = true
+    heardAny = false
+    problem = run("bash ~/voice/send listen")
+    speech("start")
+  }
+
+  // End of turn: a second without new words ends the dictation, and what was heard goes to the brain.
+  on said.text { heardAt = t; if trim(value) != "" { heardAny = true } }
+  when listening && said.text != "" && t - heardAt > 1000 { speech("stop") }
+  on said.final { if value { problem = run("bash ~/voice/send say " + sh(value)) } }
+  on said.listening {
+    if !value && !heardAny {
+      run("bash ~/voice/send back")
+      if said.error == null { problem = "didn't hear anything; tap and talk" }
+    }
+  }
+
+  // Each turn's finished sentences come as a growing list: say the new ones.
+  on b.say {
+    if b.turn != spokenTurn { spokenTurn = b.turn; spokenN = 0 }
+    if len(value) > spokenN { speak(join(value.drop(spokenN), " ")); spokenN = len(value) }
+  }
+
+  Box {
+    fill: true
+    Column {
+      padding: [16, 12]
+      gap: 10
+      Row {
+        Text {
+          weight: 1
+          style: muted
+          text: said.error != null ? said.error
+            : listening ? (working ? "listening · ${agentName} keeps working" : "listening…")
+            : st == "starting" ? "starting ${agentName}…"
+            : ask != null ? "${agentName} needs your OK · ${elapsed}"
+            : working ? "working · ${elapsed}"
+            : st == "speaking" ? "tap to talk over it"
+            : "tap to talk"
+        }
+        // Which agent to talk to: its name opens a menu of the installed ones; not while one is busy.
+        if len(agents) > 1 {
+          // sized: an unsized Box in a Row takes the whole row
+          Box {
+            width: 96
+            Text {
+              text: "${agentName} ▾"
+              color: accent
+              padding: [4, 8]
+              opacity: working || listening ? 0.4 : 1
+              onTap: { if !working && !listening { picking = true } }
+            }
+            Popup {
+              visible: picking
+              onDismiss: picking = false
+              align: end
+              width: 160
+              gap: 0
+              for a in agents {
+                Row {
+                  fill: width
+                  padding: [12, 10]
+                  onTap: {
+                    picking = false
+                    if a != b.agent { speak(); problem = run("bash ~/voice/send agent " + a) }
+                  }
+                  Text { weight: 1; text: a; color: a == b.agent ? accent : foreground }
+                  if a == b.agent {
+                    Text { text: "✓"; color: accent }
+                  }
+                }
+              }
+            }
+          }
+        }
+        // How the agent's requests are answered: asked one by one, or all allowed (kept across opens).
+        if b != null {
+          Text {
+            text: b.approveAll == true ? "allow all" : "ask"
+            color: b.approveAll == true ? yellow : muted
+            padding: [4, 8]
+            onTap: problem = run("bash ~/voice/send approve " + (b.approveAll == true ? "ask" : "all"))
+          }
+        }
+        if len(past) > 0 && !working && !listening {
+          Text {
+            text: now - newAt < 4 ? "clear? tap again" : "new"
+            color: now - newAt < 4 ? red : accent
+            padding: [4, 8]
+            onTap: {
+              if now - newAt < 4 { newAt = 0; speak(); problem = run("bash ~/voice/send new") } else { newAt = now }
+            }
+          }
+        }
+      }
+      Box {
+        weight: 1
+        fill: width
+        align: top
+        // the conversation, under the orb's place at the top
+        if talking {
+          Column {
+            fill: true
+            padding: [0, orbH + 8, 0, 0]
+            lazy: true
+            reverse: true
+            gap: 10
+            for item in items {
+              if item.who == "image" {
+                // what Claude looked at, like a widget's preview: tap for the whole picture
+                Column {
+                  fill: width
+                  gap: 4
+                  Box {
+                    fill: width
+                    height: 220
+                    radius: 8
+                    background: alpha(muted, 0.12)
+                    onTap: viewing = item.text
+                    Image { src: item.text; fit: contain; fill: true }
+                  }
+                  Text { fill: width; style: muted; text: item.name }
+                }
+              } else {
+                Text {
+                  fill: width
+                  color: item.who == "note" ? yellow : item.who == "agent" || item.who == "claude" ? foreground : muted
+                  text: item.who == "you" ? "› ${item.text}" : item.who == "note" ? "· ${item.text}" : item.text
+                }
+              }
+            }
+          }
+        }
+        // the orb: a fixed size at the top, moved down to the middle while there's nothing under it
+        Box {
+          height: orbH
+          fill: width
+          offset: [0, talking ? 0 : max(0, (screenHeight - 90 - orbH) / 2)]
+          animate offset: spring(0.85, 300)
+          onTap: {
+            if listening { speech("stop") } else { problem = ""; heardAny = false; speak(); problem = run("bash ~/voice/send listen"); speech("start") }
+          }
+          Canvas {
+            fill: true
+            scale: grow
+            animate scale: spring(0.7, 220)
+            let cx = width / 2
+            let cy = height / 2
+            let r = min(width, height) / 2 - 8
+            if breathe > 0 {
+              let k = 1 + breathe * sin(time * 4.2)
+              circle(cx, cy, r * k, fill: alpha(tint, 0.12))
+              circle(cx, cy, r * 0.82 * k, fill: radial(cx, cy, r * 0.82 * k, [alpha(tint, 0.6), alpha(tint, 0.2)]))
+              circle(cx, cy, r * 0.82 * k, stroke: tint, width: 2)
+            } else {
+              circle(cx, cy, r, fill: alpha(tint, 0.12))
+              circle(cx, cy, r * 0.82, fill: radial(cx, cy, r * 0.82, [alpha(tint, 0.6), alpha(tint, 0.2)]))
+              circle(cx, cy, r * 0.82, stroke: tint, width: 2)
+            }
+            // while Claude has a task open: two arcs chasing round the orb
+            if working && ask == null {
+              arc(cx, cy, r, (time * 220) % 360, 70, stroke: yellow, width: 4, cap: round)
+              arc(cx, cy, r, (time * 220 + 180) % 360, 70, stroke: alpha(yellow, 0.5), width: 4, cap: round)
+            }
+          }
+        }
+      }
+      if ask != null {
+        Column {
+          fill: width
+          gap: 8
+          padding: 12
+          radius: 10
+          background: alpha(red, 0.12)
+          Text { fill: width; text: "${b.agentName} wants to ${ask.says}" }
+          if ask.detail != "" && ask.detail != ask.what {
+            Text { fill: width; style: muted; text: ask.detail }
+          }
+          Row {
+            gap: 8
+            Button { text: "allow"; color: green; weight: 1; onTap: problem = run("bash ~/voice/send allow " + sh(ask.id)) }
+            Button { text: "always"; color: accent; weight: 1; onTap: problem = run("bash ~/voice/send always " + sh(ask.id)) }
+            Button { text: "deny"; color: red; weight: 1; onTap: problem = run("bash ~/voice/send deny " + sh(ask.id)) }
+          }
+          Text { fill: width; style: muted; text: "or tap the orb and say yes, no, or what to do instead" }
+        }
+      }
+      // What Claude is doing right now, and the steps before it.
+      if working && ask == null {
+        Column {
+          fill: width
+          gap: 2
+          Text { fill: width; color: yellow; text: "● ${current}" }
+          for s in steps.take(len(steps) - 1).reverse() {
+            Text { fill: width; style: muted; text: "  ${trim(s)}" }
+          }
+        }
+      }
+      if b != null && b.err != null {
+        Text { fill: width; color: red; text: b.err }
+      }
+      if problem != null && problem != "" {
+        Text { fill: width; color: red; text: problem }
+      }
+      // Tapping the orb only talks over Claude; this is what cancels what it's doing.
+      if !listening && (working || st == "speaking") {
+        Text {
+          text: "stop"
+          color: red
+          align: center
+          fill: width
+          padding: 8
+          onTap: { speak(); problem = run("bash ~/voice/send stop") }
+        }
+      }
+    }
+    if viewing != "" {
+      Box {
+        fill: true
+        background: background
+        onTap: viewing = ""
+        Image { src: viewing; fit: contain; fill: true }
+      }
+    }
+  }
+}

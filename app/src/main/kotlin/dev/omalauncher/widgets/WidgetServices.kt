@@ -656,6 +656,7 @@ class WidgetServices(
             "typeText" -> return runtime.keyboard.type(arg)
             "latch" -> return runtime.keyboard.latch(arg, args.getOrNull(1).textOrNull())
             "pickImages" -> return runtime.keyboard.pickImages()
+            "speak" -> return if (args.isEmpty()) runtime.speaker.stop() else runtime.speaker.speak(arg)
         }
         when (name) {
             // Named after the command (btop, dua, ...) unless the widget passes a name.

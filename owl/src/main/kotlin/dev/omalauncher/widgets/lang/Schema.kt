@@ -163,7 +163,9 @@ internal val SINCE =
         // owl 17: a list pulled down past its top, to fetch again.
         mapOf("onPull" to 17) +
         // owl 17: servers with a certificate of their own, pinned; WebSockets, and a trigger for each of their messages.
-        listOf(HTTP_PIN, "ws", "send", ON_EACH).associateWith { 17 }
+        listOf(HTTP_PIN, "ws", "send", ON_EACH).associateWith { 17 } +
+        // owl 18: Android's text-to-speech, for a widget that talks back; an app listening as it opens.
+        mapOf("speak" to 18, APP_SPEECH to 18)
 
 /** `strings { ... }`, named like this in [SINCE]. */
 internal const val STRINGS_DECL = "strings { }"
@@ -176,6 +178,9 @@ internal const val VOLUME_STREAM = "volume(…, stream)"
 
 /** `torch(40)`, a brightness, named like this in [SINCE]. */
 internal const val TORCH_LEVEL = "torch(level)"
+
+/** speech("start") in an app's trigger, named like this in [SINCE]. */
+internal const val APP_SPEECH = "speech(\"start\") in an app's trigger"
 
 /** volume(...)'s second value; media without one. */
 internal val VOLUME_STREAMS = setOf("media", "ring", "notification", "alarm")

@@ -191,6 +191,14 @@ internal fun PromptBar(
         }
     }
 
+    /**
+     * A tap on the mic: the voice app, a spoken conversation with the agent, when it's installed (a file
+     * [VOICE_APP] among the widgets); dictation into the bar otherwise. Holding the mic always dictates.
+     */
+    fun tapMic() {
+        if (linux && runtime.widgets.isApp(VOICE_APP)) runtime.openOwlApp(VOICE_APP) else talk(hold = false)
+    }
+
     LaunchedEffect(state.promptRequest) {
         when (state.promptRequest) {
             PromptRequest.Type -> {
@@ -198,7 +206,7 @@ internal fun PromptBar(
                 keyboard?.show()
             }
             PromptRequest.Send -> send(text)
-            PromptRequest.Listen -> talk(hold = false)
+            PromptRequest.Listen -> tapMic()
             // A menu opened over the panel: the keyboard stays down from here on, rather than coming back as it closes.
             PromptRequest.Release -> {
                 focusManager.clearFocus()
@@ -348,8 +356,9 @@ internal fun PromptBar(
                 }
                 MicButton(
                     listening = listening,
-                    // A tap dictates into the field and stops at the next pause; another tap stops it sooner.
-                    onTap = { if (speech.listening) speech.stop() else talk(hold = false) },
+                    // A tap opens the voice app, or dictates into the field and stops at the next pause; another tap
+                    // stops it sooner.
+                    onTap = { if (speech.listening) speech.stop() else tapMic() },
                     onHold = { talk(hold = true) },
                     onRelease = { if (speech.listening) speech.stop() },
                     onCancel = {
@@ -373,6 +382,9 @@ internal fun PromptBar(
         }
     }
 }
+
+/** The voice app's file: the mic opens it instead of dictating when it's installed. */
+private const val VOICE_APP = "voice.owl"
 
 /** How long a press on the mic waits before it counts as hold-to-talk rather than a tap or a passing swipe. */
 private const val HOLD_MILLIS = 250L
