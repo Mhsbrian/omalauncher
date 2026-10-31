@@ -192,11 +192,13 @@ internal fun PromptBar(
     }
 
     /**
-     * A tap on the mic: the voice screen, a spoken conversation with an agent that can talk (Claude Code, Grok);
-     * dictation into the bar without one. Holding the mic always dictates.
+     * A tap on the mic: the voice screen, a spoken conversation with the bar's agent, when it's one that talks there
+     * (Claude Code, Grok, OpenCode); dictation into the bar for the others. Holding the mic always dictates.
      */
     fun tapMic() {
-        if (linux && runtime.voice.voiceAgents.isNotEmpty()) runtime.openVoice() else talk(hold = false)
+        val talker = agent?.takeIf { linux && runtime.voice.talksTo(it) } ?: return talk(hold = false)
+        runtime.voice.prefer(talker)
+        runtime.openVoice()
     }
 
     LaunchedEffect(state.promptRequest) {
@@ -356,7 +358,7 @@ internal fun PromptBar(
                 }
                 MicButton(
                     listening = listening,
-                    voice = linux && runtime.voice.voiceAgents.isNotEmpty(),
+                    voice = linux && runtime.voice.talksTo(agent),
                     // A tap opens the voice app, or dictates into the field and stops at the next pause; another tap
                     // stops it sooner.
                     onTap = { if (speech.listening) speech.stop() else tapMic() },

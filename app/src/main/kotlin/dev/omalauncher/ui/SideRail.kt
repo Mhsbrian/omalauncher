@@ -249,6 +249,6 @@ private fun PromptRail(
                     state.open()
                 },
             contentAlignment = Alignment.Center,
-        ) { if (linuxState == LinuxState.Installed && runtime.voice.voiceAgents.isNotEmpty()) VoiceIcon(Palette.foreground) else MicIcon(Palette.foreground) }
+        ) { if (linuxState == LinuxState.Installed && runtime.voice.talksTo(agent)) VoiceIcon(Palette.foreground) else MicIcon(Palette.foreground) }
     }
 }

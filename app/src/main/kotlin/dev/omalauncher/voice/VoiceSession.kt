@@ -52,6 +52,18 @@ class VoiceSession(
     /** The agents that can talk: installed, and with a link. */
     val voiceAgents: List<Agent> get() = agents.installed.filter { it.bin in LINKS }
 
+    /** Whether [agent] can talk here: Claude Code, Grok and OpenCode, the ones tried. */
+    fun talksTo(agent: Agent?) = agent != null && agent.bin in LINKS
+
+    /** The agent the screen opens with next, from the AI bar; null for the last one used. */
+    private var wanted: Agent? = null
+
+    /** Talks to [to] when the screen opens, as the AI bar asks: now, or as it starts. Not while a task runs. */
+    fun prefer(to: Agent) {
+        if (!talksTo(to) || busy) return
+        if (agent == null) wanted = to else if (to.bin != agent?.bin) switchTo(to)
+    }
+
     var agent by mutableStateOf<Agent?>(null)
         private set
     var phase by mutableStateOf(Phase.Off)
@@ -136,7 +148,8 @@ class VoiceSession(
         if (agent == null) {
             val settings = readJson(settingsFile)
             approveAll = settings?.optBoolean("approveAll") == true
-            val pick = voiceAgents.firstOrNull { it.bin == settings?.optString("agent") } ?: voiceAgents.firstOrNull { it.bin == agents.default?.bin } ?: voiceAgents.firstOrNull()
+            val pick = wanted?.takeIf { it in voiceAgents } ?: voiceAgents.firstOrNull { it.bin == settings?.optString("agent") } ?: voiceAgents.firstOrNull { it.bin == agents.default?.bin } ?: voiceAgents.firstOrNull()
+            wanted = null
             pick?.let(::load)
         }
         if (process?.isAlive != true) start()
