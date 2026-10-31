@@ -78,6 +78,44 @@ widget "fetch" {
         "failing": "falhando", "wireless": "sem fio", "dock": "dock"
       }, w, w)
     }
+    de {
+      uptime: "uptime"; packages: "pakete"; display: "display"; theme: "theme"; memory: "ram"; disk: "speicher"
+      battery: "akku"; apps: "apps"; byDefault: "standard"; phone: "smartphone"; device: "gerät"; hardware: "hardware"
+      network: "netzwerk"; launcher: "launcher"; security: "sicherheit"; build: "build"; locale: "sprache"; cores: "kerne"
+      storage: "speicher"; speed: "takt"; received: "empfangen"; sent: "gesendet"; mobile: "mobil"
+      level: "ladestand"; temperature: "temperatur"; voltage: "spannung"; health: "zustand"; cycles: "ladezyklen"
+      technology: "technologie"; version: "version"; explicit: "explizit"; upgraded: "aktualisiert"; never: "nie"
+      unknown: "unbekannt"; installLinux: "linux installieren"
+      notInstalled: "nicht installiert. arch linux arm bringt ein terminal, agenten und pacman in den launcher."
+      upTo: ghz => " · bis ${ghz} GHz"
+      androidApps: n => "${n} android-apps"
+      appCount: n => "${n} apps"
+      // android.battery's status, health and plug.
+      word: w => get({
+        "charging": "lädt", "plugged in": "angeschlossen", "on battery": "akkubetrieb", "good": "gut",
+        "overheating": "überhitzt", "dead": "defekt", "over voltage": "überspannung", "cold": "kalt",
+        "failing": "schwächelt", "wireless": "kabellos", "dock": "dock"
+      }, w, w)
+    }
+    zh {
+      uptime: "运行时间"; packages: "软件包"; display: "屏幕"; theme: "主题"; memory: "内存"; disk: "磁盘"
+      battery: "电池"; apps: "应用"; byDefault: "默认"; phone: "手机"; device: "设备"; hardware: "硬件"
+      network: "网络"; launcher: "启动器"; security: "安全补丁"; build: "版本号"; locale: "语言"; cores: "核心"
+      storage: "存储"; speed: "网速"; received: "接收"; sent: "发送"; mobile: "移动数据"
+      level: "电量"; temperature: "温度"; voltage: "电压"; health: "健康度"; cycles: "循环次数"
+      technology: "类型"; version: "版本"; explicit: "手动安装"; upgraded: "上次升级"; never: "从未"
+      unknown: "未知"; installLinux: "安装 linux"
+      notInstalled: "未安装。arch linux arm 为启动器带来终端、智能体和 pacman。"
+      upTo: ghz => " · 最高 ${ghz} GHz"
+      androidApps: n => "${n} 个 android 应用"
+      appCount: n => "${n} 个应用"
+      // android.battery's status, health and plug.
+      word: w => get({
+        "charging": "充电中", "plugged in": "已接电源", "on battery": "电池供电", "good": "良好",
+        "overheating": "过热", "dead": "损坏", "over voltage": "过压", "cold": "过冷",
+        "failing": "故障", "wireless": "无线", "dock": "底座"
+      }, w, w)
+    }
   }
 
   // The phone, from Android: works without Linux.

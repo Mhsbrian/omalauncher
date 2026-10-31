@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- This fork's own UI text (feed, folders, backup, icon packs, swipe-down actions), apart from upstream's strings_*.xml so syncs merge cleanly. -->
-<!-- Not translated yet (values-in, values-es, values-pt): the launcher shows these in English in those languages. -->
+<!-- Not translated yet (values-de, values-es, values-in, values-pt, values-zh): the launcher shows these in English in those languages. -->
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
     <!-- Shared -->
     <string name="fork_cancel">cancel</string>
