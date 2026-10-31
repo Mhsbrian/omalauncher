@@ -40,6 +40,14 @@ panel "app drawer" {
       open: "abrir"; ask: "perguntar"; askInstallLinux: "perguntar a um agente · instalar linux"; askInstallAgent: "perguntar a um agente · instalar um"
       askAgent: (bin, text) => "perguntar ao ${bin}: ${text}"
     }
+    de {
+      personal: "persönlich"; work: "arbeit"; apps: "apps"; linux: "linux"; shortcuts: "verknüpfungen"; android: "android"
+      workApps: "arbeits-apps"; workPaused: "arbeits-apps pausiert"; linuxApps: "linux-apps"
+      pin: "zum startbildschirm hinzufügen"; info: "app-info"; uninstall: "deinstallieren"; remove: "entfernen"; edit: "bearbeiten"; share: "teilen"
+      settings: "einstellungen"; turnOn: "aktivieren"; pause: "pausieren"; installing: "wird installiert…"; installLinux: "linux installieren"
+      open: "öffnen"; ask: "fragen"; askInstallLinux: "einen agenten fragen · linux installieren"; askInstallAgent: "einen agenten fragen · einen installieren"
+      askAgent: (bin, text) => "${bin} fragen: ${text}"
+    }
   }
   source d = android.drawer
   source ag = android.agents

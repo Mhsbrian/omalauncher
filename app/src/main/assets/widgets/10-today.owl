@@ -117,6 +117,39 @@ widget "today" {
         "Last Quarter": "quarto minguante", "Waning Crescent": "minguante"
       }, phase, lower(phase)) + " · ${lit}% iluminada"
     }
+    de {
+      title: "wetter"; loading: "wetter…"; offline: "wetter offline"; city: "stadt · leer = auto"
+      feels: "gefühlt"; humidity: "luftfeuchte"; rainToday: "regen heute"; uv: "uv-index"; pressure: "luftdruck"
+      visibility: "sichtweite"; next24: "nächste 24 stunden"; now: "jetzt"; days: "3 tage"; today: "heute"
+      sunrise: "aufgang"; sunset: "untergang"; moon: "mond"; kmh: "km/h"; yr: "yr.no öffnen ↗"
+      sky: (code, desc) => get({
+        "113": "klar", "116": "teils bewölkt", "119": "bewölkt", "122": "bedeckt", "143": "dunst",
+        "176": "örtlich regen", "179": "örtlich schnee", "182": "örtlich schneeregen", "185": "örtlich gefrierender niesel",
+        "200": "gewitter", "227": "schneetreiben", "230": "schneesturm", "248": "nebel", "260": "gefrierender nebel",
+        "263": "örtlich leichter niesel", "266": "leichter niesel", "281": "gefrierender niesel", "284": "starker gefrierender niesel",
+        "293": "örtlich leichter regen", "296": "leichter regen", "299": "zeitweise mäßiger regen", "302": "mäßiger regen",
+        "305": "zeitweise starker regen", "308": "starker regen", "311": "leichter gefrierender regen", "314": "starker gefrierender regen",
+        "317": "leichter schneeregen", "320": "starker schneeregen", "323": "örtlich leichter schnee", "326": "leichter schnee",
+        "329": "örtlich mäßiger schnee", "332": "mäßiger schnee", "335": "örtlich starker schnee", "338": "starker schnee",
+        "350": "eiskörner", "353": "leichte regenschauer", "356": "starke regenschauer", "359": "wolkenbruch",
+        "362": "leichte schneeregenschauer", "365": "starke schneeregenschauer", "368": "leichte schneeschauer",
+        "371": "starke schneeschauer", "374": "leichte eiskörnerschauer", "377": "starke eiskörnerschauer",
+        "386": "leichter regen mit gewitter", "389": "starker regen mit gewitter", "392": "leichter schnee mit gewitter",
+        "395": "starker schnee mit gewitter"
+      }, code, lower(trim(desc)))
+      // Eight points: the sixteen's in-between ones go to the nearer of north, east, south and west.
+      wind: dir => get({
+        "N": "nordwind", "NNE": "nordwind", "NE": "nordostwind", "ENE": "ostwind", "E": "ostwind", "ESE": "ostwind",
+        "SE": "südostwind", "SSE": "südwind", "S": "südwind", "SSW": "südwind", "SW": "südwestwind", "WSW": "westwind",
+        "W": "westwind", "WNW": "westwind", "NW": "nordwestwind", "NNW": "nordwind"
+      }, dir, "wind ${lower(dir)}")
+      uvLevel: uv => uv >= 8 ? "sehr hoch" : uv >= 6 ? "hoch" : uv >= 3 ? "mäßig" : "niedrig"
+      phase: (phase, lit) => get({
+        "New Moon": "neumond", "Waxing Crescent": "zunehmende sichel", "First Quarter": "erstes viertel",
+        "Waxing Gibbous": "zunehmender mond", "Full Moon": "vollmond", "Waning Gibbous": "abnehmender mond",
+        "Last Quarter": "letztes viertel", "Waning Crescent": "abnehmende sichel"
+      }, phase, lower(phase)) + " · ${lit}% beleuchtet"
+    }
   }
 
   source now = clock every 1m
