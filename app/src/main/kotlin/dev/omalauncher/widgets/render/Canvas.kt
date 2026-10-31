@@ -252,10 +252,12 @@ internal fun CanvasNode(
         val painter = Painter(inst, measurer, this, d, kept, if (keeping) runs else null)
         val reads = inst.timeReads
         val started = System.nanoTime()
-        inst.guarded("Canvas") {
-            inst.budget.run {
-                scale(d, d, pivot = Offset.Zero) {
-                    with(painter) { if (keeping) paintKept(p.el.children, env) { env } else paint(p.el.children, env) }
+        inst.drawing {
+            inst.guarded("Canvas") {
+                inst.budget.run {
+                    scale(d, d, pivot = Offset.Zero) {
+                        with(painter) { if (keeping) paintKept(p.el.children, env) { env } else paint(p.el.children, env) }
+                    }
                 }
             }
         }
@@ -751,21 +753,23 @@ internal fun ShaderNode(
     Spacer(
         (if (readsTime) modifier else modifier.graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }).drawBehind {
             val started = System.nanoTime()
-            shader.setFloatUniform("size", size.width, size.height)
-            if (readsTime) shader.setFloatUniform("time", inst.time().toFloat())
-            (p.now("uniforms") as? Obj)?.fields?.forEach { (name, v) ->
-                try {
-                    when {
-                        v is Lst -> shader.setFloatUniform(name, v.items.map { f -> f.num()?.toFloat() ?: 0f }.toFloatArray())
-                        v.num() != null -> shader.setFloatUniform(name, v.num()!!.toFloat())
-                        else ->
-                            Builtins.argb(v, inst)?.let { c ->
-                                val col = androidx.compose.ui.graphics.Color(c)
-                                shader.setFloatUniform(name, col.red, col.green, col.blue, col.alpha)
-                            }
+            inst.drawing {
+                shader.setFloatUniform("size", size.width, size.height)
+                if (readsTime) shader.setFloatUniform("time", inst.time().toFloat())
+                (p.now("uniforms") as? Obj)?.fields?.forEach { (name, v) ->
+                    try {
+                        when {
+                            v is Lst -> shader.setFloatUniform(name, v.items.map { f -> f.num()?.toFloat() ?: 0f }.toFloatArray())
+                            v.num() != null -> shader.setFloatUniform(name, v.num()!!.toFloat())
+                            else ->
+                                Builtins.argb(v, inst)?.let { c ->
+                                    val col = androidx.compose.ui.graphics.Color(c)
+                                    shader.setFloatUniform(name, col.red, col.green, col.blue, col.alpha)
+                                }
+                        }
+                    } catch (e: IllegalArgumentException) {
+                        inst.report("Shader uniform '$name': ${e.message}")
                     }
-                } catch (e: IllegalArgumentException) {
-                    inst.report("Shader uniform '$name': ${e.message}")
                 }
             }
             drawRect(brush)
