@@ -44,8 +44,8 @@
     <string name="store_terminal_details">6x4 · eine shell</string>
     <!-- %1$s is the coding agent's command, like "claude". -->
     <string name="store_agent_details">6x6 · startet %1$s</string>
-    <string name="store_on_home">✓ auf start</string>
-    <string name="store_tap_to_add">tippen, um es zu seite %1$d hinzuzufügen</string>
+    <string name="store_on_home">✓ auf dem startbildschirm</string>
+    <string name="store_tap_to_add">tippen: zu seite %1$d hinzufügen</string>
 
     <!-- %1$s is what they are, like "widgets"; %2$s the store's repo, like "SimonSchubert/omarchy-widgets". -->
     <string name="store_reviewed">geprüfte %1$s von github.com/%2$s</string>
@@ -72,8 +72,8 @@
 
     <!-- An entry's page. %1$d is the version of the widget language it needs. -->
     <string name="store_needs_newer_detail">braucht einen neueren launcher (owl %1$d); zum installieren den launcher aktualisieren</string>
-    <string name="store_may_have_changes">enthält vielleicht deine änderungen, und aktualisieren ersetzt sie</string>
-    <string name="store_you_changed">von dir geändert, und aktualisieren ersetzt deine änderungen</string>
+    <string name="store_may_have_changes">enthält vielleicht deine änderungen; aktualisieren ersetzt sie</string>
+    <string name="store_you_changed">von dir geändert; aktualisieren ersetzt deine änderungen</string>
     <!-- %1$s is the installed version, %2$s the new one. -->
     <string name="store_update_anyway">trotzdem aktualisieren %1$s → %2$s</string>
     <string name="store_update">aktualisieren %1$s → %2$s</string>
@@ -150,7 +150,7 @@
     <!-- %1$s is a file name. -->
     <string name="store_share_unreadable">%1$s nicht lesbar</string>
     <!-- %1$s is a file name, %2$d the most a launcher takes. -->
-    <string name="store_share_too_big">%1$s ist über %2$d KB, mehr als ein launcher annimmt</string>
+    <string name="store_share_too_big">%1$s ist größer als %2$d KB, mehr als ein launcher annimmt</string>
     <string name="store_uploading">wird hochgeladen…</string>
     <string name="store_share_get_code">QR-code erstellen</string>
     <string name="store_something_wrong">etwas ist schiefgelaufen</string>
@@ -159,8 +159,8 @@
     <string name="store_share_send_link">Oder sende den Link: dauerhaft, das ganze Widget steckt darin.</string>
     <string name="store_share_too_big_link">Zu groß für einen Link: Teile es über den QR-Code.</string>
     <!-- %1$s is the site, like "dpaste.com"; %2$d how many days it keeps it. -->
-    <string name="store_share_pasted_permanent">Führt zu %1$s, in %2$d Tagen gelöscht. Der Link unten ist dauerhaft.</string>
-    <string name="store_share_pasted">Führt zu %1$s, in %2$d Tagen gelöscht.</string>
+    <string name="store_share_pasted_permanent">Verweist auf %1$s, dort in %2$d Tagen gelöscht. Der Link unten ist dauerhaft.</string>
+    <string name="store_share_pasted">Verweist auf %1$s, dort in %2$d Tagen gelöscht.</string>
     <string name="store_share_permanent">Dauerhaft: Das ganze Widget steckt im Bild.</string>
     <string name="store_share_code">QR-code teilen</string>
     <string name="store_share_link">link teilen</string>
@@ -204,7 +204,7 @@
     <!-- %2$s is the name of the user's own theme it replaces. -->
     <string name="store_theme_install_message_replaces">Von %1$s. Linux übernimmt die Farben und Hintergründe, nicht die Skripte oder Terminal-Configs.\n\nEs ersetzt dein %2$s.</string>
     <!-- %2$s is the name of Omarchy's theme of the same name. -->
-    <string name="store_theme_install_message_over">Von %1$s. Linux übernimmt die Farben und Hintergründe, nicht die Skripte oder Terminal-Configs.\n\nEs liegt über Omarchys %2$s; beim Entfernen kommt das zurück.</string>
+    <string name="store_theme_install_message_over">Von %1$s. Linux übernimmt die Farben und Hintergründe, nicht die Skripte oder Terminal-Configs.\n\nEs überdeckt Omarchys %2$s; entfernst du es, kommt das wieder.</string>
     <!-- %1$s is the theme's name, %2$d how many megabytes have downloaded. -->
     <string name="store_theme_installing">%1$s wird installiert… %2$d MB</string>
     <!-- %1$s is why, an error message from the system. -->

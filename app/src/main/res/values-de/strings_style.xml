@@ -33,12 +33,12 @@
     <string name="style_corners_round">rund</string>
     <string name="style_gaps_in">gaps innen</string>
     <string name="style_gaps_out">gaps außen</string>
-    <string name="style_border_width">rahmenbreite</string>
+    <string name="style_border_width">rahmen</string>
     <string name="style_opacity">deckkraft</string>
     <string name="style_frosted_glass">milchglas</string>
     <string name="style_on">an</string>
     <string name="style_off">aus</string>
-    <string name="style_status_bar">statusleiste</string>
+    <string name="style_status_bar">status</string>
     <string name="style_bars_background">hintergrund</string>
     <string name="style_font">schrift</string>
     <string name="style_system_font">systemstandard</string>
@@ -78,13 +78,13 @@
     <string name="style_remove_deleted">Es wird vom Smartphone und aus Linux gelöscht.</string>
     <string name="style_themes_downloading">Omarchys andere Themes werden von github.com/omacom/omarchy heruntergeladen (~70 MB).</string>
     <string name="style_themes_not_installed">Omarchys Themes sind noch nicht installiert. Sie werden von github.com/omacom/omarchy heruntergeladen (~70 MB).</string>
-    <string name="style_downloading">lädt herunter… %1$d MB</string>
+    <string name="style_downloading">wird heruntergeladen… %1$d MB</string>
     <string name="style_failed">fehlgeschlagen: %1$s</string>
     <string name="style_retry">erneut versuchen</string>
     <string name="style_download_themes">themes herunterladen</string>
 
     <string name="style_add_image">+ bild</string>
-    <string name="style_wallpaper_active">✓ android-hintergrund &amp; systemfarben folgen dem theme (systemfarben ändern sich, nachdem der bildschirm ausgegangen ist)</string>
+    <string name="style_wallpaper_active">✓ android-hintergrund &amp; systemfarben folgen dem theme (systemfarben ändern sich, sobald der bildschirm einmal aus war)</string>
     <string name="style_wallpaper_use">als android-hintergrund + systemfarben nutzen</string>
     <string name="style_remove_background_title">hintergrund entfernen?</string>
 
@@ -95,7 +95,7 @@
     </plurals>
 
     <string name="pages_title">seiten</string>
-    <string name="pages_intro">Die Seiten des Startbildschirms, von links nach rechts. Zieh eine an ≡, um sie zu verschieben, oder nimm ≡ per Tastatur mit Enter auf und verschieb sie mit den Pfeiltasten. Der Startbildschirm öffnet auf der ersten mit Kacheln; Faces davor liegen links davon.</string>
+    <string name="pages_intro">Die Seiten des Startbildschirms, von links nach rechts. Zieh eine an ≡, um sie zu verschieben, oder nimm ≡ per Tastatur mit Enter auf und verschieb sie mit den Pfeiltasten. Der Startbildschirm öffnet mit der ersten Seite mit Kacheln; Faces davor liegen links davon.</string>
     <string name="pages_loading">wird geladen…</string>
     <string name="pages_remove_named">%1$s entfernen?</string>
     <string name="pages_remove_page">diese seite entfernen?</string>
@@ -120,7 +120,7 @@
     <string name="gestures_has_errors">%1$s (hat fehler)</string>
     <string name="gestures_missing">%1$s (fehlt)</string>
     <string name="gestures_edit">bearbeiten</string>
-    <string name="gestures_hint">panels sind owl-dateien, die app-übersicht ist eins davon: bearbeite sie wie widgets oder erstelle eins mit deinem agenten über das menü von start. öffnet nach oben wischen nichts, öffnet ein tippen auf die leiste trotzdem die app-übersicht</string>
+    <string name="gestures_hint">panels sind owl-dateien, die app-übersicht ist eins davon: bearbeite sie wie widgets oder erstelle eins mit deinem agenten über das menü des startbildschirms. liegt auf nach oben wischen nichts, öffnet ein tippen auf die leiste trotzdem die app-übersicht</string>
     <string name="gestures_stock_drawer">die standard-app-übersicht</string>
     <string name="gestures_drawer_shows">die app-übersicht zeigt %1$s</string>
     <string name="gestures_swipe_down_nothing">nach unten wischen öffnet nichts</string>

@@ -25,8 +25,8 @@
     </plurals>
 
     <string name="linux_log_retrying">%1$s; neuer versuch (%2$d von %3$d)</string>
-    <string name="linux_log_step_failed">%1$s – fehlgeschlagen: %2$s; in einstellungen erneut versuchen</string>
-    <string name="linux_log_agent_failed">%1$s nicht installiert; in einstellungen › coding-agenten erneut versuchen</string>
+    <string name="linux_log_step_failed">fehlgeschlagen: %1$s (%2$s); in den einstellungen erneut versuchen</string>
+    <string name="linux_log_agent_failed">%1$s wurde nicht installiert; unter einstellungen › coding-agenten erneut versuchen</string>
 
     <string name="linux_error_no_space">nicht genug speicher: Linux braucht %1$s frei, das smartphone hat %2$s; gib etwas frei und versuche es erneut</string>
     <string name="linux_error_out_of_space">der speicher des smartphones ist voll; Linux braucht etwa %1$s frei; gib etwas frei und versuche es erneut</string>
@@ -113,7 +113,7 @@
     <string name="linux_gpu_on">an · %1$s · für ab jetzt geöffnete apps</string>
     <string name="linux_gpu_off_failed">aus: die GPU hat ihre prüfung nach einem systemupdate nicht bestanden</string>
     <string name="linux_gpu_waiting">an · wartet auf prüfung</string>
-    <string name="linux_gpu_failed">die GPU hat ihre prüfung nicht bestanden; apps bleiben bei software-rendering</string>
+    <string name="linux_gpu_failed">die GPU hat ihre prüfung nicht bestanden; apps rendern weiter per software</string>
     <string name="linux_gpu_offer">experimentell · %1$s · schnellere OpenGL- und Vulkan-apps und -spiele; terminal-apps ändern sich nicht</string>
     <string name="linux_retry">erneut versuchen</string>
     <string name="linux_gpu_turn_off">ausschalten</string>
@@ -147,7 +147,7 @@
     <string name="licenses_website">website</string>
     <string name="licenses_source">quellcode</string>
     <string name="licenses_use_proot">führt das optionale Linux-system aus</string>
-    <string name="licenses_use_talloc">speicher-allocator, den PRoot nutzt</string>
+    <string name="licenses_use_talloc">speicherallokator von PRoot</string>
     <string name="licenses_use_shmem">gemeinsamer speicher für PRoot</string>
     <string name="licenses_use_mesa">OpenGL auf Adreno-GPUs im optionalen Linux-system</string>
     <string name="licenses_use_wayland">protokolldateien, mit Mesa gebündelt</string>
