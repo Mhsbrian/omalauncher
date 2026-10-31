@@ -223,6 +223,8 @@ class AcpLink(
     write: (String) -> Unit,
     /** The guest command that serves ACP on stdio: `grok agent stdio`, `opencode acp`. */
     private val serve: String,
+    /** Where its sessions work: OpenCode snapshots this folder with git before each turn, so not all of home. */
+    private val cwd: String = HOME,
 ) : AgentLink(write) {
     private var nextId = 0
     private val calls = HashMap<Int, (JSONObject?, JSONObject?) -> List<LinkEvent>>()
@@ -250,7 +252,7 @@ class AcpLink(
             val id = session
             if (id != null) {
                 loading = true
-                call("session/load", JSONObject().put("sessionId", id).put("cwd", HOME).put("mcpServers", JSONArray())) { _, e -> loaded(e) }
+                call("session/load", JSONObject().put("sessionId", id).put("cwd", cwd).put("mcpServers", JSONArray())) { _, e -> loaded(e) }
             } else {
                 newSession()
             }
@@ -259,7 +261,7 @@ class AcpLink(
     }
 
     private fun newSession() {
-        call("session/new", JSONObject().put("cwd", HOME).put("mcpServers", JSONArray())) { result, error ->
+        call("session/new", JSONObject().put("cwd", cwd).put("mcpServers", JSONArray())) { result, error ->
             val id = result?.optString("sessionId")?.takeIf { it.isNotEmpty() }
             if (id == null) return@call listOf(LinkEvent.Failed(error?.optString("message") ?: "no conversation"))
             session = id
@@ -375,7 +377,7 @@ class AcpLink(
         write(JSONObject().put("jsonrpc", "2.0").put("id", id).put("method", method).put("params", params).toString())
     }
 
-    private companion object {
+    companion object {
         const val HOME = "/root"
     }
 }

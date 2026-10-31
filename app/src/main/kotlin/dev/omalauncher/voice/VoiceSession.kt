@@ -15,6 +15,7 @@ import dev.omalauncher.linux.AgentStore
 import dev.omalauncher.linux.Proot
 import dev.omalauncher.linux.killTree
 import dev.omalauncher.ui.Speaker
+import dev.omalauncher.widgets.WidgetEngine
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
@@ -532,13 +533,19 @@ class VoiceSession(
         /** The agents that speak ACP, by bin, with what starts them as an ACP server on stdio. */
         private val ACP = mapOf("grok" to "grok agent stdio", "opencode" to "opencode acp")
 
+        /**
+         * Where an ACP agent's sessions work, when not home: OpenCode snapshots its folder with git before every
+         * turn, and all of home took minutes before its first word; the widgets are what voice is mostly for.
+         */
+        private val ACP_DIRS = mapOf("opencode" to "/root/${WidgetEngine.GUEST_DIR}")
+
         /** The agents with a link, by bin. */
         val LINKS = ACP.keys + "claude"
 
         fun linkFor(
             agent: Agent,
             write: (String) -> Unit,
-        ): AgentLink = ACP[agent.bin]?.let { AcpLink(write, it) } ?: ClaudeLink(write)
+        ): AgentLink = ACP[agent.bin]?.let { AcpLink(write, it, ACP_DIRS[agent.bin] ?: AcpLink.HOME) } ?: ClaudeLink(write)
 
         const val IDLE_STOP_MS = 10 * 60_000L
         const val RESUME_MS = 12 * 3_600_000L
