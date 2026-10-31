@@ -66,7 +66,7 @@ class AgentLinkTest {
     }
 
     @Test fun acpOpensPromptsAndAsks() {
-        val link = AcpLink(write, "grok")
+        val link = AcpLink(write, "grok agent stdio")
         link.open(null)
         assertEquals("initialize", written.last().getString("method"))
         // A prompt before it's ready waits.
@@ -110,7 +110,7 @@ class AgentLinkTest {
     }
 
     @Test fun acpResumesOrStartsOver() {
-        val link = AcpLink(write, "grok")
+        val link = AcpLink(write, "grok agent stdio")
         link.open("old")
         link.read("""{"jsonrpc":"2.0","id":1,"result":{}}""")
         assertEquals("session/load", written.last().getString("method"))

@@ -213,7 +213,7 @@ class ClaudeLink(
 }
 
 /**
- * An agent over ACP, the Agent Client Protocol: JSON-RPC on stdio (`grok agent stdio`). One session; prompts go
+ * An agent over ACP, the Agent Client Protocol: JSON-RPC on stdio (`grok agent stdio`, `opencode acp`). One session; prompts go
  * one at a time, a later one waiting for the one in flight. session/update notifications carry the reply and
  * tool calls, session/request_permission asks before a tool, session/load continues a conversation (its
  * replay of the old one isn't shown). ACP has no system prompt, so the first prompt of a conversation says
@@ -221,7 +221,8 @@ class ClaudeLink(
  */
 class AcpLink(
     write: (String) -> Unit,
-    private val bin: String,
+    /** The guest command that serves ACP on stdio: `grok agent stdio`, `opencode acp`. */
+    private val serve: String,
 ) : AgentLink(write) {
     private var nextId = 0
     private val calls = HashMap<Int, (JSONObject?, JSONObject?) -> List<LinkEvent>>()
@@ -233,7 +234,7 @@ class AcpLink(
     private val queue = ArrayDeque<String>()
     private val asked = HashMap<String, Pair<Any, JSONArray>>()
 
-    override fun command(resume: String?) = "exec ${sh(bin)} agent stdio"
+    override fun command(resume: String?) = "exec $serve"
 
     override fun open(resume: String?) {
         session = resume

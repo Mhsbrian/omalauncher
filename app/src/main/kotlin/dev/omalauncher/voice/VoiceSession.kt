@@ -101,6 +101,21 @@ class VoiceSession(
     private val writer = Executors.newSingleThreadExecutor { Thread(it, "voice-write").apply { isDaemon = true } }
 
     val dir get() = File(context.filesDir, "voice")
+
+    /**
+     * What went to and came from the agent, for finding out why it misbehaves: /tmp/voice-agent.log in Linux,
+     * readable from a terminal, cut in half when it passes 1 MB; /tmp is emptied as the launcher starts.
+     */
+    private fun trace(
+        way: Char,
+        line: String,
+    ) = writer.execute {
+        runCatching {
+            val log = proot.hostFile("/tmp/voice-agent.log")
+            if (log.length() > 1_000_000) log.writeText(log.readText().takeLast(500_000))
+            log.appendText("${System.currentTimeMillis() % 100_000_000} $way ${line.take(4000)}\n")
+        }
+    }
     private val settingsFile get() = File(dir, "settings.json")
 
     private fun transcriptFile(bin: String) = File(dir, "transcript-$bin.json")
@@ -247,8 +262,26 @@ class VoiceSession(
             }
         process = p
         l.open(session)
-        Thread({ p.inputStream.bufferedReader().forEachLine { line -> main.post { if (process === p) events(l.read(line)) } } ; p.waitFor(); main.post { exited(p) } }, "voice-read").apply { isDaemon = true }.start()
-        Thread({ p.errorStream.bufferedReader().forEachLine { line -> main.post { if (process === p) complain(line) } } }, "voice-err").apply { isDaemon = true }.start()
+        trace('$', "start ${a.bin}" + (session?.let { " resuming $it" } ?: ""))
+        // Stopping the agent closes its pipes under these readers: that ends them, it isn't an error.
+        Thread({
+            runCatching {
+                p.inputStream.bufferedReader().forEachLine { line ->
+                    trace('<', line)
+                    main.post { if (process === p) events(l.read(line)) }
+                }
+            }
+            runCatching { p.waitFor() }
+            main.post { exited(p) }
+        }, "voice-read").apply { isDaemon = true }.start()
+        Thread({
+            runCatching {
+                p.errorStream.bufferedReader().forEachLine { line ->
+                    trace('!', line)
+                    main.post { if (process === p) complain(line) }
+                }
+            }
+        }, "voice-err").apply { isDaemon = true }.start()
         // Claude says nothing until the first prompt; it's ready once it runs.
         if (l is ClaudeLink) phase = Phase.Idle
         startWatch()
@@ -256,6 +289,7 @@ class VoiceSession(
 
     private fun write(line: String) {
         val p = process ?: return
+        trace('>', line)
         runCatching {
             p.outputStream.write((line + "\n").toByteArray())
             p.outputStream.flush()
@@ -495,13 +529,16 @@ class VoiceSession(
     companion object {
         private const val TAG = "voice"
 
+        /** The agents that speak ACP, by bin, with what starts them as an ACP server on stdio. */
+        private val ACP = mapOf("grok" to "grok agent stdio", "opencode" to "opencode acp")
+
         /** The agents with a link, by bin. */
-        val LINKS = setOf("claude", "grok")
+        val LINKS = ACP.keys + "claude"
 
         fun linkFor(
             agent: Agent,
             write: (String) -> Unit,
-        ): AgentLink = if (agent.bin == "grok") AcpLink(write, "grok") else ClaudeLink(write)
+        ): AgentLink = ACP[agent.bin]?.let { AcpLink(write, it) } ?: ClaudeLink(write)
 
         const val IDLE_STOP_MS = 10 * 60_000L
         const val RESUME_MS = 12 * 3_600_000L
