@@ -25,6 +25,8 @@
     <string name="settings_needs_linux">需要 linux</string>
     <string name="settings_packages">软件包</string>
     <string name="settings_packages_subtitle">用 pacman 和 AUR 安装 Linux 应用和工具</string>
+    <string name="settings_home_app">默认主屏幕应用</string>
+    <string name="settings_home_app_subtitle">将 Omalauncher 设为主屏幕 · 应用快捷方式需要它</string>
     <string name="settings_local_network">局域网</string>
     <string name="settings_local_network_subtitle">让小组件和 linux 访问你的打印机、Home Assistant…</string>
     <string name="settings_android">android 设置</string>

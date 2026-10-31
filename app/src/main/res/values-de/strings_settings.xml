@@ -30,6 +30,8 @@
     <string name="settings_needs_linux">braucht linux</string>
     <string name="settings_packages">pakete</string>
     <string name="settings_packages_subtitle">Linux-apps und -tools mit pacman und dem AUR installieren</string>
+    <string name="settings_home_app">standard-start-app</string>
+    <string name="settings_home_app_subtitle">mach Omalauncher zu deinem startbildschirm · app-verknüpfungen brauchen das</string>
     <string name="settings_local_network">lokales netzwerk</string>
     <string name="settings_local_network_subtitle">lässt widgets und linux deinen drucker, home assistant, … erreichen</string>
     <string name="settings_android">android-einstellungen</string>
