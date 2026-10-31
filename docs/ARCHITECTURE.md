@@ -39,8 +39,6 @@ touches it: `files/omarchy` is `~/.local/share/omarchy` and `files/widgets` is
   current page: a node drawn in Kotlin loses its `remember` state when its
   page is swiped away, and keeps anything lasting in the instance
 - `theme/`: Omarchy themes, applied to the launcher and the guest
-- `feed/`: the feed left of the first home page: its sources, reading RSS,
-  Atom, Hacker News and FxTwitter, settings and the cache; `ui/FeedPanel.kt` draws it
 - `upgrade/`: how installs follow app updates (see below)
 
 ## Rendering

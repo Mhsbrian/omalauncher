@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- This fork's own UI text (feed, folders, backup, icon packs, swipe-down actions), apart from upstream's strings_*.xml so syncs merge cleanly. -->
+<!-- This fork's own UI text (folders, backup, icon packs, swipe-down actions), apart from upstream's strings_*.xml so syncs merge cleanly. -->
 <!-- Not translated yet (values-de, values-es, values-in, values-pt, values-zh): the launcher shows these in English in those languages. -->
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
     <!-- Shared -->
@@ -12,7 +12,6 @@
 
     <!-- Settings rows -->
     <string name="fork_settings_icons">icons</string>
-    <string name="fork_settings_feed">feed</string>
     <string name="fork_settings_backup">backup &amp; restore</string>
     <string name="fork_settings_backup_subtitle">the home screen, its widgets and folders, to a file</string>
 
@@ -24,8 +23,6 @@
     <!-- Home menu -->
     <string name="fork_home_new_icon_pack">new icon pack with %1$s</string>
     <string name="fork_home_new_icon_pack_an_agent">new icon pack with an agent</string>
-    <string name="fork_home_feed_on">[x] feed · swipe right</string>
-    <string name="fork_home_feed_off">[ ] feed</string>
 
     <!-- Folders -->
     <string name="fork_folder_name_title">name folder</string>
@@ -39,10 +36,6 @@
     <string name="fork_backup_restore_from_file">restore from a file</string>
     <string name="fork_backup_undo">undo the last restore</string>
     <string name="fork_backup_restore">restore</string>
-
-    <!-- Feed settings -->
-    <string name="fork_feed_reset_accounts">reset to the default accounts</string>
-    <string name="fork_feed_add">add</string>
 
     <!-- Icons -->
     <string name="fork_style_icon_pack">icon pack</string>

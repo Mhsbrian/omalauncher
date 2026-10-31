@@ -239,7 +239,6 @@ class MainActivity : ComponentActivity() {
                     state.openPull(runtime.panelOf(runtime.gestures.swipeDown) ?: return false)
                 }
             KeyEvent.KEYCODE_A -> state.promptRequest = PromptRequest.Type
-            KeyEvent.KEYCODE_F -> if (runtime.launcherReady && runtime.feed.settings.enabled) state.feed.toggle() else return false
             in KeyEvent.KEYCODE_1..KeyEvent.KEYCODE_9 -> state.requestedPage = keyCode - KeyEvent.KEYCODE_0
             else -> return false
         }

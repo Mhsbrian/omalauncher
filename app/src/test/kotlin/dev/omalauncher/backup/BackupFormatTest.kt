@@ -231,6 +231,21 @@ class BackupFormatTest {
         assertFalse(File(staging, "escaped.txt").exists())
     }
 
+    /** The fork's feed is gone: a backup made while it was there still restores, without its settings. */
+    @Test fun aBackupWithTheOldFeedsSettingsRestoresWithoutThem() {
+        val staging = tmp.newFolder("staging")
+        val zip =
+            zipOf(
+                "backup.json" to info.toJson().toString(),
+                "prefs/feed.json" to """{"settings":"{}"}""",
+                "files/widgets/a.owl" to "a",
+            )
+        val staged = readBackup(ByteArrayInputStream(zip), staging)
+        assertEquals(1, staged.skipped)
+        assertFalse("feed" in staged.prefs)
+        assertTrue(File(staging, "files/widgets/a.owl").isFile)
+    }
+
     @Test fun refusesWhatIsntABackup() {
         expectRefusal("not an omalauncher backup") { readBackup(ByteArrayInputStream(zipOf("files/widgets/a.owl" to "a")), tmp.newFolder("a")) }
         // ZipInputStream reads bytes that aren't a zip as an empty one: no backup.json, so the same answer.
