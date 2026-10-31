@@ -45,12 +45,18 @@ internal fun UpPanel(
     modifier: Modifier = Modifier,
 ) {
     val inst = runtime.widgets.panelInstance(name)?.second ?: return
-    // Each time it opens. Cheap when nothing changed, as for the drawer: Linux apps installed since show up in android.drawer.
-    LaunchedEffect(inst, hidden) { snapshotFlow { hidden() }.collect { if (!it) runtime.refreshApps() } }
-    // What had the keys in it lets go as it closes: kept, it would hold them out of sight.
     val focusManager = LocalFocusManager.current
     var focused by remember { mutableStateOf(false) }
-    LaunchedEffect(inst, hidden) { snapshotFlow { hidden() }.collect { if (it && focused) focusManager.clearFocus(force = true) } }
+    LaunchedEffect(inst, hidden) {
+        snapshotFlow { hidden() }.collect { closed ->
+            when {
+                // Each time it opens. Cheap when nothing changed, as for the drawer: Linux apps installed since show up in android.drawer.
+                !closed -> runtime.refreshApps()
+                // What had the keys in it lets go as it closes: kept, it would hold them out of sight.
+                focused -> focusManager.clearFocus(force = true)
+            }
+        }
+    }
     // The panel reads the bar's text itself. Set before it composes, below, so its first frame has it too.
     val bar = remember(state) { { state.query } }
     if (inst.query !== bar) inst.query = bar
