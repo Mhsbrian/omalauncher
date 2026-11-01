@@ -77,6 +77,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.StrokeCap
@@ -263,13 +264,6 @@ fun VoiceScreen(
                         )
                     }
                 }
-                if (ready) {
-                    Chip(stringResource(R.string.voice_voice), Palette.muted) {
-                        // Not listening while samples play: it would hear them.
-                        speech.cancel()
-                        tuning = true
-                    }
-                }
                 if (ready) Chip((if (session.approveAll) "● " else "○ ") + stringResource(R.string.voice_allow_all), if (session.approveAll) yellow else Palette.muted) { session.approveEverything(!session.approveAll) }
                 // A new conversation puts this one aside, so one tap is enough: resume brings it back.
                 if (ready && !session.busy) {
@@ -283,6 +277,22 @@ fun VoiceScreen(
                             speech.cancel()
                             session.resume()
                         }
+                    }
+                }
+                // The language, voice and speed, last in the row.
+                if (ready) {
+                    Box(
+                        Modifier
+                            .size(36.dp)
+                            .clip(LauncherStyle.shape(18.dp))
+                            .clickable {
+                                // Not listening while samples play: it would hear them.
+                                speech.cancel()
+                                tuning = true
+                            },
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Image(Icons.Gear, stringResource(R.string.voice_voice), Modifier.size(20.dp), colorFilter = ColorFilter.tint(Palette.muted))
                     }
                 }
             }
