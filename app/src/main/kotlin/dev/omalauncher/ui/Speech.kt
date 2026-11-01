@@ -35,6 +35,8 @@ import java.util.Locale
  */
 class Speech(
     private val context: Context,
+    /** The language to listen in: the launcher's, or the voice screen's pick. */
+    private val wanted: () -> Locale = { Locale.getDefault() },
 ) {
     var listening by mutableStateOf(false)
         private set
@@ -119,16 +121,18 @@ class Speech(
     }
 
     /**
-     * The language to recognize: the phone's, or the closest one the recognizer
+     * The language to recognize: the [wanted] one, or the closest one the recognizer
      * has a model for. Recognizers only know common language-region pairs, so a
      * phone set to English (Germany) needs en-US or en-GB instead. Null for the
-     * recognizer's default; asked once for each kind of recognizer, see [languages].
+     * recognizer's default; asked once for each kind of recognizer and language, see [languages].
      */
     private var language: String?
-        get() = languages[onDevice]
+        get() = languages[key]
         set(value) {
-            languages[onDevice] = value
+            languages[key] = value
         }
+
+    private val key get() = onDevice to wanted().toLanguageTag()
 
     /** The recognizer that's being asked for its languages before it listens. */
     private var pending: SpeechRecognizer? = null
@@ -145,7 +149,7 @@ class Speech(
         recognizer = r
         r.setRecognitionListener(Listener(r))
         Log.i(TAG, "listening with the ${if (onDevice && onDeviceAvailable) "on-device" else "regular"} recognizer")
-        if (onDevice in languages || Build.VERSION.SDK_INT < 33) return begin(r)
+        if (key in languages || Build.VERSION.SDK_INT < 33) return begin(r)
         pending = r
         // A Pixel took 16 seconds to answer, with an error, the first time: the words said meanwhile were lost.
         main.postDelayed({
@@ -235,15 +239,15 @@ class Speech(
      */
     @androidx.annotation.RequiresApi(33)
     private fun closestLanguage(support: RecognitionSupport): String? {
-        val locale = Locale.getDefault()
-        val wanted = Locale(locale.language, locale.country).toLanguageTag()
+        val locale = wanted()
+        val tag = Locale(locale.language, locale.country).toLanguageTag()
         val pools =
             if (onDevice) {
                 listOf(support.installedOnDeviceLanguages, support.supportedOnDeviceLanguages, support.onlineLanguages)
             } else {
                 listOf(support.onlineLanguages, support.installedOnDeviceLanguages, support.supportedOnDeviceLanguages)
             }
-        pools.flatten().firstOrNull { it.equals(wanted, ignoreCase = true) }?.let { return it }
+        pools.flatten().firstOrNull { it.equals(tag, ignoreCase = true) }?.let { return it }
         val home = "${locale.language}-${locale.language}"
         for (pool in pools) {
             val same = pool.filter { it.substringBefore('-').equals(locale.language, ignoreCase = true) }
@@ -259,9 +263,9 @@ class Speech(
         return null
     }
 
-    /** The phone's language in its main region: en-US, de-DE, fr-FR. */
+    /** The [wanted] language in its main region: en-US, de-DE, fr-FR. */
     private fun mainRegion(): String {
-        val l = Locale.getDefault().language
+        val l = wanted().language
         return if (l == "en") "en-US" else "$l-${l.uppercase(Locale.ROOT)}"
     }
 
@@ -430,8 +434,8 @@ class Speech(
         /** How long a recognizer gets to say which languages it knows before it listens for the default one. */
         private const val SUPPORT_WAIT_MS = 2000L
 
-        /** [language] for each kind of recognizer, on-device or not, once asked: the same for every Speech. */
-        private val languages = HashMap<Boolean, String?>()
+        /** [language] for each kind of recognizer, on-device or not, and wanted language, once asked: the same for every Speech. */
+        private val languages = HashMap<Pair<Boolean, String>, String?>()
 
         /** The one started last: the phone has one microphone, and a second recognizer would get nothing. */
         private var active: Speech? = null
