@@ -180,15 +180,15 @@ class VoiceSession(
     var voice by mutableStateOf<String?>(null)
         private set
 
-    /** How fast replies are read: 1 is the engine's normal speed. */
-    var rate by mutableFloatStateOf(1f)
+    /** How fast replies are read: 1 is the engine's normal speed; a little faster by default, as replies can be long. */
+    var rate by mutableFloatStateOf(DEFAULT_RATE)
         private set
 
     init {
         readJson(settingsFile)?.let { s ->
             language = s.optString("language").ifEmpty { null }
             voice = s.optString("voice").ifEmpty { null }
-            rate = s.optDouble("rate", 1.0).toFloat().takeIf { it in 0.5f..2f } ?: 1f
+            rate = s.optDouble("rate", DEFAULT_RATE.toDouble()).toFloat().takeIf { it in 0.5f..2f } ?: DEFAULT_RATE
         }
         speaker.use(language, voice, rate)
     }
@@ -847,6 +847,7 @@ class VoiceSession(
             write: (String) -> Unit,
         ): AgentLink = ACP[agent.bin]?.let { AcpLink(write, it, ACP_DIRS[agent.bin] ?: AcpLink.HOME) } ?: ClaudeLink(write)
 
+        const val DEFAULT_RATE = 1.25f
         const val IDLE_STOP_MS = 10 * 60_000L
         const val RESUME_MS = 12 * 3_600_000L
         const val QUIET_MS = 120_000L
