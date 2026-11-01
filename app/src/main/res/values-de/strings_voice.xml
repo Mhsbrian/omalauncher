@@ -71,7 +71,7 @@
     <string name="voice_retrying">neuer versuch: %1$s</string>
     <string name="voice_voice">stimme</string>
     <string name="voice_language">sprache</string>
-    <string name="voice_language_launcher">wie der launcher (%1$s)</string>
+    <string name="voice_language_launcher">standard (%1$s)</string>
     <string name="voice_default">standard</string>
     <string name="voice_online">online</string>
     <string name="voice_speed">tempo</string>

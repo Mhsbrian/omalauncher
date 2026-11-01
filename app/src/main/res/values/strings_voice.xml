@@ -93,8 +93,8 @@
     <!-- The voice settings: the chip in the top row and the dialog it opens. -->
     <string name="voice_voice">voice</string>
     <string name="voice_language">language</string>
-    <!-- The language picked in the launcher; %1$s is its name. -->
-    <string name="voice_language_launcher">as the launcher (%1$s)</string>
+    <!-- The language picked in the launcher, which Voice uses unless another is picked; %1$s is its name. -->
+    <string name="voice_language_launcher">default (%1$s)</string>
     <string name="voice_default">default</string>
     <!-- After a voice that needs the internet. -->
     <string name="voice_online">online</string>
