@@ -70,4 +70,14 @@
     <string name="voice_quiet">%1$s está quieto há dois minutos; pare se ele travou</string>
     <string name="voice_failed">falhou</string>
     <string name="voice_retrying">tentando de novo: %1$s</string>
+    <string name="voice_voice">voz</string>
+    <string name="voice_language">idioma</string>
+    <string name="voice_language_launcher">o do launcher (%1$s)</string>
+    <string name="voice_language_hint">Voz ouve e lê as respostas em voz alta neste idioma; os agentes respondem no idioma em que você fala.</string>
+    <string name="voice_default">padrão</string>
+    <string name="voice_online">online</string>
+    <string name="voice_speed">velocidade</string>
+    <string name="voice_tts_settings">configurações de texto para fala</string>
+    <string name="voice_no_voice">Ainda não há voz para %1$s neste telefone: baixe uma nas configurações de texto para fala.</string>
+    <string name="voice_sample">É assim que as respostas vão soar.</string>
 </resources>

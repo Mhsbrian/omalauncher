@@ -5,6 +5,7 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateListOf
@@ -170,6 +171,40 @@ class VoiceSession(
         }
     }
     private val settingsFile get() = File(dir, "settings.json")
+
+    /** The language it listens and reads aloud in, a tag ("de"); null for the launcher's. */
+    var language by mutableStateOf<String?>(null)
+        private set
+
+    /** The voice replies are read in, by name; null for the engine's choice for [language]. */
+    var voice by mutableStateOf<String?>(null)
+        private set
+
+    /** How fast replies are read: 1 is the engine's normal speed. */
+    var rate by mutableFloatStateOf(1f)
+        private set
+
+    init {
+        readJson(settingsFile)?.let { s ->
+            language = s.optString("language").ifEmpty { null }
+            voice = s.optString("voice").ifEmpty { null }
+            rate = s.optDouble("rate", 1.0).toFloat().takeIf { it in 0.5f..2f } ?: 1f
+        }
+        speaker.use(language, voice, rate)
+    }
+
+    /** Listens and reads aloud in [language] (null for the launcher's), with [voice], at [rate]. */
+    fun useVoice(
+        language: String?,
+        voice: String?,
+        rate: Float,
+    ) {
+        this.language = language
+        this.voice = voice
+        this.rate = rate
+        speaker.use(language, voice, rate)
+        saveSettings()
+    }
 
     private fun transcriptFile(bin: String) = File(dir, "transcript-$bin.json")
 
@@ -763,7 +798,18 @@ class VoiceSession(
         writeFile(sessionFile(a.bin), JSONObject().put("id", id).put("at", System.currentTimeMillis()).put("busy", busy).toString())
     }
 
-    private fun saveSettings() = writeFile(settingsFile, JSONObject().put("agent", agent?.bin).put("approveAll", approveAll).put("typing", typing).toString())
+    private fun saveSettings() =
+        writeFile(
+            settingsFile,
+            JSONObject()
+                .put("agent", agent?.bin)
+                .put("approveAll", approveAll)
+                .put("typing", typing)
+                .put("language", language)
+                .put("voice", voice)
+                .put("rate", rate.toDouble())
+                .toString(),
+        )
 
     private fun writeFile(
         file: File,

@@ -104,6 +104,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import dev.omalauncher.AppLanguage
 import dev.omalauncher.R
 import dev.omalauncher.Runtime
 import dev.omalauncher.voice.VoiceSession
@@ -111,6 +112,7 @@ import dev.omalauncher.voice.VoiceSession.Phase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
+import java.util.Locale
 import kotlin.math.PI
 import kotlin.math.min
 import kotlin.math.sin
@@ -134,10 +136,11 @@ fun VoiceScreen(
     val context = LocalContext.current
     val session = runtime.voice
     val speaker = runtime.speaker
-    val speech = remember { Speech(context.applicationContext) }
+    val speech = remember { Speech(context.applicationContext) { speaker.locale } }
     val haptics = LocalHapticFeedback.current
     var viewing by remember { mutableStateOf<String?>(null) }
     var picking by remember { mutableStateOf(false) }
+    var tuning by remember { mutableStateOf(false) }
     var showSteps by remember { mutableStateOf(false) }
     var draft by remember { mutableStateOf("") }
     var bottomHeight by remember { mutableIntStateOf(0) }
@@ -258,6 +261,13 @@ fun VoiceScreen(
                             label = { it.name },
                             minWidth = 160.dp,
                         )
+                    }
+                }
+                if (ready) {
+                    Chip(stringResource(R.string.voice_voice), Palette.muted) {
+                        // Not listening while samples play: it would hear them.
+                        speech.cancel()
+                        tuning = true
                     }
                 }
                 if (ready) Chip((if (session.approveAll) "● " else "○ ") + stringResource(R.string.voice_allow_all), if (session.approveAll) yellow else Palette.muted) { session.approveEverything(!session.approveAll) }
@@ -432,8 +442,161 @@ fun VoiceScreen(
 
         // A picture, whole: pinch to zoom, tap to close.
         viewing?.let { path -> ImageViewer(path) { viewing = null } }
+        if (tuning) {
+            VoiceSettings(session, speaker) {
+                tuning = false
+                speaker.stop()
+            }
+        }
     }
 }
+
+/**
+ * The language Voice listens and reads aloud in, the voice it reads in and how fast: each pick plays a sample. The
+ * languages are the text-to-speech engine's (and the launcher's), the voices its own for the language picked.
+ */
+@Composable
+private fun VoiceSettings(
+    session: VoiceSession,
+    speaker: Speaker,
+    onDismiss: () -> Unit,
+) {
+    val context = LocalContext.current
+    LaunchedEffect(Unit) { speaker.warmUp() }
+    // Read again once the engine is up: before, it can't say what it has.
+    val ready = speaker.ready
+    val language = session.language
+    val launcher = Locale.getDefault()
+    val shown = language ?: launcher.language
+    val languages =
+        remember(ready) {
+            (speaker.languages() + AppLanguage.supported.map { Locale.forLanguageTag(it).language })
+                .distinct()
+                .sortedBy { AppLanguage.name(it).lowercase(launcher) }
+        }
+    val voices = remember(ready, shown) { speaker.voices(shown) }
+
+    /** A sentence in the language replies are read in: its own words when the launcher has them, else its name. */
+    fun sample() {
+        val locale = speaker.locale
+        val text =
+            if (AppLanguage.supported.any { Locale.forLanguageTag(it).language == locale.language }) {
+                val config = android.content.res.Configuration(context.resources.configuration).apply { setLocale(locale) }
+                context.createConfigurationContext(config).getString(R.string.voice_sample)
+            } else {
+                AppLanguage.name(locale.toLanguageTag())
+            }
+        speaker.stop()
+        speaker.speak(text)
+    }
+
+    fun use(
+        language: String? = session.language,
+        voice: String? = session.voice,
+        rate: Float = session.rate,
+    ) {
+        session.useVoice(language, voice, rate)
+        sample()
+    }
+
+    DialogFrame(onDismiss) {
+        BasicText(stringResource(R.string.voice_voice), style = Mono.copy(color = Palette.accent, fontSize = TextSize.Title))
+
+        var pickLanguage by remember { mutableStateOf(false) }
+        Setting(stringResource(R.string.voice_language)) {
+            Box {
+                Pick(if (language == null) stringResource(R.string.voice_language_launcher, AppLanguage.name(launcher.language)) else AppLanguage.name(language)) { pickLanguage = true }
+                if (pickLanguage) {
+                    ChoicePopup(
+                        options = listOf<String?>(null) + languages,
+                        selected = language,
+                        position = BelowAnchorStart,
+                        onDismiss = { pickLanguage = false },
+                        // Another language's voices are other voices.
+                        onPick = { use(language = it, voice = null) },
+                        label = { it?.let(AppLanguage::name) ?: context.getString(R.string.voice_language_launcher, AppLanguage.name(launcher.language)) },
+                    )
+                }
+            }
+        }
+        BasicText(stringResource(R.string.voice_language_hint), style = Mono.copy(color = Palette.muted, fontSize = TextSize.Small))
+
+        if (voices.isNotEmpty()) {
+            var pickVoice by remember { mutableStateOf(false) }
+            // Numbered in each region: the engine's names (de-de-x-deb-local) say nothing to most. A voice and its
+            // online twin (de-de-x-deb-network) share the number.
+            val labels =
+                remember(voices) {
+                    val numbers = HashMap<String, Int>()
+                    val count = HashMap<String, Int>()
+                    voices.associate { v ->
+                        val region = v.locale.getDisplayCountry(launcher).ifEmpty { AppLanguage.name(v.locale.language) }
+                        val twin = region + "|" + v.name.substringAfter("-x-", v.name).substringBeforeLast('-')
+                        val n = numbers.getOrPut(twin) { (count[region] ?: 0).plus(1).also { count[region] = it } }
+                        v.name to (if (v.isNetworkConnectionRequired) "$region $n · ${context.getString(R.string.voice_online)}" else "$region $n")
+                    }
+                }
+            val current = voices.firstOrNull { it.name == session.voice }
+            Setting(stringResource(R.string.voice_voice)) {
+                Box {
+                    Pick(current?.let { labels[it.name] } ?: stringResource(R.string.voice_default)) { pickVoice = true }
+                    if (pickVoice) {
+                        ChoicePopup(
+                            options = listOf<android.speech.tts.Voice?>(null) + voices,
+                            selected = current,
+                            position = BelowAnchorStart,
+                            onDismiss = { pickVoice = false },
+                            onPick = { use(voice = it?.name) },
+                            label = { v -> v?.let { labels[it.name] } ?: context.getString(R.string.voice_default) },
+                            sublabel = { v -> v?.name.orEmpty() },
+                        )
+                    }
+                }
+            }
+        }
+
+        Setting(stringResource(R.string.voice_speed)) {
+            Row {
+                for (r in RATES) {
+                    Chip("${r.toString().removeSuffix(".0")}×", if (r == session.rate) Palette.accent else Palette.muted) { use(rate = r) }
+                }
+            }
+        }
+
+        if (!speaker.reads(speaker.locale)) {
+            BasicText(stringResource(R.string.voice_no_voice, AppLanguage.name(speaker.locale.language)), style = Mono.copy(color = Palette.red, fontSize = TextSize.Small))
+        }
+        // The engine, its voices' downloads and its own defaults. Back or a tap outside closes this.
+        BracketAction(stringResource(R.string.voice_tts_settings), Palette.accent) {
+            val settings = Intent("com.android.settings.TTS_SETTINGS").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            runCatching { context.startActivity(settings) }.onFailure { context.startActivity(Intent(Settings.ACTION_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
+        }
+    }
+}
+
+/** How fast replies can be read; 1 is the engine's normal speed. */
+private val RATES = listOf(0.8f, 1f, 1.25f, 1.5f)
+
+/** A setting in [VoiceSettings]: its name, and what it's set to. */
+@Composable
+private fun Setting(
+    name: String,
+    value: @Composable () -> Unit,
+) = Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+    BasicText(name, style = Mono.copy(color = Palette.muted, fontSize = TextSize.Small))
+    value()
+}
+
+/** What a setting is set to; a tap picks another. */
+@Composable
+private fun Pick(
+    text: String,
+    onClick: () -> Unit,
+) = BasicText(
+    "$text ▾",
+    Modifier.clip(LauncherStyle.shape(8.dp)).clickable(onClick = onClick).padding(vertical = 6.dp),
+    style = Mono.copy(color = Palette.foreground, fontSize = TextSize.Item),
+)
 
 /** The status line's room under the orb. */
 private val CAPTION = 28.dp
