@@ -10,9 +10,12 @@ import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import java.util.Locale
 
 /**
- * Android's own text-to-speech, in the phone's voice and language: the voice screen's replies.
+ * Android's own text-to-speech, in the launcher's language: the voice screen's replies. Not the engine's own
+ * default, which follows the phone's: with the launcher in German on an English phone, the user talks German, the agent
+ * answers in German, and an English voice would read it.
  * Sentences queue up and play one after another; [stop] stops what's playing and drops the rest. Started
  * on first use. Main thread.
  */
@@ -119,7 +122,15 @@ class Speaker(
         if (queued == 0 && waiting.isEmpty()) speaking = false
     }
 
+    /** The language the engine was last set to, set again when the launcher's changes. */
+    private var applied: Locale? = null
+
     private fun say(text: String) {
+        val locale = Locale.getDefault()
+        if (locale != applied) {
+            applied = locale
+            if ((tts?.setLanguage(locale) ?: TextToSpeech.SUCCESS) < TextToSpeech.LANG_AVAILABLE) Log.w(TAG, "no voice for $locale")
+        }
         queued++
         // Refused (the engine went away): no progress callback comes for it, so it's done now.
         if (tts?.speak(text, TextToSpeech.QUEUE_ADD, null, "s${next++}") != TextToSpeech.SUCCESS) {
