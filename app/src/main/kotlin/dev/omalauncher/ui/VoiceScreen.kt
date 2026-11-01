@@ -94,10 +94,12 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -472,11 +474,13 @@ private fun VoiceSettings(
     onDismiss: () -> Unit,
 ) {
     val context = LocalContext.current
+    val configuration = LocalConfiguration.current
+    val resources = LocalResources.current
     LaunchedEffect(Unit) { speaker.warmUp() }
     // Read again once the engine is up: before, it can't say what it has.
     val ready = speaker.ready
     val language = session.language
-    val launcher = Locale.getDefault()
+    val launcher = configuration.locales[0]
     val shown = language ?: launcher.language
     val languages =
         remember(ready) {
@@ -491,7 +495,7 @@ private fun VoiceSettings(
         val locale = speaker.locale
         val text =
             if (AppLanguage.supported.any { Locale.forLanguageTag(it).language == locale.language }) {
-                val config = android.content.res.Configuration(context.resources.configuration).apply { setLocale(locale) }
+                val config = android.content.res.Configuration(configuration).apply { setLocale(locale) }
                 context.createConfigurationContext(config).getString(R.string.voice_sample)
             } else {
                 AppLanguage.name(locale.toLanguageTag())
@@ -524,7 +528,7 @@ private fun VoiceSettings(
                         onDismiss = { pickLanguage = false },
                         // Another language's voices are other voices.
                         onPick = { use(language = it, voice = null) },
-                        label = { it?.let(AppLanguage::name) ?: context.getString(R.string.voice_language_launcher, AppLanguage.name(launcher.language)) },
+                        label = { it?.let(AppLanguage::name) ?: resources.getString(R.string.voice_language_launcher, AppLanguage.name(launcher.language)) },
                     )
                 }
             }
@@ -543,7 +547,7 @@ private fun VoiceSettings(
                         val region = v.locale.getDisplayCountry(launcher).ifEmpty { AppLanguage.name(v.locale.language) }
                         val twin = region + "|" + v.name.substringAfter("-x-", v.name).substringBeforeLast('-')
                         val n = numbers.getOrPut(twin) { (count[region] ?: 0).plus(1).also { count[region] = it } }
-                        v.name to (if (v.isNetworkConnectionRequired) "$region $n · ${context.getString(R.string.voice_online)}" else "$region $n")
+                        v.name to (if (v.isNetworkConnectionRequired) "$region $n · ${resources.getString(R.string.voice_online)}" else "$region $n")
                     }
                 }
             val current = voices.firstOrNull { it.name == session.voice }
@@ -557,7 +561,7 @@ private fun VoiceSettings(
                             position = BelowAnchorStart,
                             onDismiss = { pickVoice = false },
                             onPick = { use(voice = it?.name) },
-                            label = { v -> v?.let { labels[it.name] } ?: context.getString(R.string.voice_default) },
+                            label = { v -> v?.let { labels[it.name] } ?: resources.getString(R.string.voice_default) },
                             sublabel = { v -> v?.name.orEmpty() },
                         )
                     }
