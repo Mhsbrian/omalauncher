@@ -270,7 +270,7 @@ fun VoiceScreen(
                 // A new conversation puts this one aside, so one tap is enough: resume brings it back.
                 if (ready && !session.busy) {
                     if (session.transcript.isNotEmpty()) {
-                        Chip(stringResource(R.string.voice_new), Palette.muted) {
+                        TopIcon(Icons.Plus, stringResource(R.string.voice_new)) {
                             speaker.stop()
                             session.startOver()
                         }
@@ -283,18 +283,10 @@ fun VoiceScreen(
                 }
                 // The language, voice and speed, last in the row.
                 if (ready) {
-                    Box(
-                        Modifier
-                            .size(36.dp)
-                            .clip(LauncherStyle.shape(18.dp))
-                            .clickable {
-                                // Not listening while samples play: it would hear them.
-                                speech.cancel()
-                                tuning = true
-                            },
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Image(Icons.Gear, stringResource(R.string.voice_voice), Modifier.size(20.dp), colorFilter = ColorFilter.tint(Palette.muted))
+                    TopIcon(Icons.Gear, stringResource(R.string.voice_voice)) {
+                        // Not listening while samples play: it would hear them.
+                        speech.cancel()
+                        tuning = true
                     }
                 }
             }
@@ -762,6 +754,17 @@ private fun rememberBitmap(
                 }.getOrNull()
             }
     }.value
+
+/** An icon in the top row that does something, [label] for screen readers. */
+@Composable
+private fun TopIcon(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    label: String,
+    onClick: () -> Unit,
+) = Box(
+    Modifier.size(44.dp).clip(LauncherStyle.shape(22.dp)).clickable(onClick = onClick),
+    contentAlignment = Alignment.Center,
+) { Image(icon, label, Modifier.size(24.dp), colorFilter = ColorFilter.tint(Palette.muted)) }
 
 /** A small word in the top row that does something. */
 @Composable
