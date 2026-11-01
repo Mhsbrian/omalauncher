@@ -95,7 +95,6 @@
     <string name="voice_language">language</string>
     <!-- The language picked in the launcher; %1$s is its name. -->
     <string name="voice_language_launcher">as the launcher (%1$s)</string>
-    <string name="voice_language_hint">Voice listens and reads replies aloud in it; agents answer in the language you speak.</string>
     <string name="voice_default">default</string>
     <!-- After a voice that needs the internet. -->
     <string name="voice_online">online</string>

@@ -533,7 +533,6 @@ private fun VoiceSettings(
                 }
             }
         }
-        BasicText(stringResource(R.string.voice_language_hint), style = Mono.copy(color = Palette.muted, fontSize = TextSize.Small))
 
         if (voices.isNotEmpty()) {
             var pickVoice by remember { mutableStateOf(false) }

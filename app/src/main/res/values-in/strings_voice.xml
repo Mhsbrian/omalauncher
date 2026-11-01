@@ -71,7 +71,6 @@
     <string name="voice_voice">suara</string>
     <string name="voice_language">bahasa</string>
     <string name="voice_language_launcher">seperti launcher (%1$s)</string>
-    <string name="voice_language_hint">Suara mendengarkan dan membacakan jawaban dalam bahasa ini; agen menjawab dalam bahasa yang kamu ucapkan.</string>
     <string name="voice_default">bawaan</string>
     <string name="voice_online">online</string>
     <string name="voice_speed">kecepatan</string>

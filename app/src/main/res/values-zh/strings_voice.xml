@@ -71,7 +71,6 @@
     <string name="voice_voice">声音</string>
     <string name="voice_language">语言</string>
     <string name="voice_language_launcher">跟随启动器（%1$s）</string>
-    <string name="voice_language_hint">语音用这种语言听你说话并朗读回复；代理会用你说的语言回答。</string>
     <string name="voice_default">默认</string>
     <string name="voice_online">在线</string>
     <string name="voice_speed">语速</string>
