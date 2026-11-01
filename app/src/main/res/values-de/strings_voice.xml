@@ -69,4 +69,13 @@
     <string name="voice_quiet">%1$s ist seit zwei minuten still; stopp es, wenn es hängt</string>
     <string name="voice_failed">hat nicht geklappt</string>
     <string name="voice_retrying">neuer versuch: %1$s</string>
+    <string name="voice_voice">stimme</string>
+    <string name="voice_language">sprache</string>
+    <string name="voice_language_launcher">standard (%1$s)</string>
+    <string name="voice_default">standard</string>
+    <string name="voice_online">online</string>
+    <string name="voice_speed">tempo</string>
+    <string name="voice_tts_settings">sprachausgabe-einstellungen</string>
+    <string name="voice_no_voice">Noch keine Stimme für %1$s auf diesem Smartphone: lad eine in den Sprachausgabe-Einstellungen herunter.</string>
+    <string name="voice_sample">So werden die Antworten klingen.</string>
 </resources>

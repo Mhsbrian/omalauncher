@@ -68,4 +68,13 @@
     <string name="voice_quiet">%1$s sudah diam dua menit; hentikan kalau macet</string>
     <string name="voice_failed">gagal</string>
     <string name="voice_retrying">mencoba lagi: %1$s</string>
+    <string name="voice_voice">suara</string>
+    <string name="voice_language">bahasa</string>
+    <string name="voice_language_launcher">bawaan (%1$s)</string>
+    <string name="voice_default">bawaan</string>
+    <string name="voice_online">online</string>
+    <string name="voice_speed">kecepatan</string>
+    <string name="voice_tts_settings">setelan teks ke ucapan</string>
+    <string name="voice_no_voice">Belum ada suara untuk %1$s di ponsel ini: unduh di setelan teks ke ucapan.</string>
+    <string name="voice_sample">Seperti inilah jawaban akan terdengar.</string>
 </resources>

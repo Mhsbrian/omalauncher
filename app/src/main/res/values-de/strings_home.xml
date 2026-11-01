@@ -53,7 +53,7 @@
     <string name="home_refresh">aktualisieren</string>
     <string name="home_refreshing">wird aktualisiert</string>
     <string name="home_job_failed">schiefgegangen:</string>
-    <string name="home_job_whole_log">tippen für das ganze log</string>
+    <string name="home_job_whole_log">ganzes log</string>
     <string name="home_job_less">weniger</string>
     <string name="home_job_copy">kopieren</string>
     <string name="home_settings">einstellungen</string>
